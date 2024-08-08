@@ -18,7 +18,7 @@ public class UserController(UserService userService) : ControllerBase
     {
       return BadRequest(ModelState);
     }
-
+    Console.WriteLine(registerUserDto.ToString());
     return Ok("User Registered");
   }
 
