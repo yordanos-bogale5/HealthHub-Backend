@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "JXRT7tpqC0E=",
+  "dgSpecHash": "E/SekIHA9+8=",
   "success": true,
   "projectFilePath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\dotenv.net\\3.2.0\\dotenv.net.3.2.0.nupkg.sha512",
