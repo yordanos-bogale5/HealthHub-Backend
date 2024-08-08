@@ -13,6 +13,8 @@ public class UserService(AppContext appContext)
 
   public JsonResult RegisterUser(RegisterUserDto registerUserDto)
   {
+
+
     return new JsonResult("Registered");
   }
 }
