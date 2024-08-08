@@ -1,0 +1,11 @@
+POST {{apiHostUrl}}/api/user/register
+
+{
+  "FirstName": "Dagmawi",
+  "LastName" : "Tefera",
+  "Email"    : "dagtef@gmail.com",
+  "Password" : "1234",
+  "Gender"   : "Male",
+  "DateOfBirth" : "2000-01-01",
+  "Role"     : "Patient",
+}
