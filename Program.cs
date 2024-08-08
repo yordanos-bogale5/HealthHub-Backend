@@ -1,4 +1,5 @@
 using dotenv.net;
+using HealthHub.Source.Services;
 using Microsoft.EntityFrameworkCore;
 
 // Load Environment Variables
@@ -18,6 +19,8 @@ builder.Services.AddDbContext<AppContext>(options =>
     Console.WriteLine($"This is the conn str: {connectionString}");
     options.UseSqlServer(connectionString);
 });
+
+builder.Services.AddTransient<UserService>();
 
 var app = builder.Build();
 
