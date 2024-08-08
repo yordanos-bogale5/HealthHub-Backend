@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using dotenv.net;
 using HealthHub.Source.Services;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,14 @@ builder.Services.AddDbContext<AppContext>(options =>
 });
 
 builder.Services.AddTransient<UserService>();
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+
+//----------------------------------------
 
 var app = builder.Build();
 

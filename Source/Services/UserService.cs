@@ -1,3 +1,4 @@
+using HealthHub.Source.Dtos;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ public class UserService(AppContext appContext)
     return new JsonResult(appContext.Users.ToList());
   }
 
-  public JsonResult RegisterUser()
+  public JsonResult RegisterUser(RegisterUserDto registerUserDto)
   {
     return new JsonResult("Registered");
   }
