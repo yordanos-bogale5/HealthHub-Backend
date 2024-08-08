@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using HealthHub.Source.Attributes;
 using HealthHub.Source.Enums;
 
 public class User
@@ -19,6 +20,7 @@ public class User
   [Required]
   public Gender Gender { get; set; }
   [Required]
+  [AgeAbove18]
   public DateTime DateOfBirth { get; set; }
   public string? ProfilePicture { get; set; }
   public string? Address { get; set; }
