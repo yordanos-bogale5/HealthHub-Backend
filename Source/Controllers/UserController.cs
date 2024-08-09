@@ -4,11 +4,21 @@ using HealthHub.Source.Models.Dtos;
 
 namespace HealthHub.Source.Controllers;
 
+/// <summary>
+/// User Controller handles routes related to a user from the client.
+/// </summary>
+/// <param name="userService"></param>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 public class UserController(UserService userService) : ControllerBase
 {
 
+  /// <summary>
+  /// User registration endpoint.
+  /// </summary>
+  /// <param name="registerUserDto"></param>
+  /// <returns>The UserId of the newly created user</returns>
+  /// <exception cref="Exception"></exception>
   [HttpPost("register")]
   public async Task<IActionResult> RegisterUser(RegisterUserDto registerUserDto)
   {
@@ -41,6 +51,10 @@ public class UserController(UserService userService) : ControllerBase
     }
   }
 
+  /// <summary>
+  /// This endpoint returns all the users in the database.
+  /// </summary>
+  /// <returns>List of <see cref="UserDto"/></returns>
   [HttpGet("all")]
   public async Task<IActionResult> GetAllUsers()
   {

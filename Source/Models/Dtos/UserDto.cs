@@ -5,6 +5,15 @@ using HealthHub.Source.Enums;
 
 namespace HealthHub.Source.Models.Dtos;
 
+/// <summary>
+/// User Data Transfer Object. Used for returning user information to the client.
+/// </summary>
+/// <param name="UserId"></param>
+/// <param name="FirstName"></param>
+/// <param name="LastName"></param>
+/// <param name="Email"></param>
+/// <param name="ProfilePicture"></param>
+/// <param name="Gender"></param>
 public record UserDto(
     Guid UserId,
     string FirstName,
@@ -15,6 +24,18 @@ public record UserDto(
 );
 
 
+/// <summary>
+/// Register User Data Transfer Object. Sent from the client to the server for registering a new user. Used to validate client request upon hitting register endpoint.
+/// </summary>
+/// <param name="FirstName"></param>
+/// <param name="LastName"></param>
+/// <param name="Email"></param>
+/// <param name="Password"></param>
+/// <param name="Phone"></param>
+/// <param name="Gender"></param>
+/// <param name="DateOfBirth"></param>
+/// <param name="ProfilePicture"></param>
+/// <param name="Address"></param>
 public record RegisterUserDto(
   [Required] string FirstName,
   [Required] string LastName,

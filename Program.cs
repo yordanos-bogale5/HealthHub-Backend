@@ -1,7 +1,10 @@
+using System.Reflection;
 using System.Text.Json.Serialization;
 using dotenv.net;
 using HealthHub.Source.Services;
 using Microsoft.EntityFrameworkCore;
+
+
 
 // Load Environment Variables
 DotEnv.Load(options: new DotEnvOptions(ignoreExceptions: false));
@@ -10,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddDbContext<AppContext>(options =>
+builder.Services.AddDbContext<HealthHub.Source.Data.AppContext>(options =>
 {
     var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
     if (string.IsNullOrEmpty(connectionString))
@@ -29,7 +32,12 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFile = "HealthHub.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+});
 
 
 //----------------------------------------

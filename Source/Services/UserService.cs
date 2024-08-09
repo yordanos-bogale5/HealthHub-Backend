@@ -5,11 +5,20 @@ using Microsoft.AspNetCore.Mvc;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Responses;
 using Microsoft.EntityFrameworkCore;
-
+using HealthHub.Source;
 namespace HealthHub.Source.Services;
 
-public class UserService(AppContext appContext)
+/// <summary>
+/// User Service
+/// </summary>
+/// <param name="appContext"></param>
+public class UserService(Data.AppContext appContext)
 {
+  /// <summary>
+  /// Get All Users
+  /// </summary>
+  /// <returns>A list of all users</returns>
+  /// <exception cref="Exception"></exception>
   public async Task<ServiceResponse<List<UserDto>>> GetAllUsers()
   {
     try
@@ -29,6 +38,12 @@ public class UserService(AppContext appContext)
     }
   }
 
+  /// <summary>
+  /// Register User Service
+  /// </summary>
+  /// <param name="registerUserDto"></param>
+  /// <returns>The Guid of the newly created user.</returns>
+  /// <exception cref="Exception"></exception>
   public async Task<ServiceResponse<Guid>> RegisterUser(RegisterUserDto registerUserDto)
   {
     try
