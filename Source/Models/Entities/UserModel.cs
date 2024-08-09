@@ -3,9 +3,11 @@ using System.ComponentModel.DataAnnotations;
 using HealthHub.Source.Attributes;
 using HealthHub.Source.Enums;
 
+namespace HealthHub.Source.Models.Entities;
+
 public class User
 {
-  public int UserId { get; set; }
+  public Guid UserId { get; set; } = Guid.NewGuid();
   [Required]
   public required string FirstName { get; set; }
   [Required]

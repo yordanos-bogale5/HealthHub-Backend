@@ -3,7 +3,17 @@ using System.ComponentModel.DataAnnotations;
 using HealthHub.Source.Attributes;
 using HealthHub.Source.Enums;
 
-namespace HealthHub.Source.Dtos;
+namespace HealthHub.Source.Models.Dtos;
+
+public record UserDto(
+    Guid UserId,
+    string FirstName,
+    string LastName,
+    string Email,
+    string? ProfilePicture,
+    Gender Gender
+);
+
 
 public record RegisterUserDto(
   [Required] string FirstName,
@@ -16,3 +26,5 @@ public record RegisterUserDto(
   string? ProfilePicture,
   [Required] string Address
 );
+
+

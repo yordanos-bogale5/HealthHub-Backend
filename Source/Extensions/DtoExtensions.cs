@@ -1,4 +1,6 @@
-using HealthHub.Source.Dtos;
+using HealthHub.Source.Models.Dtos;
+using HealthHub.Source.Models.Entities;
+
 
 namespace HealthHub.Source.Extensions;
 
