@@ -33,14 +33,46 @@ public class UserService(AppContext appContext)
   {
     try
     {
-      User user = registerUserDto.ToEntity();
-      await appContext.Users.AddAsync(user);
+      // Search the User By Email
+      var userByEmail = await appContext.Users.AnyAsync(u => u.Email == registerUserDto.Email);
+
+      // If User is Found By That Email
+      if (userByEmail)
+      {
+        return new ServiceResponse<Guid>(
+          false,
+          400,
+          Guid.Empty,
+          "User with that email already exists!."
+        );
+      }
+
+      // Search the User By Phone
+      var userByPhone = await appContext.Users.AnyAsync(u => u.Phone == registerUserDto.Phone);
+
+      // If User is Found With That Phone
+      if (userByPhone)
+      {
+        return new ServiceResponse<Guid>(
+          false,
+          400,
+          Guid.Empty,
+          "User with that phone already exists!."
+        );
+      }
+
+      // Convert the Dto to Entity 
+      var user = registerUserDto.ToEntity();
+      // Add the User to the Database Asyncronously
+      var addedUser = await appContext.Users.AddAsync(user);
+      // Save the Changes
       await appContext.SaveChangesAsync();
+
       return new ServiceResponse<Guid>(
         Success: true,
         StatusCode: 201,
         Message: "Registration Success!",
-        Data: user.UserId
+        Data: addedUser.Entity.UserId // Return the userId if needed
       );
     }
     catch (Exception ex)
