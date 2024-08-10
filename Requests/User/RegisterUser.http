@@ -1,14 +1,14 @@
-POST {{apiHostUrl}}/api/user/register
+POST {{apiHostUrl}}/api/users/register
 Content-Type: application/json
 
 {
-  "FirstName": "Lewinat",
+  "FirstName": "Dagmawi",
   "LastName" : "Tefera",
-  "Email"    : "lewitef3@gmail.com",
+  "Email"    : "dagtef2@gmail.com",
   "Password" : "12345678Ab",
-  "Gender"   : "Female",
+  "Gender"   : "Male",
   "DateOfBirth" : "2000-01-01",
   "Role"     : "Patient",
-  "Phone"    : "1234",
+  "Phone"    : "12345678",
   "Address"  : "Addis Ababa"
 }

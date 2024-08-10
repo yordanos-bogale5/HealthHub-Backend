@@ -12,7 +12,8 @@ namespace HealthHub.Source.Services;
 /// User Service
 /// </summary>
 /// <param name="appContext"></param>
-public class UserService(Data.AppContext appContext)
+/// <param name="authService"></param>
+public class UserService(Data.AppContext appContext, AuthService authService)
 {
   /// <summary>
   /// Get All Users
@@ -78,8 +79,14 @@ public class UserService(Data.AppContext appContext)
 
       // Convert the Dto to Entity 
       var user = registerUserDto.ToEntity();
+
+
       // Add the User to the Database Asyncronously
       var addedUser = await appContext.Users.AddAsync(user);
+
+      // Send Otp to user
+      await authService.SendOtp(addedUser.Entity.UserId);
+
       // Save the Changes
       await appContext.SaveChangesAsync();
 
