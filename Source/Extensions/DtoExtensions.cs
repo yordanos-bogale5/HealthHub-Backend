@@ -6,6 +6,11 @@ namespace HealthHub.Source.Extensions;
 
 public static class DtoExtensions
 {
+  /// <summary>
+  /// Maps RegisterUserDto to User, Notice: You will lose password property from returned User though!
+  /// </summary>
+  /// <param name="userDto"></param>
+  /// <returns>User instance</returns>
   public static User ToEntity(this RegisterUserDto userDto)
   {
     return new User()
@@ -13,7 +18,6 @@ public static class DtoExtensions
       FirstName = userDto.FirstName,
       LastName = userDto.LastName,
       Email = userDto.Email,
-      Password = userDto.Password,
       Phone = userDto.Phone,
       Address = userDto.Address
     };

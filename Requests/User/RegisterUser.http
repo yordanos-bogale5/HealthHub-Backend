@@ -4,11 +4,11 @@ Content-Type: application/json
 {
   "FirstName": "Dagmawi",
   "LastName" : "Tefera",
-  "Email"    : "dagtef3@gmail.com",
+  "Email"    : "dagtef4@gmail.com",
   "Password" : "12345678Ab",
   "Gender"   : "Male",
   "DateOfBirth" : "2000-01-01",
   "Role"     : "Patient",
-  "Phone"    : "123456789",
+  "Phone"    : "123456780",
   "Address"  : "Addis Ababa"
 }

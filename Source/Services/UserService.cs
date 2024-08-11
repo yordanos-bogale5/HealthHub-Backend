@@ -36,7 +36,12 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
     catch (Exception ex)
     {
       Console.Write(ex);
-      throw new Exception("Failed to retrieve users", ex);
+      return new ServiceResponse<List<UserDto>>(
+        Success: false,
+        StatusCode: 500,
+        Message: "Failed to retrieve users",
+        Data: null
+      );
     }
   }
 
@@ -79,13 +84,23 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
       }
 
       // Create User in Auth0
-      var auth0UserId = await auth0Service.CreateUser(registerUserDto);
+      var auth0UserId = await auth0Service.CreateUserAsync(registerUserDto);
+
+      if (auth0UserId == null)
+      {
+        return new ServiceResponse<Guid>(
+          false,
+          500,
+          Guid.Empty,
+          "Failed to create user in Auth0"
+        );
+      }
 
       // Convert the Dto to User Entity 
       var user = registerUserDto.ToEntity();
 
       // Modify the Entity Id to match the Auth0 id
-      user.UserId = auth0UserId;
+      user.UserId = Guid.Parse(auth0UserId);
 
       // Add the User to the Database Asyncronously
       var addedUser = await appContext.Users.AddAsync(user);
@@ -106,7 +121,53 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
     catch (Exception ex)
     {
       Console.WriteLine(ex);
-      throw new Exception("Registration Failed", ex);
+      return new ServiceResponse<Guid>(
+        Success: false,
+        StatusCode: 500,
+        Guid.Empty,
+        "Failed to register user"
+      );
+    }
+  }
+
+
+  public async Task<ServiceResponse> DeleteUserAsync(Guid userId)
+  {
+    try
+    {
+      var user = await appContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+      if (user == null)
+      {
+        return new ServiceResponse(
+          false,
+          404,
+          "User not found"
+        );
+      }
+
+      // Delete the User in Auth0
+      await auth0Service.DeleteUserAsync(user.UserId);
+
+      appContext.Users.Remove(user);
+
+      await appContext.SaveChangesAsync();
+
+      return new ServiceResponse(
+        true,
+        204,
+        "User Deleted"
+      );
+    }
+    catch (System.Exception ex)
+    {
+      Console.WriteLine($"{ex}");
+
+      return new ServiceResponse(
+        false,
+        500,
+        "An error occured trying to delete user."
+      );
     }
   }
 }

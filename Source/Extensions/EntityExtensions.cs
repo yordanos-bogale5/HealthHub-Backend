@@ -19,13 +19,13 @@ namespace HealthHub.Source.Extensions
     }
 
     // Maps User entity to RegisterUserDto
-    public static RegisterUserDto ToRegisterUserDto(this User user)
+    public static RegisterUserDto ToRegisterUserDto(this User user, string password)
     {
       return new RegisterUserDto(
           user.FirstName,
           user.LastName,
           user.Email,
-          user.Password,
+          password,
           user.Phone,
           user.Gender,
           user.DateOfBirth,

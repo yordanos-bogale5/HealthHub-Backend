@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "J27+5UHHUZI=",
+  "dgSpecHash": "Kox6F7DJgWs=",
   "success": true,
   "projectFilePath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
   "expectedPackageFiles": [
@@ -57,6 +57,7 @@
     "C:\\Users\\Dag Weg\\.nuget\\packages\\minirazor.compiler\\2.2.0\\minirazor.compiler.2.2.0.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\minirazor.runtime\\2.2.0\\minirazor.runtime.2.2.0.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\mono.texttemplating\\2.2.1\\mono.texttemplating.2.2.1.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\restsharp\\111.4.1\\restsharp.111.4.1.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\swashbuckle.aspnetcore\\6.4.0\\swashbuckle.aspnetcore.6.4.0.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.4.0\\swashbuckle.aspnetcore.swagger.6.4.0.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.4.0\\swashbuckle.aspnetcore.swaggergen.6.4.0.nupkg.sha512",
