@@ -70,6 +70,9 @@ builder.Services.AddTransient<UserService>();
 // Register Auth Service
 builder.Services.AddTransient<AuthService>();
 
+// Register the Auth0 Service
+builder.Services.AddTransient<Auth0Service>();
+
 // Register Email Service
 builder.Services.AddTransient<EmailService>();
 
