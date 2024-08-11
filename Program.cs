@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using dotenv.net;
+using HealthHub.Source.Config;
 using HealthHub.Source.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
 // Load Environment Variables
@@ -10,10 +12,27 @@ DotEnv.Load(options: new DotEnvOptions(ignoreExceptions: false));
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+
+// Register Jwt Service and Configure it
+// builder.Services.AddAuthentication("Bearer").AddJwtBearer();
+
+// Controllers & Views Service
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<HealthHub.Source.Data.AppContext>(options =>
+
+// Register the App Configuration Service
+builder.Services.AddSingleton<AppConfig>(provider =>
 {
-    var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
+    var config = provider.GetRequiredService<IConfiguration>();
+    return new AppConfig(config);
+});
+
+
+// Database Service
+builder.Services.AddDbContext<HealthHub.Source.Data.AppContext>((serviceProvider, options) =>
+{
+    var appConfig = serviceProvider.GetRequiredService<AppConfig>();
+    var connectionString = appConfig.DatabaseConnection;
     if (string.IsNullOrEmpty(connectionString))
     {
         throw new InvalidOperationException("DB_CONNECTION environment variable is not set.");
@@ -22,11 +41,19 @@ builder.Services.AddDbContext<HealthHub.Source.Data.AppContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
-// Register DI Services
+// Register User Service
 builder.Services.AddTransient<UserService>();
+
+// Register Auth Service
 builder.Services.AddTransient<AuthService>();
+
+// Register Email Service
 builder.Services.AddTransient<EmailService>();
+
+// Register File Service
 builder.Services.AddTransient<FileService>();
+
+// Register Rendering Service
 builder.Services.AddTransient<RenderingService>();
 
 

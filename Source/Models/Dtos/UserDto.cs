@@ -49,3 +49,13 @@ public record RegisterUserDto(
 );
 
 
+
+/// <summary>
+/// Login User Data Transfer Object. Sent from the client to the server for logging in a user. Used to validate client request upon hitting login endpoint.
+/// </summary>
+/// <param name="email"></param>
+/// <param name="password"></param>
+public record LoginUserDto(
+  [Required][EmailAddress] string email,
+  [Required] string password
+);

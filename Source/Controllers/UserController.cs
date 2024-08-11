@@ -51,6 +51,33 @@ public class UserController(UserService userService) : ControllerBase
     }
   }
 
+  [HttpPost("login")]
+  public async Task<IActionResult> LoginUser(LoginUserDto loginUserDto)
+  {
+    try
+    {
+      if (!ModelState.IsValid)
+      {
+        return BadRequest(ModelState);
+      }
+
+      // var response = await userService.LoginUser(loginUserDto);
+
+      // if (!response.Success)
+      // {
+      //   return StatusCode(response.StatusCode, response.Message);
+      // }
+
+      // return Ok(response);
+      return Ok();
+    }
+    catch (System.Exception ex)
+    {
+      Console.WriteLine($"{ex}");
+      throw;
+    }
+  }
+
   /// <summary>
   /// This endpoint returns all the users in the database.
   /// </summary>
