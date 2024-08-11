@@ -1,4 +1,5 @@
 using HealthHub.Source;
+using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.ViewModels;
 
@@ -12,7 +13,7 @@ namespace HealthHub.Source.Services;
 /// <param name="renderingService"></param>
 public class AuthService(Data.AppContext appContext, EmailService emailService, RenderingService renderingService)
 {
-  public async Task<Guid> SendOtp(Guid userId)
+  public async Task SendOtp(Guid userId)
   {
     try
     {
@@ -42,7 +43,6 @@ public class AuthService(Data.AppContext appContext, EmailService emailService, 
       await emailService.SendEmail(user.Email, $"{user.FirstName} {user.LastName}", "Verify Registration", emailBody);
 
       await appContext.SaveChangesAsync();
-      return user.UserId;
     }
     catch (System.Exception ex)
     {
@@ -50,4 +50,7 @@ public class AuthService(Data.AppContext appContext, EmailService emailService, 
       throw new Exception("Internal Error", ex);
     }
   }
+
+
+
 }
