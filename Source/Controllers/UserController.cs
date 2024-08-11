@@ -52,7 +52,7 @@ public class UserController(UserService userService) : ControllerBase
   }
 
   [HttpPost("login")]
-  public async Task<IActionResult> LoginUser(LoginUserDto loginUserDto)
+  public async Task<IActionResult> LoginUserAsync(LoginUserDto loginUserDto)
   {
     try
     {
@@ -96,6 +96,27 @@ public class UserController(UserService userService) : ControllerBase
     }
     catch (Exception)
     {
+      throw;
+    }
+  }
+
+
+  [HttpDelete("{userId}")]
+  public async Task<IActionResult> DeleteUser(Guid userId)
+  {
+    try
+    {
+      var response = await userService.DeleteUserAsync(userId);
+      if (!response.Success)
+      {
+        return StatusCode(response.StatusCode, response.Message);
+      }
+      return Ok(response);
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"{ex}");
+
       throw;
     }
   }
