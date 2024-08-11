@@ -13,7 +13,8 @@ namespace HealthHub.Source.Services;
 /// </summary>
 /// <param name="appContext"></param>
 /// <param name="authService"></param>
-public class UserService(Data.AppContext appContext, AuthService authService)
+/// <param name="auth0Service"></param>
+public class UserService(Data.AppContext appContext, AuthService authService, Auth0Service auth0Service)
 {
   /// <summary>
   /// Get All Users
@@ -77,9 +78,14 @@ public class UserService(Data.AppContext appContext, AuthService authService)
         );
       }
 
-      // Convert the Dto to Entity 
+      // Create User in Auth0
+      var auth0UserId = await auth0Service.CreateUser(registerUserDto);
+
+      // Convert the Dto to User Entity 
       var user = registerUserDto.ToEntity();
 
+      // Modify the Entity Id to match the Auth0 id
+      user.UserId = auth0UserId;
 
       // Add the User to the Database Asyncronously
       var addedUser = await appContext.Users.AddAsync(user);
