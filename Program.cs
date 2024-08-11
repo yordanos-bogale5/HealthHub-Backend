@@ -5,6 +5,7 @@ using HealthHub.Source.Config;
 using HealthHub.Source.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 // Load Environment Variables
 DotEnv.Load(options: new DotEnvOptions(ignoreExceptions: false));
@@ -14,8 +15,30 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 
-// Register Jwt Service and Configure it
-// builder.Services.AddAuthentication("Bearer").AddJwtBearer();
+// Configure authentication with JWT and Auth0
+// 1. Set JwtBearer as the default authentication and challenge schemes
+// 2. Configure JwtBearer options with Auth0 settings
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+})
+.AddJwtBearer(options =>
+{
+    var appConfig = new AppConfig(builder.Configuration);
+    options.Authority = $"https://{appConfig.Auth0Domain}/";
+    options.Audience = appConfig.Auth0Audience;
+    options.RequireHttpsMetadata = appConfig.IsProduction ?? false;
+});
+
+// Configure Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("Doctor", policy => policy.RequireRole("Doctor"));
+    options.AddPolicy("Patient", policy => policy.RequireRole("Patient"));
+});
 
 // Controllers & Views Service
 builder.Services.AddControllersWithViews();
@@ -76,6 +99,7 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 app.MapControllers();
+
 
 if (app.Environment.IsDevelopment())
 {
