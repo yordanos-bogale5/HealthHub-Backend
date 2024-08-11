@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "mr8Vsw69xWs=",
+  "dgSpecHash": "J27+5UHHUZI=",
   "success": true,
   "projectFilePath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\auth0.aspnetcore.authentication\\1.4.1\\auth0.aspnetcore.authentication.1.4.1.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",
@@ -12,6 +13,7 @@
     "C:\\Users\\Dag Weg\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\mailkit\\4.7.1.1\\mailkit.4.7.1.1.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.7\\microsoft.aspnetcore.authentication.jwtbearer.8.0.7.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\microsoft.aspnetcore.authentication.openidconnect\\8.0.1\\microsoft.aspnetcore.authentication.openidconnect.8.0.1.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.7\\microsoft.aspnetcore.openapi.8.0.7.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\microsoft.aspnetcore.razor.language\\5.0.4\\microsoft.aspnetcore.razor.language.5.0.4.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
