@@ -1,26 +1,29 @@
+using HealthHub.Source.Models.Responses;
+using HealthHub.Source.Services;
 using Microsoft.AspNetCore.Mvc;
 
-[Route("api/[controller]")]
-public class VerificiationController(ILogger<VerificiationController> logger) : ControllerBase
+[Route("api/verify")]
+public class VerificationController(UserService userService, ILogger<VerificationController> logger) : ControllerBase
 {
 
 
-  [HttpGet("email")]
-  public async Task<IActionResult> VerifyEmailAsync(bool success, string message)
+  [HttpGet("email/{userId}")]
+  public async Task<IApiResponse<bool>> VerifyEmailAsync(Guid userId)
   {
     try
     {
       if (!ModelState.IsValid)
       {
-        return BadRequest(ModelState);
+        return new ApiResponse<bool>(false, "Invalid Model State", false);
       }
-      logger.LogInformation($"Auth0 Callback \nSuccess: {success} \nMessage: {message}");
-      return Ok();
 
+      var result = await userService.CheckEmailVerified(userId);
+
+      return new ApiResponse<bool>(result.Success, result.Message, result.Data ?? false);
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "Failed to Verify Email");
+      logger.LogError(ex, "Failed to Check Email Verification");
       throw new Exception("Internal Server Error ", ex);
     }
   }
