@@ -89,6 +89,34 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
     }
   }
 
+  public async Task<bool?> IsEmailVerified(string userId)
+  {
+    try
+    {
+      var token = await GetManagementApiTokenAsync();
+
+      var client = new RestClient($"{appConfig.Auth0Authority}/api/v2/users/{userId}");
+      var request = new RestRequest() { Method = Method.Get };
+
+      request.AddHeader("Authorization", $"Bearer {token}");
+
+      var response = await client.ExecuteAsync(request);
+
+      if (!response.IsSuccessStatusCode)
+      {
+        logger.LogError(response.Content, $"Auth0 Get User Error for email verification");
+        throw new Exception("Failed to get user in Auth0 for email verification");
+      }
+
+      return JsonSerializer.Deserialize<JsonElement>(response.Content!).GetProperty("email_verified").GetBoolean();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Failed to verify email in Auth0");
+      throw;
+    }
+  }
+
   /// <summary>
   /// Responsible for getting the management access token for making management API calls.
   /// </summary>
