@@ -8,9 +8,10 @@ namespace HealthHub.Source.Controllers;
 /// User Controller handles routes related to a user from the client.
 /// </summary>
 /// <param name="userService"></param>
+/// <param name="logger"></param>
 [ApiController]
 [Route("api/users")]
-public class UserController(UserService userService) : ControllerBase
+public class UserController(UserService userService, ILogger<UserController> logger) : ControllerBase
 {
 
   /// <summary>
@@ -37,16 +38,12 @@ public class UserController(UserService userService) : ControllerBase
       }
 
       // Successful Registration
-      var result = new
-      {
-        userId = response.Data
-      };
 
-      return Ok(result);
+      return Ok(response.Data);
     }
     catch (Exception ex)
     {
-      Console.WriteLine(ex);
+      logger.LogError(ex, "Failed to Register User");
       throw new Exception("Internal Server Error ", ex);
     }
   }
@@ -73,7 +70,7 @@ public class UserController(UserService userService) : ControllerBase
     }
     catch (System.Exception ex)
     {
-      Console.WriteLine($"{ex}");
+      logger.LogError(ex, "Failed to Login User");
       throw;
     }
   }
@@ -115,7 +112,7 @@ public class UserController(UserService userService) : ControllerBase
     }
     catch (Exception ex)
     {
-      Console.WriteLine($"{ex}");
+      logger.LogError(ex, "Failed to Delete User");
 
       throw;
     }
