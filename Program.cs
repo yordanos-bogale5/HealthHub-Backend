@@ -4,6 +4,7 @@ using HealthHub.Source.Config;
 using HealthHub.Source.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 
@@ -46,6 +47,17 @@ builder.Services.AddAuthentication(options =>
     options.Authority = $"https://{appConfig.Auth0Domain}/";
     options.Audience = appConfig.Auth0Audience;
     options.RequireHttpsMetadata = appConfig.IsProduction ?? false;
+
+    // Configure Token Validation Parameters
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = appConfig.Auth0Authority,
+        ValidAudience = appConfig.Auth0Audience
+    };
 });
 
 // Configure Authorization
