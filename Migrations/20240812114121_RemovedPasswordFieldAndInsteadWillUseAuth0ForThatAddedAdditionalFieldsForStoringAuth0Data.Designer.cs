@@ -4,6 +4,7 @@ using HealthHub.Source.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(Source.Data.AppContext))]
-    partial class AppContextModelSnapshot : ModelSnapshot
+    [Migration("20240812114121_RemovedPasswordFieldAndInsteadWillUseAuth0ForThatAddedAdditionalFieldsForStoringAuth0Data")]
+    partial class RemovedPasswordFieldAndInsteadWillUseAuth0ForThatAddedAdditionalFieldsForStoringAuth0Data
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,9 +60,6 @@ namespace HealthHub.Migrations
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsEmailVerified")
-                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()

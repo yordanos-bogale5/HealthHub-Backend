@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HealthHub.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class RemovedPasswordFieldAndInsteadWillUseAuth0ForThatAddedAdditionalFieldsForStoringAuth0Data : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,10 +16,12 @@ namespace HealthHub.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Auth0Id = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Auth0AccessToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Auth0RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Otp = table.Column<int>(type: "int", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
