@@ -14,7 +14,8 @@ namespace HealthHub.Source.Services;
 /// <param name="appContext"></param>
 /// <param name="authService"></param>
 /// <param name="auth0Service"></param>
-public class UserService(Data.AppContext appContext, AuthService authService, Auth0Service auth0Service)
+/// <param name="logger"></param>
+public class UserService(Data.AppContext appContext, AuthService authService, Auth0Service auth0Service, ILogger<UserService> logger)
 {
   /// <summary>
   /// Get All Users
@@ -51,8 +52,9 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
   /// <param name="registerUserDto"></param>
   /// <returns>The Guid of the newly created user.</returns>
   /// <exception cref="Exception"></exception>
-  public async Task<ServiceResponse<Guid>> RegisterUser(RegisterUserDto registerUserDto)
+  public async Task<ServiceResponse<UserDto>> RegisterUser(RegisterUserDto registerUserDto)
   {
+    Auth0UserDto? auth0User = null;
     try
     {
       // Search the User By Email
@@ -61,10 +63,10 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
       // If User is Found By That Email
       if (userByEmail)
       {
-        return new ServiceResponse<Guid>(
+        return new ServiceResponse<UserDto>(
           false,
           400,
-          Guid.Empty,
+          null,
           "User with that email already exists!."
         );
       }
@@ -75,23 +77,26 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
       // If User is Found With That Phone
       if (userByPhone)
       {
-        return new ServiceResponse<Guid>(
+        return new ServiceResponse<UserDto>(
           false,
           400,
-          Guid.Empty,
+          null,
           "User with that phone already exists!."
         );
       }
 
       // Create User in Auth0
-      var auth0UserId = await auth0Service.CreateUserAsync(registerUserDto);
+      auth0User = await auth0Service.CreateUserAsync(registerUserDto);
 
-      if (auth0UserId == null)
+      logger.LogInformation($"Auth0Created User in UserService \n\n:{auth0User}");
+
+
+      if (auth0User == null || auth0User.UserId == null)
       {
-        return new ServiceResponse<Guid>(
+        return new ServiceResponse<UserDto>(
           false,
           500,
-          Guid.Empty,
+          null,
           "Failed to create user in Auth0"
         );
       }
@@ -99,32 +104,41 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
       // Convert the Dto to User Entity 
       var user = registerUserDto.ToEntity();
 
-      // Modify the Entity Id to match the Auth0 id
-      user.UserId = Guid.Parse(auth0UserId);
+      // Populate the User Entity with the Auth0User Accordingly
+      user.Auth0Id = auth0User.UserId;
+      user.ProfilePicture = auth0User.Profile;
+      user.IsEmailVerified = auth0User.EmailVerified;
 
-      // Add the User to the Database Asyncronously
+      // Add the User to the Database 
       var addedUser = await appContext.Users.AddAsync(user);
 
-      // Send Otp to user
-      await authService.SendOtp(addedUser.Entity.UserId);
+      // COMMENTED INTENTIONALLY BECAUSE AUTH0 PROVIDES CUSTOM EMAIL VERIFICATION
+      // Send Otp to user if their email isn't verified
+      // if (!auth0User.EmailVerified)
+      //   await authService.SendOtp(addedUser.Entity.UserId);
 
       // Save the Changes
       await appContext.SaveChangesAsync();
 
-      return new ServiceResponse<Guid>(
+      return new ServiceResponse<UserDto>(
         Success: true,
         StatusCode: 201,
         Message: "Registration Success!",
-        Data: addedUser.Entity.UserId // Return the userId if needed
+        Data: user.ToUserDto()
       );
     }
     catch (Exception ex)
     {
-      Console.WriteLine(ex);
-      return new ServiceResponse<Guid>(
+      // Rollback auth0 user creation
+      if (auth0User != null)
+        await auth0Service.DeleteUserAsync(auth0User.UserId);
+
+      logger.LogError(ex, "Failed to register user");
+
+      return new ServiceResponse<UserDto>(
         Success: false,
         StatusCode: 500,
-        Guid.Empty,
+        null,
         "Failed to register user"
       );
     }
@@ -147,7 +161,8 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
       }
 
       // Delete the User in Auth0
-      await auth0Service.DeleteUserAsync(user.UserId);
+      if (user.Auth0Id != null)
+        await auth0Service.DeleteUserAsync(user.Auth0Id);
 
       appContext.Users.Remove(user);
 
@@ -161,7 +176,7 @@ public class UserService(Data.AppContext appContext, AuthService authService, Au
     }
     catch (System.Exception ex)
     {
-      Console.WriteLine($"{ex}");
+      logger.LogError(ex, "Failed to delete user");
 
       return new ServiceResponse(
         false,

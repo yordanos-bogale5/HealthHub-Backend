@@ -11,7 +11,8 @@ namespace HealthHub.Source.Services;
 /// <param name="appContext"></param>
 /// <param name="emailService"></param>
 /// <param name="renderingService"></param>
-public class AuthService(Data.AppContext appContext, EmailService emailService, RenderingService renderingService)
+/// <param name="logger"></param>
+public class AuthService(Data.AppContext appContext, EmailService emailService, RenderingService renderingService, ILogger<AuthService> logger)
 {
   public async Task SendOtp(Guid userId)
   {
@@ -21,10 +22,11 @@ public class AuthService(Data.AppContext appContext, EmailService emailService, 
       var otp = new Random().Next(100000, 999999);
 
       User? user = await appContext.Users.FindAsync(userId);
-      Console.WriteLine($"FIRSTNAME : {user?.FirstName}");
+      logger.LogInformation($"FIRSTNAME : {user?.FirstName}");
 
       if (user == null)
       {
+        logger.LogError("User with that id is not found!");
         throw new ArgumentException("User with that id is not found!");
       }
 
@@ -46,7 +48,7 @@ public class AuthService(Data.AppContext appContext, EmailService emailService, 
     }
     catch (System.Exception ex)
     {
-      Console.WriteLine(ex);
+      logger.LogError(ex, "Failed to send OTP");
       throw new Exception("Internal Error", ex);
     }
   }

@@ -3,7 +3,7 @@ using MimeKit;
 
 namespace HealthHub.Source.Services;
 
-public class EmailService(IConfiguration configuration)
+public class EmailService(IConfiguration configuration, ILogger<EmailService> logger)
 {
   /// <summary>
   /// Function used to send email to people.
@@ -33,7 +33,7 @@ public class EmailService(IConfiguration configuration)
       // Send the MimeMessage to the specified Email Address using the SmtpClient 
       using (var client = new SmtpClient())
       {
-        Console.WriteLine($"--CONFIGURATOIN-{configuration}");
+        logger.LogInformation($"--CONFIGURATOIN-{configuration}");
 
         await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
         await client.AuthenticateAsync(configuration["MAIL_SENDER_EMAIL"], configuration["MAIL_SENDER_PASSWORD"]);
@@ -43,7 +43,7 @@ public class EmailService(IConfiguration configuration)
     }
     catch (System.Exception ex)
     {
-      Console.WriteLine($"{ex}");
+      logger.LogInformation($"{ex}");
       throw new Exception("Error sending email ", ex);
     }
   }
