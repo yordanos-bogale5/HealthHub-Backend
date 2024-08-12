@@ -18,6 +18,7 @@ public class User
   [Required]
   [EmailAddress]
   public required string Email { get; set; }
+  public bool IsEmailVerified { get; set; } = false;
   public int? Otp { get; set; }
   [Phone]
   [MinLength(4, ErrorMessage = "The field must be at least 4 characters long.")]
