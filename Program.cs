@@ -1,19 +1,35 @@
-using System.Reflection;
 using System.Text.Json.Serialization;
 using dotenv.net;
 using HealthHub.Source.Config;
 using HealthHub.Source.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Serilog;
+
 
 // Load Environment Variables
 DotEnv.Load(options: new DotEnvOptions(ignoreExceptions: false));
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
+// Configure Serilog with appropriate sinks
+Log.Logger = new LoggerConfiguration()
+        .MinimumLevel.Debug() // Set the minimum log level to Debug
+        .WriteTo.Console() // Write logs to the console
+        .WriteTo.File("Logs/HealthHub.log", rollingInterval: RollingInterval.Day) // Write logs to a file
+        .WriteTo.Seq("http://localhost:5341/") // Write logs to Seq
+        .CreateLogger();
+
+Log.Information("Application Starting...");
+
+// Configure Serilog to capture logs from application host
+builder.Host.UseSerilog();
+
+
+/*
+    Add Services to the Container
+*/
 
 // Configure authentication with JWT and Auth0
 // 1. Set JwtBearer as the default authentication and challenge schemes
@@ -60,29 +76,17 @@ builder.Services.AddDbContext<HealthHub.Source.Data.AppContext>((serviceProvider
     {
         throw new InvalidOperationException("DB_CONNECTION environment variable is not set.");
     }
-    Console.WriteLine($"This is the conn str: {connectionString}");
+    Log.Information($"This is the conn str: {connectionString}");
     options.UseSqlServer(connectionString);
 });
 
-// Register User Service
+// Register Services
 builder.Services.AddTransient<UserService>();
-
-// Register Auth Service
 builder.Services.AddTransient<AuthService>();
-
-// Register the Auth0 Service
 builder.Services.AddTransient<Auth0Service>();
-
-// Register Email Service
 builder.Services.AddTransient<EmailService>();
-
-// Register File Service
 builder.Services.AddTransient<FileService>();
-
-// Register Rendering Service
 builder.Services.AddTransient<RenderingService>();
-
-
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -97,12 +101,18 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
+// Close and Flush Serilog when the application exits
+AppDomain.CurrentDomain.ProcessExit += (s, e) => Log.CloseAndFlush();
+
 //----------------------------------------
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging(); // Enable Serilog Request Logging
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 
