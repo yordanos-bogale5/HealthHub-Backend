@@ -7,7 +7,7 @@ using RestSharp;
 
 namespace HealthHub.Source.Services;
 
-public class Auth0Service(AppConfig appConfig)
+public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
 {
 
   /// <summary>
@@ -15,7 +15,7 @@ public class Auth0Service(AppConfig appConfig)
   /// </summary>
   /// <param name="userDto"></param>
   /// <returns>Newly created auth0 UserID</returns>
-  public async Task<string?> CreateUserAsync(RegisterUserDto userDto)
+  public async Task<Auth0UserDto?> CreateUserAsync(RegisterUserDto userDto)
   {
 
     var userPayload = new
@@ -31,7 +31,6 @@ public class Auth0Service(AppConfig appConfig)
     };
 
     var token = await GetManagementApiTokenAsync();
-    Console.WriteLine("THIS IS THE TOKEN " + token);
 
     var client = new RestClient($"{appConfig.Auth0Authority}/api/v2/users");
 
@@ -46,38 +45,48 @@ public class Auth0Service(AppConfig appConfig)
 
     if (response.StatusCode != System.Net.HttpStatusCode.Created)
     {
-      Console.WriteLine($"Auth0 Create User Error:\n {response.Content}");
+      logger.LogError(response.Content, $"Auth0 Create User Error");
       throw new Exception("Failed to create user in Auth0");
     }
 
-    Console.WriteLine($"Auth0 Create User Success:\n {response.Content}");
+    logger.LogInformation($"Auth0 Create User Success:\n {response.Content}");
 
 
     var userData = JsonSerializer.Deserialize<JsonElement>(response.Content!);
 
-    return userData.GetProperty("user_id").GetString();
+    return new Auth0UserDto(
+      userData.GetProperty("user_id").GetString()!,
+      userData.GetProperty("picture").GetString()!,
+      userData.GetProperty("email_verified").GetBoolean()
+    );
   }
 
-  public async Task<Guid> DeleteUserAsync(Guid userId)
+  public async Task DeleteUserAsync(string userId)
   {
-    var token = await GetManagementApiTokenAsync();
-    Console.WriteLine("THIS IS THE TOKEN " + token);
-
-    var client = new RestClient($"{appConfig.Auth0Authority}/api/v2/users/{userId}");
-    var request = new RestRequest() { Method = Method.Delete };
-
-    request.AddHeader("Authorization", $"Bearer {token}");
-
-    var response = await client.ExecuteAsync(request);
-
-    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+    try
     {
-      Console.WriteLine($"Auth0 Delete User Error:\n {response.Content}");
-      throw new Exception("Failed to delete user in Auth0");
-    }
+      var token = await GetManagementApiTokenAsync();
 
-    Console.WriteLine($"Auth0 Delete User Success:\n {response.Content}");
-    return userId;
+      var client = new RestClient($"{appConfig.Auth0Authority}/api/v2/users/{userId}");
+      var request = new RestRequest() { Method = Method.Delete };
+
+      request.AddHeader("Authorization", $"Bearer {token}");
+
+      var response = await client.ExecuteAsync(request);
+
+      if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
+      {
+        logger.LogError(response.Content, $"Auth0 Delete User Error");
+        throw new Exception("Failed to delete user in Auth0");
+      }
+
+      logger.LogInformation($"Auth0 Delete User Success:\n {response.Content}");
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Failed to delete user in Auth0");
+      throw;
+    }
   }
 
   /// <summary>
@@ -92,7 +101,7 @@ public class Auth0Service(AppConfig appConfig)
     var url = $"{appConfig.Auth0Authority}/oauth/token";
 
     var client = new RestClient(url);
-    Console.WriteLine($"Auth0 Get Management API Token Request:\n {url}");
+    logger.LogInformation($"Auth0 Get Management API Token Request:\n {url}");
 
     var request = new RestRequest() { Method = Method.Post };
 
@@ -106,12 +115,12 @@ public class Auth0Service(AppConfig appConfig)
 
     if (response.StatusCode != System.Net.HttpStatusCode.OK)
     {
-      Console.WriteLine($"Auth0 Get Management API Token Error:\n {response.Content}");
+      logger.LogError(response.Content, $"Auth0 Get Management API Token Error");
 
       throw new Exception("Failed to get management API token");
     }
 
-    Console.WriteLine($"Auth0 Get Management API Token Success:\n {response.Content}");
+    logger.LogInformation($"Auth0 Get Management API Token Success:\n {response.Content}");
 
     var tokenData = JsonSerializer.Deserialize<JsonElement>(response.Content!);
     return tokenData.GetProperty("access_token").GetString()!;
