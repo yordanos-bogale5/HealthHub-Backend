@@ -6,7 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 public class VerificationController(UserService userService, ILogger<VerificationController> logger) : ControllerBase
 {
 
-
+  /// <summary>
+  /// This endpoint is responsible for verifying a user's email.
+  /// </summary>
+  /// <param name="userId"></param>
+  /// <returns></returns>
+  /// <exception cref="Exception"></exception>
   [HttpGet("email/{userId}")]
   public async Task<IApiResponse<bool>> VerifyEmailAsync(Guid userId)
   {

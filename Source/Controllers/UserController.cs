@@ -48,6 +48,11 @@ public class UserController(UserService userService, ILogger<UserController> log
     }
   }
 
+  /// <summary>
+  /// This endpoint is responsible for logging in a user.
+  /// </summary>
+  /// <param name="loginUserDto"></param>
+  /// <returns></returns>
   [HttpPost("login")]
   public async Task<IActionResult> LoginUserAsync(LoginUserDto loginUserDto)
   {
@@ -97,7 +102,11 @@ public class UserController(UserService userService, ILogger<UserController> log
     }
   }
 
-
+  /// <summary>
+  /// This endpoint deletes the user with the specified userId.
+  /// </summary>
+  /// <param name="userId"></param>
+  /// <returns></returns>
   [HttpDelete("{userId}")]
   public async Task<IActionResult> DeleteUser(Guid userId)
   {
