@@ -12,11 +12,89 @@ namespace HealthHub.Source.Services;
 /// User Service
 /// </summary>
 /// <param name="appContext"></param>
-/// <param name="authService"></param>
 /// <param name="auth0Service"></param>
 /// <param name="logger"></param>
-public class UserService(Data.AppContext appContext, AuthService authService, Auth0Service auth0Service, ILogger<UserService> logger)
+public class UserService(Data.AppContext appContext, Auth0Service auth0Service, ILogger<UserService> logger)
 {
+
+  /// <summary>
+  /// Check if Email is Verified by Auth0
+  /// </summary>
+  /// <param name="userId"></param>
+  /// <returns></returns>
+  public async Task<ServiceResponse<bool?>> CheckEmailVerified(Guid userId)
+  {
+    try
+    {
+      var user = await appContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+      if (user == null)
+      {
+        return new ServiceResponse<bool?>(
+          false,
+          404,
+          false,
+          "User with that id not found"
+        );
+      }
+
+      if (user.IsEmailVerified)
+      {
+        return new ServiceResponse<bool?>(
+          true,
+          200,
+          true,
+          "Email is verified"
+        );
+      }
+
+      if (user.Auth0Id == null)
+      {
+        return new ServiceResponse<bool?>(
+          false,
+          400,
+          false,
+          "User does not have an Auth0Id"
+        );
+      }
+
+      var isEmailVerified = await auth0Service.IsEmailVerified(user.Auth0Id);
+
+      if (isEmailVerified == null)
+      {
+        return new ServiceResponse<bool?>(
+          false,
+          500,
+          false,
+          "Failed to check email verification"
+        );
+      }
+
+      // Sync the auth0 email verification status with the user entity
+      user.IsEmailVerified = (bool)isEmailVerified;
+
+      await appContext.SaveChangesAsync();
+
+      return new ServiceResponse<bool?>(
+        true,
+        200,
+        isEmailVerified,
+        (bool)isEmailVerified ? "Email is verified" : "Email is not verified"
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Failed to check email verification");
+
+      return new ServiceResponse<bool?>(
+        false,
+        500,
+        false,
+        "An error occured trying to check email verification."
+      );
+    }
+  }
+
   /// <summary>
   /// Get All Users
   /// </summary>
