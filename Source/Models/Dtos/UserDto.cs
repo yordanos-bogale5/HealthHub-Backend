@@ -48,6 +48,18 @@ public record RegisterUserDto(
   [Required] string Address
 );
 
+/// <summary>
+/// These are the fields what a newly created Auth0 User will have
+/// </summary>
+/// <param name="UserId"></param>
+/// <param name="Profile"></param>
+/// <param name="EmailVerified"></param>
+public record Auth0UserDto(
+  string UserId,
+  string Profile,
+  bool EmailVerified
+);
+
 
 
 /// <summary>
