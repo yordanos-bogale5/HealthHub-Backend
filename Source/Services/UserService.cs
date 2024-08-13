@@ -222,7 +222,50 @@ public class UserService(Data.AppContext appContext, Auth0Service auth0Service, 
     }
   }
 
+  public async Task<ServiceResponse<Auth0LoginDto>> LoginUserAsync(LoginUserDto loginUserDto)
+  {
+    try
+    {
+      var user = await appContext.Users.FirstOrDefaultAsync(u => u.Email == loginUserDto.Email);
 
+      if (user == null)
+      {
+        return new ServiceResponse<Auth0LoginDto>(
+          false,
+          400,
+          null,
+          "User with that email is not found. Please register!"
+        );
+      }
+
+      var auth0LoginDto = await auth0Service.LoginUserAsync(loginUserDto);
+
+      logger.LogInformation($"Auth0 Login Dto: {auth0LoginDto}");
+
+      return new ServiceResponse<Auth0LoginDto>(
+        true,
+        200,
+        auth0LoginDto,
+        "Login success!"
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Failed to login user");
+      return new ServiceResponse<Auth0LoginDto>(
+        false,
+        500,
+        null,
+        ex.Message
+      );
+    }
+  }
+
+  /// <summary>
+  /// Delete User Service
+  /// </summary>
+  /// <param name="userId"></param>
+  /// <returns></returns>
   public async Task<ServiceResponse> DeleteUserAsync(Guid userId)
   {
     try
@@ -260,6 +303,42 @@ public class UserService(Data.AppContext appContext, Auth0Service auth0Service, 
         false,
         500,
         "An error occured trying to delete user."
+      );
+    }
+  }
+
+  public async Task<ServiceResponse<ProfileDto>> GetUserProfile(Guid userId)
+  {
+    try
+    {
+      var user = await appContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+      if (user == null)
+      {
+        return new ServiceResponse<ProfileDto>(
+          false,
+          404,
+          null,
+          "User not found"
+        );
+      }
+
+      return new ServiceResponse<ProfileDto>(
+        true,
+        200,
+        user.ToProfileDto(),
+        "User Profile Retrieved"
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Failed to retrieve user");
+
+      return new ServiceResponse<ProfileDto>(
+        false,
+        500,
+        null,
+        "An error occured trying to retrieve user profile."
       );
     }
   }
