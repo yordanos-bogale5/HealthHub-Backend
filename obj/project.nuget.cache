@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "qp5xAUEeYWc=",
+  "dgSpecHash": "EkUy79nD2hQ=",
   "success": true,
   "projectFilePath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
   "expectedPackageFiles": [
@@ -108,7 +108,14 @@
     "C:\\Users\\Dag Weg\\.nuget\\packages\\system.text.json\\8.0.4\\system.text.json.8.0.4.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\system.threading.channels\\6.0.0\\system.threading.channels.6.0.0.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
-    "C:\\Users\\Dag Weg\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512"
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\xunit\\2.9.0\\xunit.2.9.0.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\xunit.abstractions\\2.0.3\\xunit.abstractions.2.0.3.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\xunit.analyzers\\1.15.0\\xunit.analyzers.1.15.0.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\xunit.assert\\2.9.0\\xunit.assert.2.9.0.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\xunit.core\\2.9.0\\xunit.core.2.9.0.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\xunit.extensibility.core\\2.9.0\\xunit.extensibility.core.2.9.0.nupkg.sha512",
+    "C:\\Users\\Dag Weg\\.nuget\\packages\\xunit.extensibility.execution\\2.9.0\\xunit.extensibility.execution.2.9.0.nupkg.sha512"
   ],
   "logs": []
 }
