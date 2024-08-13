@@ -24,6 +24,20 @@ public record UserDto(
 );
 
 
+public record ProfileDto(
+    Guid UserId,
+    string FirstName,
+    string LastName,
+    string Email,
+    string? ProfilePicture,
+    string Phone,
+    Gender Gender,
+    DateTime DateOfBirth,
+    string Address,
+    Role Role
+);
+
+
 /// <summary>
 /// Register User Data Transfer Object. Sent from the client to the server for registering a new user. Used to validate client request upon hitting register endpoint.
 /// </summary>
@@ -61,13 +75,23 @@ public record Auth0UserDto(
 );
 
 
+/// <summary>
+/// Auth0 Login Data Transfer Object. Used for returning Auth0 login information to the client.
+/// </summary>
+/// <param name="AccessToken"></param>
+/// <param name="ExpiresIn"></param>
+public record Auth0LoginDto(
+  string AccessToken,
+  int ExpiresIn
+);
+
 
 /// <summary>
 /// Login User Data Transfer Object. Sent from the client to the server for logging in a user. Used to validate client request upon hitting login endpoint.
 /// </summary>
-/// <param name="email"></param>
-/// <param name="password"></param>
+/// <param name="Email"></param>
+/// <param name="Password"></param>
 public record LoginUserDto(
-  [Required][EmailAddress] string email,
-  [Required] string password
+  [Required][EmailAddress] string Email,
+  [Required] string Password
 );
