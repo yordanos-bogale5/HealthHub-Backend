@@ -18,6 +18,22 @@ namespace HealthHub.Source.Extensions
       );
     }
 
+    public static ProfileDto ToProfileDto(this User user)
+    {
+      return new ProfileDto(
+          user.UserId,
+          user.FirstName,
+          user.LastName,
+          user.Email,
+          user.ProfilePicture,
+          user.Phone,
+          user.Gender,
+          user.DateOfBirth,
+          user.Address,
+          user.Role
+      );
+    }
+
     // Maps User entity to RegisterUserDto
     public static RegisterUserDto ToRegisterUserDto(this User user, string password)
     {
