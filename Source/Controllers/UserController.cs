@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using HealthHub.Source.Services;
 using HealthHub.Source.Models.Dtos;
+using HealthHub.Source.Config;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HealthHub.Source.Controllers;
 
@@ -11,7 +13,7 @@ namespace HealthHub.Source.Controllers;
 /// <param name="logger"></param>
 [ApiController]
 [Route("api/users")]
-public class UserController(UserService userService, ILogger<UserController> logger) : ControllerBase
+public class UserController(UserService userService, ILogger<UserController> logger, AppConfig appConfig) : ControllerBase
 {
 
   /// <summary>
@@ -63,20 +65,27 @@ public class UserController(UserService userService, ILogger<UserController> log
         return BadRequest(ModelState);
       }
 
-      // var response = await userService.LoginUser(loginUserDto);
+      var response = await userService.LoginUserAsync(loginUserDto);
 
-      // if (!response.Success)
-      // {
-      //   return StatusCode(response.StatusCode, response.Message);
-      // }
+      if (!response.Success || response.Data == null)
+      {
+        return StatusCode(response.StatusCode, response.Message);
+      }
 
-      // return Ok(response);
-      return Ok();
+      Response.Cookies.Append("access_token", response.Data.AccessToken, new CookieOptions
+      {
+        HttpOnly = true,
+        Secure = appConfig.IsProduction ?? false,
+        SameSite = SameSiteMode.None,
+        Expires = DateTime.Now.AddSeconds(response.Data.ExpiresIn)
+      });
+
+      return Ok(response);
     }
     catch (System.Exception ex)
     {
       logger.LogError(ex, "Failed to Login User");
-      throw;
+      return StatusCode(500, ex.Message);
     }
   }
 
@@ -122,6 +131,32 @@ public class UserController(UserService userService, ILogger<UserController> log
     catch (Exception ex)
     {
       logger.LogError(ex, "Failed to Delete User");
+
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// This endpoint returns the profile of the user with the specified userId.
+  /// </summary>
+  /// <param name="userId"></param>
+  /// <returns></returns>
+  [HttpGet("{userId}/profile")]
+  [Authorize]
+  public async Task<IActionResult> Profile(Guid userId)
+  {
+    try
+    {
+      var response = await userService.GetUserProfile(userId);
+      if (!response.Success)
+      {
+        return StatusCode(response.StatusCode, response.Message);
+      }
+      return Ok(response);
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Failed to get user profile");
 
       throw;
     }
