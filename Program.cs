@@ -48,6 +48,11 @@ builder.Services.AddAuthentication(options =>
     options.Audience = appConfig.Auth0Audience;
     options.RequireHttpsMetadata = appConfig.IsProduction ?? false;
 
+    Log.Logger.Information($"\nAudience: {options.Audience}");
+    Log.Logger.Information($"\nAuthority: {options.Authority}");
+    Log.Logger.Information($"\nClientId: {appConfig.Auth0ClientId}");
+    Log.Logger.Information($"\nClientSecret: {appConfig.Auth0ClientSecret}");
+
     // Configure Token Validation Parameters
     options.TokenValidationParameters = new TokenValidationParameters
     {
