@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using HealthHub.Source.Enums;
+using HealthHub.Source.Models.Enums;
 
 public class GenderAttribute : ValidationAttribute
 {

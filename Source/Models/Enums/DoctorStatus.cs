@@ -1,4 +1,4 @@
-namespace HealthHub.Source.Enums;
+namespace HealthHub.Source.Models.Enums;
 public enum DoctorStatus
 {
   Active,

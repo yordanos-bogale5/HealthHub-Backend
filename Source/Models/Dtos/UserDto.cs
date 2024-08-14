@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using HealthHub.Source.Attributes;
-using HealthHub.Source.Enums;
+using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Dtos;
 

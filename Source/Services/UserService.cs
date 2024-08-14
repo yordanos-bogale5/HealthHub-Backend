@@ -7,7 +7,7 @@ using HealthHub.Source.Models.Responses;
 using Microsoft.EntityFrameworkCore;
 using HealthHub.Source;
 using HealthHub.Source.Data;
-using HealthHub.Source.Enums;
+using HealthHub.Source.Models.Enums;
 namespace HealthHub.Source.Services;
 
 /// <summary>
