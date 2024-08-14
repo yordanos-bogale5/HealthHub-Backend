@@ -101,6 +101,7 @@ builder.Services.AddDbContext<ApplicationContext>((serviceProvider, options) =>
 
 // Register Services
 builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<DoctorService>();
 builder.Services.AddTransient<AuthService>();
 builder.Services.AddTransient<Auth0Service>();
 builder.Services.AddTransient<EmailService>();
