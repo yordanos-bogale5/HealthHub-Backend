@@ -34,7 +34,7 @@ public class User
   public Gender Gender { get; set; }
 
   [Required]
-  [AgeAbove18]
+  [AgeAbove(18)]
   public DateTime DateOfBirth { get; set; }
 
   public string? ProfilePicture { get; set; }
