@@ -11,9 +11,9 @@ public class RoleValidationAttribute : ValidationAttribute
       return new ValidationResult("Role is required.");
     }
 
-    if (value.ToString() != "Admin" || value.ToString() != "Doctor" || value.ToString() != "Patient")
+    if (value.ToString() != "Admin" && value.ToString() != "Doctor" && value.ToString() != "Patient")
     {
-      return new ValidationResult("Role be either Admin, Doctor, or Patient.");
+      return new ValidationResult("Role should be either Admin, Doctor, or Patient.");
     }
 
     return ValidationResult.Success;

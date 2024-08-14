@@ -189,7 +189,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
     request.AddParameter("audience", audience);
 
     RestResponse response = await client.ExecuteAsync(request);
-    logger.LogInformation($"\n\nThis is the Management Api Response: {response.Content}");
+    // logger.LogInformation($"\n\nThis is the Management Api Response: {response.Content}");
     if (!response.IsSuccessStatusCode)
     {
       logger.LogError(response.Content, $"Auth0 Get Management API Token Error");
