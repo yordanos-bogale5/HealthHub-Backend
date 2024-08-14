@@ -7,6 +7,7 @@ using HealthHub.Source.Models.Responses;
 using Microsoft.EntityFrameworkCore;
 using HealthHub.Source;
 using HealthHub.Source.Data;
+using HealthHub.Source.Enums;
 namespace HealthHub.Source.Services;
 
 /// <summary>
@@ -15,7 +16,7 @@ namespace HealthHub.Source.Services;
 /// <param name="appContext"></param>
 /// <param name="auth0Service"></param>
 /// <param name="logger"></param>
-public class UserService(ApplicationContext appContext, Auth0Service auth0Service, ILogger<UserService> logger)
+public class UserService(ApplicationContext appContext, Auth0Service auth0Service, ILogger<UserService> logger, PatientService patientService, DoctorService doctorService, AdminService adminService)
 {
 
   /// <summary>
@@ -181,20 +182,38 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
       }
 
       // Convert the Dto to User Entity 
-      var user = registerUserDto.ToEntity();
+      var user = registerUserDto.ToUser();
 
       // Populate the User Entity with the Auth0User Accordingly
       user.Auth0Id = auth0User.UserId;
       user.ProfilePicture = auth0User.Profile;
       user.IsEmailVerified = auth0User.EmailVerified;
 
+
       // Add the User to the Database 
       var addedUser = await appContext.Users.AddAsync(user);
 
-      // COMMENTED INTENTIONALLY BECAUSE AUTH0 PROVIDES CUSTOM EMAIL VERIFICATION
-      // Send Otp to user if their email isn't verified
-      // if (!auth0User.EmailVerified)
-      //   await authService.SendOtp(addedUser.Entity.UserId);
+
+      if (registerUserDto.Role == Role.Patient)
+      {
+        // Create a Patient table for the user
+        await patientService.CreatePatientAsync(new CreatePatientDto
+        {
+          UserId = addedUser.Entity.UserId,
+          MedicalHistory = registerUserDto.MedicalHistory,
+        });
+      }
+      else if (registerUserDto.Role == Role.Doctor)
+      {
+        // Create a Doctor table for the user
+
+      }
+      else
+      {
+        // Create a Admin table for the user
+
+      }
+
 
       // Save the Changes
       await appContext.SaveChangesAsync();
