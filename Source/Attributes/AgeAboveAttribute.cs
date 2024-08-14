@@ -4,18 +4,30 @@ namespace HealthHub.Source.Attributes;
 
 public class AgeAboveAttributes(int minAge = 18, string errMsg = "You must be at least 18 years old.") : ValidationAttribute
 {
-  public override bool IsValid(object? value)
+  protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
   {
-    if (value is DateTime birthDate)
+    if (value == null)
     {
-      var age = DateTime.Today.Year - birthDate.Year;
-      if (birthDate > DateTime.Today.AddYears(-age)) age--; // Subtract 1 if birthday hasn't occurred yet
-      return age >= minAge;
+      return new ValidationResult("Date field must be provided.");
     }
-    return false;
+
+    if (value is not DateTime birthDate)
+    {
+      return new ValidationResult("Date should be in the correct format.");
+    }
+
+    var today = DateTime.Today;
+    var age = today.Year - birthDate.Year;
+    if (birthDate > today.AddYears(-age)) age--; // Subtract 1 if birthday hasn't occurred yet
+
+    if (age >= minAge)
+    {
+      return ValidationResult.Success!;
+    }
+    return new ValidationResult(FormatErrorMessage(null));
   }
 
-  public override string FormatErrorMessage(string name)
+  public override string FormatErrorMessage(string? name)
   {
     return errMsg;
   }
