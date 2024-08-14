@@ -7,13 +7,13 @@ namespace HealthHub.Source.Data
   /// Represents the database context for the HealthHub application using Entity Framework Core.
   /// This class is responsible for configuring the database schema and managing entity objects.
   /// </summary>
-  public class AppContext : DbContext
+  public class ApplicationContext : DbContext
   {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AppContext"/> class.
+    /// Initializes a new instance of the <see cref="ApplicationContext"/> class.
     /// </summary>
     /// <param name="options">The options used to configure the <see cref="DbContext"/> instance.</param>
-    public AppContext(DbContextOptions<AppContext> options) : base(options) { }
+    public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) { }
 
     /// <summary>
     /// Configures the model and its relationships using the provided <see cref="ModelBuilder"/>.
