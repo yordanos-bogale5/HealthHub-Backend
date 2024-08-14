@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using dotenv.net;
 using HealthHub.Source.Config;
@@ -105,10 +106,20 @@ builder.Services.AddTransient<Auth0Service>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddTransient<FileService>();
 builder.Services.AddTransient<RenderingService>();
-builder.Services.AddControllers().AddJsonOptions(options =>
+
+
+
+builder.Services.AddControllers(configure =>
+{
+
+}).AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
+
+
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -125,6 +136,7 @@ AppDomain.CurrentDomain.ProcessExit += (s, e) => Log.CloseAndFlush();
 //----------------------------------------
 
 var app = builder.Build();
+
 
 app.UseSerilogRequestLogging(); // Enable Serilog Request Logging
 
