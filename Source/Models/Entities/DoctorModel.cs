@@ -17,6 +17,9 @@ public class Doctor
   public required string Biography { get; set; }
   public DoctorStatus DoctorStatus { get; set; } = DoctorStatus.Active;
 
+  // Doctor will be verified by staff, by default it is false
+  public bool Verified { get; set; } = false;
+
   public virtual User? User { get; set; } // <<NAV>>
   public virtual Speciality? Speciality { get; set; } // <<NAV>>
 }
