@@ -4,7 +4,7 @@ namespace HealthHub.Source.Models.Entities;
 
 public class BlogLike
 {
-  public Guid LikeId { get; set; } = Guid.NewGuid();
+  public Guid BlogLikeId { get; set; } = Guid.NewGuid();
   [Required]
   public Guid UserId { get; set; } // <<FK>>
   [Required]
