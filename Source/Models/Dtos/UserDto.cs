@@ -67,7 +67,6 @@ public record RegisterUserDto
   public required Gender Gender { get; init; }
 
   [Required]
-  [AgeAbove18]
   public required DateTime DateOfBirth { get; init; }
 
   [Required]
@@ -76,6 +75,19 @@ public record RegisterUserDto
   [Required]
   [RoleValidation]
   public required Role Role { get; init; }
+
+  // If the user is a patient, they may/may-not specify the following
+  // Note the following fields MUST be validated in the controller based on the Role field provided as payload
+  public string? MedicalHistory { get; set; }
+  public string? EmergencyContactName { get; set; }
+  public string? EmergencyContactPhone { get; set; }
+
+  // If the user is a doctor, they may/may-not specify the following
+  // Note the following fields MUST be validated in the controller based on the Role field provided as payload
+  public List<string> Specialities { get; set; } = [];
+  public string? Qualifications { get; set; }
+  public string? Biography { get; set; }
+  public DoctorStatus DoctorStatus { get; set; } = DoctorStatus.Active;
 }
 
 /// <summary>
