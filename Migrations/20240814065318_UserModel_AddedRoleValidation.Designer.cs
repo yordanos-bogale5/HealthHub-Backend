@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HealthHub.Migrations
 {
-    [DbContext(typeof(Source.Data.AppContext))]
-    [Migration("20240812114121_RemovedPasswordFieldAndInsteadWillUseAuth0ForThatAddedAdditionalFieldsForStoringAuth0Data")]
-    partial class RemovedPasswordFieldAndInsteadWillUseAuth0ForThatAddedAdditionalFieldsForStoringAuth0Data
+    [DbContext(typeof(ApplicationContext))]
+    [Migration("20240814065318_UserModel_AddedRoleValidation")]
+    partial class UserModel_AddedRoleValidation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,6 +60,9 @@ namespace HealthHub.Migrations
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsEmailVerified")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()

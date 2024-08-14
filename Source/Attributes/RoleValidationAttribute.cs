@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using HealthHub.Source.Enums;
 
 namespace HealthHub.Source.Attributes;
 
@@ -11,7 +12,13 @@ public class RoleValidationAttribute : ValidationAttribute
       return new ValidationResult("Role is required.");
     }
 
-    if (value.ToString() != "Admin" && value.ToString() != "Doctor" && value.ToString() != "Patient")
+    if (value is not Role role)
+    {
+      return new ValidationResult("Invalid role type.");
+    }
+
+    // Validate if the role is one of the allowed values
+    if (!Enum.IsDefined(typeof(Role), role))
     {
       return new ValidationResult("Role should be either Admin, Doctor, or Patient.");
     }

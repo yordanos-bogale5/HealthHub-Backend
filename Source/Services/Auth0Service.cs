@@ -20,47 +20,55 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
   public async Task<Auth0UserDto?> CreateUserAsync(RegisterUserDto userDto)
   {
 
-    var userPayload = new
+    try
     {
-      email = userDto.Email,
-      password = userDto.Password,
-      connection = "Username-Password-Authentication",
-      user_metadata = new
+      var userPayload = new
       {
-        firstName = userDto.FirstName,
-        lastName = userDto.LastName,
+        email = userDto.Email,
+        password = userDto.Password,
+        connection = "Username-Password-Authentication",
+        user_metadata = new
+        {
+          firstName = userDto.FirstName,
+          lastName = userDto.LastName,
+        }
+      };
+
+      var token = await GetManagementApiTokenAsync();
+
+      var client = new RestClient($"{appConfig.Auth0Authority}/api/v2/users");
+
+      var request = new RestRequest() { Method = Method.Post };
+
+      request.AddHeader("content-type", "application/json");
+      request.AddHeader("Authorization", $"Bearer {token}");
+      request.AddJsonBody(userPayload);
+
+      RestResponse response = await client.ExecuteAsync(request);
+
+
+      if (response.StatusCode != System.Net.HttpStatusCode.Created)
+      {
+        logger.LogError(response.Content, $"Auth0 Create User Error\n\n");
+        throw new Exception("Failed to create user in Auth0");
       }
-    };
 
-    var token = await GetManagementApiTokenAsync();
-
-    var client = new RestClient($"{appConfig.Auth0Authority}/api/v2/users");
-
-    var request = new RestRequest() { Method = Method.Post };
-
-    request.AddHeader("content-type", "application/json");
-    request.AddHeader("Authorization", $"Bearer {token}");
-    request.AddJsonBody(userPayload);
-
-    RestResponse response = await client.ExecuteAsync(request);
+      logger.LogInformation($"\n\nAuth0 Create User Success:\n {response.Content}");
 
 
-    if (response.StatusCode != System.Net.HttpStatusCode.Created)
-    {
-      logger.LogError(response.Content, $"Auth0 Create User Error\n\n");
-      throw new Exception("Failed to create user in Auth0");
+      var userData = JsonSerializer.Deserialize<JsonElement>(response.Content!);
+
+      return new Auth0UserDto(
+        userData.GetProperty("user_id").GetString()!,
+        userData.GetProperty("picture").GetString()!,
+        userData.GetProperty("email_verified").GetBoolean()
+      );
     }
-
-    logger.LogInformation($"\n\nAuth0 Create User Success:\n {response.Content}");
-
-
-    var userData = JsonSerializer.Deserialize<JsonElement>(response.Content!);
-
-    return new Auth0UserDto(
-      userData.GetProperty("user_id").GetString()!,
-      userData.GetProperty("picture").GetString()!,
-      userData.GetProperty("email_verified").GetBoolean()
-    );
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Failed to create user in Auth0");
+      throw;
+    }
   }
 
   public async Task DeleteUserAsync(string userId)

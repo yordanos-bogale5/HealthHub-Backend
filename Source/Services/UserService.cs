@@ -6,6 +6,7 @@ using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Responses;
 using Microsoft.EntityFrameworkCore;
 using HealthHub.Source;
+using HealthHub.Source.Data;
 namespace HealthHub.Source.Services;
 
 /// <summary>
@@ -14,7 +15,7 @@ namespace HealthHub.Source.Services;
 /// <param name="appContext"></param>
 /// <param name="auth0Service"></param>
 /// <param name="logger"></param>
-public class UserService(Data.AppContext appContext, Auth0Service auth0Service, ILogger<UserService> logger)
+public class UserService(ApplicationContext appContext, Auth0Service auth0Service, ILogger<UserService> logger)
 {
 
   /// <summary>
@@ -175,7 +176,7 @@ public class UserService(Data.AppContext appContext, Auth0Service auth0Service, 
           false,
           500,
           null,
-          "Failed to create user in Auth0"
+          "Failed to create user in Auth0."
         );
       }
 

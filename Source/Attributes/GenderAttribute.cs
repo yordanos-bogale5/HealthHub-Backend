@@ -1,24 +1,32 @@
 using System.ComponentModel.DataAnnotations;
+using HealthHub.Source.Enums;
 
-namespace HealthHub.Source.Attributes
+public class GenderAttribute : ValidationAttribute
 {
-  public class GenderAttribute : ValidationAttribute
+  protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
   {
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    try
     {
       if (value == null)
       {
         return new ValidationResult("Gender field cannot be empty.");
       }
 
-      var gender = value.ToString();
+      if (value is not Gender gender)
+      {
+        return new ValidationResult("Invalid gender value.");
+      }
 
-      if (gender != "Male" && gender != "Female")
+      if (!Enum.IsDefined(typeof(Gender), gender))
       {
         return new ValidationResult("Gender must be either Male or Female.");
       }
 
       return ValidationResult.Success;
+    }
+    catch (System.Exception ex)
+    {
+      return new ValidationResult("Invalid Gender type! Must be either Male or Female!");
     }
   }
 }

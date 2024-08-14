@@ -3,6 +3,7 @@ using HealthHub.Source.Services;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Config;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace HealthHub.Source.Controllers;
 
@@ -23,12 +24,13 @@ public class UserController(UserService userService, ILogger<UserController> log
   /// <returns>The UserId of the newly created user</returns>
   /// <exception cref="Exception"></exception>
   [HttpPost("register")]
-  public async Task<IActionResult> RegisterUser(RegisterUserDto registerUserDto)
+  public async Task<IActionResult> RegisterUser([FromBody] RegisterUserDto registerUserDto)
   {
     try
     {
       if (!ModelState.IsValid)
       {
+        logger.LogError(ModelState.ToString(), "Error validating register request payload/n/n");
         return BadRequest(ModelState);
       }
       // Make Service Invocation

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HealthHub.Source.Attributes;
 
-public class AgeAboveAttributes(int minAge = 18, string errMsg = "You must be at least 18 years old.") : ValidationAttribute
+public class AgeAboveAttribute(int minAge = 18, string errMsg = "You must be at least 18 years old.") : ValidationAttribute
 {
   protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
   {
