@@ -1,4 +1,5 @@
 using HealthHub.Source;
+using HealthHub.Source.Data;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.ViewModels;
@@ -12,7 +13,7 @@ namespace HealthHub.Source.Services;
 /// <param name="emailService"></param>
 /// <param name="renderingService"></param>
 /// <param name="logger"></param>
-public class AuthService(Data.AppContext appContext, EmailService emailService, RenderingService renderingService, ILogger<AuthService> logger)
+public class AuthService(ApplicationContext appContext, EmailService emailService, RenderingService renderingService, ILogger<AuthService> logger)
 {
   public async Task SendOtp(Guid userId)
   {
