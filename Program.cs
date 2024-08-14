@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using dotenv.net;
 using HealthHub.Source.Config;
+using HealthHub.Source.Data;
 using HealthHub.Source.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -85,7 +86,7 @@ builder.Services.AddSingleton<AppConfig>(provider =>
 
 
 // Database Service
-builder.Services.AddDbContext<HealthHub.Source.Data.AppContext>((serviceProvider, options) =>
+builder.Services.AddDbContext<ApplicationContext>((serviceProvider, options) =>
 {
     var appConfig = serviceProvider.GetRequiredService<AppConfig>();
     var connectionString = appConfig.DatabaseConnection;
