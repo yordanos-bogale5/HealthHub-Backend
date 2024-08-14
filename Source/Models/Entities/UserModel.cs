@@ -32,6 +32,7 @@ public class User
   [Required]
   public required string Address { get; set; }
   [Required]
+  [RoleValidation]
   public Role Role { get; set; }
   public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
   public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
