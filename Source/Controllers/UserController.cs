@@ -34,6 +34,13 @@ public class UserController(UserService userService, ILogger<UserController> log
         return BadRequest(ModelState);
       }
       // Make Service Invocation
+
+      logger.LogInformation(@$"
+        \n\n
+        RegisterUser Payload: \n{registerUserDto.ToString()}
+        \n
+      ");
+
       var response = await userService.RegisterUser(registerUserDto);
 
       if (!response.Success)
