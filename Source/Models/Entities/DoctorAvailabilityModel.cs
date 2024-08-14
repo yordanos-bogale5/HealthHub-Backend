@@ -5,7 +5,7 @@ namespace HealthHub.Source.Models.Entities;
 
 public class DoctorAvailability
 {
-  public Guid AvailabilityId { get; set; }
+  public Guid DoctorAvailabilityId { get; set; }
   [Required]
   public Guid DoctorId { get; set; } // <<FK>>
   [Required]
