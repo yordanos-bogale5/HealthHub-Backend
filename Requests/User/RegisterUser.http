@@ -8,7 +8,7 @@ Content-Type: application/json
   "Password" : "12345678Ab",
   "Gender"   : "Female",
   "DateOfBirth" : "2005-01-01", 
-  "Role"     : "Doctor",
+  "Role"     : "Patient",
   "Phone"    : "1234567891",
   "Address"  : "Addis Ababa"
 }

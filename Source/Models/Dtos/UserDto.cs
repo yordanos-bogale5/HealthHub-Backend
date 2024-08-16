@@ -63,7 +63,6 @@ public record RegisterUserDto
   [MinLength(4, ErrorMessage = "The field must be at least 4 characters long.")]
   public required string Phone { get; init; }
 
-  [Gender]
   public required Gender Gender { get; init; }
 
   [Required]
@@ -73,7 +72,6 @@ public record RegisterUserDto
   public required string Address { get; init; }
 
   [Required]
-  [RoleValidation]
   public required Role Role { get; init; }
 
   // If the user is a patient, they may/may-not specify the following
