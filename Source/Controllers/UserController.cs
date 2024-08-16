@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using FluentValidation;
 using System.ComponentModel.DataAnnotations;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
+using HealthHub.Source.Helpers.Constants;
 
 namespace HealthHub.Source.Controllers;
 
@@ -33,8 +35,8 @@ public class UserController(UserService userService, ILogger<UserController> log
     {
       if (!ModelState.IsValid)
       {
-        logger.LogError(ModelState.ToString(), "Error validating register request payload/n/n");
-        return BadRequest(ModelState);
+        HttpContext.Items[ErrorConstants.ModelStateErrors] = ModelState;
+        throw new BadHttpRequestException(ErrorConstants.ModelValidationError);
       }
 
       // Role based validation of payload
@@ -42,34 +44,23 @@ public class UserController(UserService userService, ILogger<UserController> log
 
       if (!validation.IsValid)
       {
-        HttpContext.Items["FluentValidationErrors"] = validation.Errors.ToDictionary(err => err.PropertyName, err => new[] { err.ErrorMessage });
-        logger.LogError("Error validating role specific fields: {Errors}", string.Join(", ", validation.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}")));
-        return BadRequest(validation.Errors);
+        HttpContext.Items[ErrorConstants.FluentValidationErrors] = validation.ToFluentValidationErrorResult();
+        throw new BadHttpRequestException(ErrorConstants.ModelValidationError);
       }
-
-      // Make Service Invocation
-
-      logger.LogInformation(@$"
-        \n\n
-        RegisterUser Payload: \n{registerUserDto.ToString()}
-        \n
-      ");
 
       var response = await userService.RegisterUser(registerUserDto);
 
       if (!response.Success)
       {
-        return StatusCode(response.StatusCode, response.Message);
+        throw new Exception(response.Message);
       }
-
-      // Successful Registration
 
       return Ok(response.Data);
     }
     catch (Exception ex)
     {
       logger.LogError(ex, "Failed to Register User");
-      throw new Exception("Internal Server Error ", ex);
+      throw;
     }
   }
 
@@ -108,7 +99,7 @@ public class UserController(UserService userService, ILogger<UserController> log
     catch (System.Exception ex)
     {
       logger.LogError(ex, "Failed to Login User");
-      return StatusCode(500, ex.Message);
+      throw;
     }
   }
 
