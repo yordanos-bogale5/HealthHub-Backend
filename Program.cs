@@ -1,4 +1,4 @@
-using System.Text.Json;
+using FluentValidation;
 using System.Text.Json.Serialization;
 using dotenv.net;
 using HealthHub.Source.Config;
@@ -8,153 +8,162 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using HealthHub.Source.Validation.UserValidation;
+using HealthHub.Source.Helpers.Extensions;
 
 
 // Load Environment Variables
 DotEnv.Load(options: new DotEnvOptions(ignoreExceptions: false));
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-// Configure Serilog with appropriate sinks
-Log.Logger = new LoggerConfiguration()
-        .MinimumLevel.Debug() // Set the minimum log level to Debug
-        .WriteTo.Console() // Write logs to the console
-        .WriteTo.File("Logs/HealthHub.log", rollingInterval: RollingInterval.Day) // Write logs to a file
-        .WriteTo.Seq("http://localhost:5341/") // Write logs to Seq
-        .CreateLogger();
-
-Log.Information("Application Starting...");
-
-// Configure Serilog to capture logs from application host
-builder.Host.UseSerilog();
-
-
-/*
-    Add Services to the Container
-*/
-
-// Configure authentication with JWT and Auth0
-// 1. Set JwtBearer as the default authentication and challenge schemes
-// 2. Configure JwtBearer options with Auth0 settings
-builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
-})
-.AddJwtBearer(options =>
-{
-    var appConfig = new AppConfig(builder.Configuration);
-    options.Authority = $"https://{appConfig.Auth0Domain}/";
-    options.Audience = appConfig.Auth0Audience;
-    options.RequireHttpsMetadata = appConfig.IsProduction ?? false;
 
-    Log.Logger.Information($"\nAudience: {options.Audience}");
-    Log.Logger.Information($"\nAuthority: {options.Authority}");
-    Log.Logger.Information($"\nClientId: {appConfig.Auth0ClientId}");
-    Log.Logger.Information($"\nClientSecret: {appConfig.Auth0ClientSecret}");
+    // Configure Serilog with appropriate sinks
+    Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug() // Set the minimum log level to Debug
+            .WriteTo.Console() // Write logs to the console
+            .WriteTo.File("Logs/HealthHub.log", rollingInterval: RollingInterval.Day) // Write logs to a file
+            .WriteTo.Seq("http://localhost:5341/") // Write logs to Seq
+            .CreateLogger();
 
-    // Configure Token Validation Parameters
-    options.TokenValidationParameters = new TokenValidationParameters
+    Log.Information("Application Starting...");
+
+    // Configure Serilog to capture logs from application host
+    builder.Host.UseSerilog();
+
+
+    /*
+        Add Services to the Container
+    */
+
+    // Configure authentication with JWT and Auth0
+    // 1. Set JwtBearer as the default authentication and challenge schemes
+    // 2. Configure JwtBearer options with Auth0 settings
+    builder.Services.AddAuthentication(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = appConfig.Auth0Authority,
-        ValidAudience = appConfig.Auth0Audience
-    };
-});
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
-// Configure Authorization
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("Doctor", policy => policy.RequireRole("Doctor"));
-    options.AddPolicy("Patient", policy => policy.RequireRole("Patient"));
-});
-
-// Controllers & Views Service
-builder.Services.AddControllersWithViews();
-
-// Register the App Configuration Service
-builder.Services.AddSingleton<AppConfig>(provider =>
-{
-    var config = provider.GetRequiredService<IConfiguration>();
-    return new AppConfig(config);
-});
-
-
-// Database Service
-builder.Services.AddDbContext<ApplicationContext>((serviceProvider, options) =>
-{
-    var appConfig = serviceProvider.GetRequiredService<AppConfig>();
-    var connectionString = appConfig.DatabaseConnection;
-    if (string.IsNullOrEmpty(connectionString))
+    })
+    .AddJwtBearer(options =>
     {
-        throw new InvalidOperationException("DB_CONNECTION environment variable is not set.");
-    }
-    Log.Information($"This is the conn str: {connectionString}");
-    options.UseSqlServer(connectionString);
-});
+        var appConfig = new AppConfig(builder.Configuration);
+        options.Authority = $"https://{appConfig.Auth0Domain}/";
+        options.Audience = appConfig.Auth0Audience;
+        options.RequireHttpsMetadata = appConfig.IsProduction ?? false;
 
-// Register Services
-builder.Services.AddTransient<UserService>();
-builder.Services.AddTransient<DoctorService>();
-builder.Services.AddTransient<PatientService>();
-builder.Services.AddTransient<AdminService>();
+        Log.Logger.Information($"\nAudience: {options.Audience}");
+        Log.Logger.Information($"\nAuthority: {options.Authority}");
+        Log.Logger.Information($"\nClientId: {appConfig.Auth0ClientId}");
+        Log.Logger.Information($"\nClientSecret: {appConfig.Auth0ClientSecret}");
 
-builder.Services.AddTransient<AuthService>();
-builder.Services.AddTransient<Auth0Service>();
+        // Configure Token Validation Parameters
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = appConfig.Auth0Authority,
+            ValidAudience = appConfig.Auth0Audience
+        };
+    });
 
-builder.Services.AddTransient<EmailService>();
-builder.Services.AddTransient<FileService>();
-builder.Services.AddTransient<RenderingService>();
+    // Configure Authorization
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+        options.AddPolicy("Doctor", policy => policy.RequireRole("Doctor"));
+        options.AddPolicy("Patient", policy => policy.RequireRole("Patient"));
+    });
 
+    // Controllers & Views Service
+    builder.Services.AddControllersWithViews();
 
+    // Register Validation Services
+    builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
 
-builder.Services.AddControllers(configure =>
-{
-
-}).AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-});
-
-
-
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    var xmlFile = "HealthHub.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    options.IncludeXmlComments(xmlPath);
-});
-
-
-// Close and Flush Serilog when the application exits
-AppDomain.CurrentDomain.ProcessExit += (s, e) => Log.CloseAndFlush();
-
-//----------------------------------------
-
-var app = builder.Build();
+    // Register the App Configuration Service
+    builder.Services.AddSingleton<AppConfig>(provider =>
+    {
+        var config = provider.GetRequiredService<IConfiguration>();
+        return new AppConfig(config);
+    });
 
 
-app.UseSerilogRequestLogging(); // Enable Serilog Request Logging
+    // Database Service
+    builder.Services.AddDbContext<ApplicationContext>((serviceProvider, options) =>
+    {
+        var appConfig = serviceProvider.GetRequiredService<AppConfig>();
+        var connectionString = appConfig.DatabaseConnection;
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("DB_CONNECTION environment variable is not set.");
+        }
+        Log.Information($"This is the conn str: {connectionString}");
+        options.UseSqlServer(connectionString);
+    });
 
-app.UseAuthentication();
-app.UseAuthorization();
+    // Register Services
+    builder.Services.AddTransient<UserService>();
+    builder.Services.AddTransient<DoctorService>();
+    builder.Services.AddTransient<PatientService>();
+    builder.Services.AddTransient<AdminService>();
 
-app.MapControllers();
+    builder.Services.AddTransient<AuthService>();
+    builder.Services.AddTransient<Auth0Service>();
+
+    builder.Services.AddTransient<EmailService>();
+    builder.Services.AddTransient<FileService>();
+    builder.Services.AddTransient<RenderingService>();
 
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+
+    builder.Services.AddControllers(configure =>
+    {
+
+    }).AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
+
+
+
+
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        var xmlFile = "HealthHub.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        options.IncludeXmlComments(xmlPath);
+    });
+
+
+    // Close and Flush Serilog when the application exits
+    AppDomain.CurrentDomain.ProcessExit += (s, e) => Log.CloseAndFlush();
+
+    //----------------------------------------
 }
 
-app.Run();
+var app = builder.Build();
+{
+
+    app.UseSerilogRequestLogging(); // Enable Serilog Request Logging
+
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.Run();
+}

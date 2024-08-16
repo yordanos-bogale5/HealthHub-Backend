@@ -53,6 +53,14 @@
               "target": "Package",
               "version": "[13.0.1, )"
             },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.9.2, )"
+            },
+            "FluentValidation.AspNetCore": {
+              "target": "Package",
+              "version": "[11.3.0, )"
+            },
             "MailKit": {
               "target": "Package",
               "version": "[4.7.1.1, )"
