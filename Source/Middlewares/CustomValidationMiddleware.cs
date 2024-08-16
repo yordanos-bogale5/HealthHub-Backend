@@ -1,35 +1,59 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Auth0.AspNetCore.Authentication.BackchannelLogout;
+using HealthHub.Source.Helpers.Constants;
+using HealthHub.Source.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace HealthHub.Source.Middlewares;
 
-public class CustomValidationMiddleware(RequestDelegate next)
+public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
 {
   public async Task InvokeAsync(HttpContext httpContext)
   {
-    await next(httpContext); // Let other functions in the req pipeline be called
-
-    foreach (var kvp in httpContext.Items)
-      Console.WriteLine($"\n\n{kvp.Key} : {kvp.Value}\n\n");
-
-
-    // If the response is a bad request and there are fluent validation errors present
-    if (
-        httpContext.Response.StatusCode == StatusCodes.Status400BadRequest &&
-        httpContext.Items.ContainsKey("FluentValidationErrors"))
+    try
     {
-      var errors = (IDictionary<string, string[]>)httpContext.Items["FluentValidationErrors"]!;
+      await next(httpContext); // Let other functions in the req pipeline be called
+    }
+    catch (BadHttpRequestException ex)
+    {
+      httpContext.Response.ContentType = "application/problem+json";
+      httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-      var problemDetails = new ValidationProblemDetails(errors)
+      object errors = new { };
+
+      // Map Errors Correctly for Model State Errors
+      if (httpContext.Items.ContainsKey(ErrorConstants.ModelStateErrors))
       {
-        Title = "One or more validation errors occured!",
-        Status = StatusCodes.Status400BadRequest,
-        Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
+        var data = (ModelStateDictionary)httpContext.Items[ErrorConstants.ModelStateErrors]!;
+        errors = data.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToList());
+      }
+      // Map Errors Correctly for Fluent Validation Errors
+      else if (httpContext.Items.ContainsKey(ErrorConstants.FluentValidationErrors))
+      {
+        errors = (IDictionary<string, string[]>)httpContext.Items[ErrorConstants.FluentValidationErrors]!;
+      }
+
+      await httpContext.Response.WriteAsync(JsonSerializer.Serialize(new ErrorResponse()
+      {
+        title = ex.Message,
+        errors = errors
+      }));
+
+    }
+    catch (Exception ex)
+    {
+      httpContext.Response.ContentType = "application/json";
+      httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+      var errorResponse = new
+      {
+        message = "An unexpected error occurred.",
+        details = ex.Message
       };
 
-      httpContext.Response.ContentType = "application/problem+json";
-
-      await httpContext.Response.WriteAsJsonAsync(problemDetails); // Write the formatted Fluent Error to the response context
-      Console.WriteLine($"\n\nProblemDetails: \n{problemDetails}\n");
+      await httpContext.Response.WriteAsync(JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions { WriteIndented = true }));
     }
   }
 }
