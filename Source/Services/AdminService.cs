@@ -1,5 +1,5 @@
 using HealthHub.Source.Data;
-using HealthHub.Source.Extensions;
+using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Entities;
 
 public class AdminService(ILogger<AdminService> logger, ApplicationContext appContext)

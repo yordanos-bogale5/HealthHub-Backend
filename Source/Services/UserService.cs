@@ -1,5 +1,5 @@
 using HealthHub.Source.Models.Dtos;
-using HealthHub.Source.Extensions;
+using HealthHub.Source.Helpers.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using HealthHub.Source.Models.Entities;
