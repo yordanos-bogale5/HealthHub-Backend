@@ -1,7 +1,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace HealthHub.Source.Extensions;
+namespace HealthHub.Source.Helpers.Extensions;
 
 public static class StringExtensions
 {

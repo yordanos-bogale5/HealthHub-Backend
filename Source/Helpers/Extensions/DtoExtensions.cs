@@ -2,7 +2,7 @@ using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
 
 
-namespace HealthHub.Source.Extensions;
+namespace HealthHub.Source.Helpers.Extensions;
 
 public static class DtoExtensions
 {
