@@ -4,6 +4,9 @@ using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Config;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using FluentValidation;
+using System.ComponentModel.DataAnnotations;
+using FluentValidation.Results;
 
 namespace HealthHub.Source.Controllers;
 
@@ -14,7 +17,7 @@ namespace HealthHub.Source.Controllers;
 /// <param name="logger"></param>
 [ApiController]
 [Route("api/users")]
-public class UserController(UserService userService, ILogger<UserController> logger, AppConfig appConfig) : ControllerBase
+public class UserController(UserService userService, ILogger<UserController> logger, AppConfig appConfig, IValidator<RegisterUserDto> registerUserValidator) : ControllerBase
 {
 
   /// <summary>
@@ -33,6 +36,17 @@ public class UserController(UserService userService, ILogger<UserController> log
         logger.LogError(ModelState.ToString(), "Error validating register request payload/n/n");
         return BadRequest(ModelState);
       }
+
+      // Role based validation of payload
+      var validation = registerUserValidator.Validate(registerUserDto);
+
+      if (!validation.IsValid)
+      {
+        HttpContext.Items["FluentValidationErrors"] = validation.Errors.ToDictionary(err => err.PropertyName, err => new[] { err.ErrorMessage });
+        logger.LogError("Error validating role specific fields: {Errors}", string.Join(", ", validation.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}")));
+        return BadRequest(validation.Errors);
+      }
+
       // Make Service Invocation
 
       logger.LogInformation(@$"
