@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using HealthHub.Source.Validation.UserValidation;
 using HealthHub.Source.Helpers.Extensions;
+using HealthHub.Source.Filters.Error;
+using Microsoft.AspNetCore.Mvc;
 
 
 // Load Environment Variables
@@ -32,6 +34,10 @@ var builder = WebApplication.CreateBuilder(args);
     // Configure Serilog to capture logs from application host
     builder.Host.UseSerilog();
 
+    builder.Services.Configure<ApiBehaviorOptions>(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
 
     /*
         Add Services to the Container
@@ -79,7 +85,11 @@ var builder = WebApplication.CreateBuilder(args);
     });
 
     // Controllers & Views Service
-    builder.Services.AddControllersWithViews();
+    builder.Services.AddControllersWithViews(options =>
+    {
+        // Register the global exception handler filer
+        // options.Filters.Add<GlobalExceptionFilter>();
+    });
 
     // Register Validation Services
     builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
@@ -152,6 +162,9 @@ var app = builder.Build();
 
     app.UseSerilogRequestLogging(); // Enable Serilog Request Logging
 
+    // app.UseExceptionHandler("/error"); // Exception handling endpoint
+
+    app.UseCustomValidation(); // Register the Custom Validation Middleware
 
     app.UseAuthentication();
     app.UseAuthorization();
