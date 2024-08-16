@@ -20,3 +20,9 @@ public class ApiResponse<T> : IApiResponse<T>
     Data = data;
   }
 }
+
+public class ErrorResponse
+{
+  public string title { get; set; } = "";
+  public object errors { get; set; } = new { };
+}
