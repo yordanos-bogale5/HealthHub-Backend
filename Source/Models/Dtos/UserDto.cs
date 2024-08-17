@@ -1,8 +1,10 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using HealthHub.Source.Attributes;
 using HealthHub.Source.Models.Enums;
+using Newtonsoft.Json.Serialization;
 
 namespace HealthHub.Source.Models.Dtos;
 
@@ -63,6 +65,7 @@ public record RegisterUserDto
   [MinLength(4, ErrorMessage = "The field must be at least 4 characters long.")]
   public required string Phone { get; init; }
 
+  [Required]
   public required Gender Gender { get; init; }
 
   [Required]
@@ -86,6 +89,8 @@ public record RegisterUserDto
   public string? Qualifications { get; set; }
   public string? Biography { get; set; }
   public DoctorStatus DoctorStatus { get; set; } = DoctorStatus.Active;
+
+
 }
 
 /// <summary>
