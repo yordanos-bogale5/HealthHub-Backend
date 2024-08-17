@@ -19,7 +19,7 @@ namespace HealthHub.Source.Controllers;
 /// <param name="logger"></param>
 [ApiController]
 [Route("api/users")]
-public class UserController(UserService userService, ILogger<UserController> logger, AppConfig appConfig, IValidator<RegisterUserDto> registerUserValidator) : ControllerBase
+public class UserController(UserService userService, DoctorService doctorService, ILogger<UserController> logger, AppConfig appConfig, IValidator<RegisterUserDto> registerUserValidator) : ControllerBase
 {
 
   /// <summary>
@@ -186,13 +186,30 @@ public class UserController(UserService userService, ILogger<UserController> log
   {
     try
     {
-      var response = await userService.GetAllDoctors();
+      var response = await doctorService.GetAllDoctors();
       if (!response.Success) throw new Exception(response.Message);
       return Ok(response);
     }
     catch (Exception ex)
     {
+      logger.LogError($"Internal Server Error: {ex}");
       throw new Exception("Failed to get all doctors in controller.");
+    }
+  }
+
+  [HttpGet("doctors/speciality/{specialityName}")]
+  public async Task<IActionResult> GetDoctorsBySpeciality(string specialityName)
+  {
+    try
+    {
+      var response = await doctorService.GetDoctorsBySpecialityAsync(specialityName);
+      if (!response.Success) throw new Exception(response.Message);
+      return Ok(response);
+    }
+    catch (Exception ex)
+    {
+      logger.LogError($"Internal Server Error: {ex}");
+      throw new Exception("Error getting doctors by speciality");
     }
   }
 }
