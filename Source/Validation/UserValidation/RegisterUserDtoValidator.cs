@@ -15,12 +15,17 @@ public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
     // What is remaining from the RegisterUserDto validation using Attribues is
     // Role based Validation
 
+    RuleFor(u => u.Gender)
+    .Must(g => g == Gender.Male || g == Gender.Female)
+    .WithMessage("Gender must be either Male or Female");
+
+
+
+
+
     // Validate fields required for Patients
     When(u => u.Role == Role.Patient, () =>
     {
-      RuleFor(u => u.MedicalHistory)
-                  .NotEmpty().WithMessage("Medical history is required for patients.");
-
       RuleFor(u => u.EmergencyContactName)
                   .NotEmpty().WithMessage("Emergency contact name is required for patients.");
 
