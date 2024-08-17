@@ -4,7 +4,7 @@ using HealthHub.Source.Models.Entities;
 
 public class AdminService(ILogger<AdminService> logger, ApplicationContext appContext)
 {
-  public async Task<Admin?> CreateAdmin(CreateAdminDto createAdminDto)
+  public async Task<Admin?> CreateAdminAsync(CreateAdminDto createAdminDto)
   {
     try
     {
