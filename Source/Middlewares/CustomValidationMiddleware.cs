@@ -55,6 +55,21 @@ public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
       }));
 
     }
+    catch (KeyNotFoundException ex)
+    {
+      httpContext.Response.ContentType = "application/problem+json";
+      httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+
+      object errors = new { };
+
+
+
+      await httpContext.Response.WriteAsync(JsonSerializer.Serialize(new ErrorResponse()
+      {
+        title = ex.Message,
+        errors = errors
+      }));
+    }
     catch (Exception ex)
     {
       httpContext.Response.ContentType = "application/json";
