@@ -173,12 +173,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       if (auth0User == null || auth0User.UserId == null)
       {
-        return new ServiceResponse<UserDto>(
-          false,
-          500,
-          null,
-          "Failed to create user in Auth0."
-        );
+        throw new Exception("Failed to Create user in Auth0");
       }
 
       // Convert the Dto to User Entity 
@@ -201,6 +196,8 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
         {
           UserId = addedUser.Entity.UserId,
           MedicalHistory = registerUserDto.MedicalHistory,
+          EmergencyContactName = registerUserDto.EmergencyContactName,
+          EmergencyContactPhone = registerUserDto.EmergencyContactPhone
         });
       }
       else if (registerUserDto.Role == Role.Doctor)
@@ -233,12 +230,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       logger.LogError(ex, "Failed to register user");
 
-      return new ServiceResponse<UserDto>(
-        Success: false,
-        StatusCode: 500,
-        null,
-        "Failed to register user"
-      );
+      throw;
     }
   }
 
