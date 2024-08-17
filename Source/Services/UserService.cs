@@ -315,43 +315,6 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
     }
   }
 
-  public async Task<ServiceResponse<List<DoctorUser>>> GetAllDoctors()
-  {
-    try
-    {
-      List<DoctorUser> doctors = await appContext.Specialities
-      .Include(s => s.Doctor)
-          .ThenInclude(d => d.User)
-      .Select(s => new DoctorUser
-      {
-        Address = s.Doctor!.User!.Address,
-        DateOfBirth = s.Doctor.User.DateOfBirth,
-        Email = s.Doctor.User.Email,
-        FirstName = s.Doctor.User.FirstName,
-        Gender = s.Doctor.User.Gender,
-        LastName = s.Doctor.User.LastName,
-        Phone = s.Doctor.User.Phone,
-        Biography = s.Doctor.Biography,
-        DoctorStatus = s.Doctor.DoctorStatus,
-        Qualifications = s.Doctor.Qualifications,
-        Specialities = appContext.Specialities
-              .Where(spec => spec.DoctorId == s.DoctorId)
-              .Select(spec => spec.SpecialityName)
-              .ToList()
-      })
-      .ToListAsync();
 
-
-      var jsonDoc = JsonSerializer.Serialize(doctors, new JsonSerializerOptions { WriteIndented = true });
-      Console.WriteLine($"\n\n{jsonDoc}\n\n");
-
-
-      return new ServiceResponse<List<DoctorUser>>(true, 200, doctors, "All Doctors Retrieved!");
-    }
-    catch (System.Exception ex)
-    {
-      throw new Exception("Failed to Get all Doctors in User Service");
-    }
-  }
 
 }
