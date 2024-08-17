@@ -121,6 +121,8 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddTransient<PatientService>();
     builder.Services.AddTransient<AdminService>();
 
+    builder.Services.AddTransient<SpecialityService>();
+
     builder.Services.AddTransient<AuthService>();
     builder.Services.AddTransient<Auth0Service>();
 
