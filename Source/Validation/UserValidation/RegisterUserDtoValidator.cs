@@ -15,11 +15,6 @@ public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
     // What is remaining from the RegisterUserDto validation using Attribues is
     // Role based Validation
 
-    RuleFor(u => u.Gender)
-    .Must(g => g == Gender.Male || g == Gender.Female)
-    .WithMessage("Gender must be either Male or Female");
-
-
 
 
 
