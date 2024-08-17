@@ -10,6 +10,13 @@ namespace HealthHub.Source.Middlewares;
 
 public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
 {
+
+  Dictionary<string, string> RegisterModelErrorMessages = new()
+  {
+      { "Role", "Invalid Role Provided. Role can be only Patient, Doctor or Admin" },
+      { "Gender", "Invalid Gender Provided. Gender can be only Male or Female." },
+  };
+
   public async Task InvokeAsync(HttpContext httpContext)
   {
     try
@@ -27,7 +34,13 @@ public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
       if (httpContext.Items.ContainsKey(ErrorConstants.ModelStateErrors))
       {
         var data = (ModelStateDictionary)httpContext.Items[ErrorConstants.ModelStateErrors]!;
-        errors = data.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToList());
+        errors = data.ToDictionary(
+          kvp => kvp.Key,
+          kvp => kvp.Value?.Errors.Select(e =>
+            RegisterModelErrorMessages.TryGetValue(kvp.Key, out string? value) ?
+            value : e.ErrorMessage
+          ).ToList()
+        );
       }
       // Map Errors Correctly for Fluent Validation Errors
       else if (httpContext.Items.ContainsKey(ErrorConstants.FluentValidationErrors))
@@ -49,11 +62,12 @@ public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
 
       var errorResponse = new
       {
-        message = "An unexpected error occurred.",
-        details = ex.Message
+        title = "An unexpected error occurred.",
+        errors = ex.Message
       };
 
       await httpContext.Response.WriteAsync(JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions { WriteIndented = true }));
     }
   }
+
 }
