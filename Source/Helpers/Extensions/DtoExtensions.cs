@@ -51,7 +51,6 @@ public static class DtoExtensions
     return new Doctor()
     {
       UserId = createDoctorDto.UserId,
-      SpecialityId = createDoctorDto.SpecialityId,
       Qualifications = createDoctorDto.Qualifications,
       Biography = createDoctorDto.Biography,
       DoctorStatus = createDoctorDto.DoctorStatus
@@ -70,6 +69,16 @@ public static class DtoExtensions
     {
       UserId = createAdminDto.UserId
       // More to be added here if admin changes in future, currently only UserId is needed
+    };
+  }
+
+
+  public static Speciality ToSpeciality(this CreateSpecialityDto specialityDto)
+  {
+    return new Speciality()
+    {
+      DoctorId = specialityDto.DoctorId,
+      SpecialityName = specialityDto.SpecialityName
     };
   }
 }
