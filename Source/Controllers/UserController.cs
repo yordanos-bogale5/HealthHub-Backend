@@ -52,7 +52,7 @@ public class UserController(UserService userService, ILogger<UserController> log
 
       if (!response.Success)
       {
-        throw new Exception(response.Message);
+        throw new BadHttpRequestException(response.Message!);
       }
 
       return Ok(response.Data);
