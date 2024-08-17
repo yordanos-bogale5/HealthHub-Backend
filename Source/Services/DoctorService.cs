@@ -2,6 +2,7 @@ using HealthHub.Source.Data;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 public class DoctorService(ApplicationContext appContext, ILogger<DoctorService> logger)
 {
@@ -22,5 +23,18 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
     }
   }
 
+  public async Task<Doctor?> GetDoctor(Guid userId)
+  {
+    try
+    {
+      var doctor = await appContext.Doctors.SingleOrDefaultAsync(d => d.UserId == userId);
+      return doctor;
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"An error occured when trying to get doctor by id {ex}");
+      throw;
+    }
+  }
 
 }
