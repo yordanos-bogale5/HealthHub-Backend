@@ -8,8 +8,6 @@ public class Doctor
   public Guid DoctorId { get; set; }
   [Required]
   public Guid UserId { get; set; }  // <<FK>>
-  [Required]
-  public Guid SpecialityId { get; set; }  // <<FK>>
 
   [Required]
   public required string Qualifications { get; set; }
@@ -21,5 +19,4 @@ public class Doctor
   public bool Verified { get; set; } = false;
 
   public virtual User? User { get; set; } // <<NAV>>
-  public virtual Speciality? Speciality { get; set; } // <<NAV>>
 }
