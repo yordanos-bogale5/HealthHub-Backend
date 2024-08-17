@@ -19,7 +19,7 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
     catch (System.Exception ex)
     {
       logger.LogError(ex, "Failed to Create Patient");
-      throw;
+      throw new Exception("Failed to Create Patient");
     }
   }
 }
