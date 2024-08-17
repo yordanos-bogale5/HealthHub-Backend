@@ -22,22 +22,17 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
   /// <summary>
   /// Check if Email is Verified by Auth0
   /// </summary>
-  /// <param name="userId"></param>
+  /// <param name="email"></param>
   /// <returns></returns>
-  public async Task<ServiceResponse<bool?>> CheckEmailVerified(Guid userId)
+  public async Task<ServiceResponse<bool?>> CheckEmailVerified(string email)
   {
     try
     {
-      var user = await appContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+      var user = await appContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
       if (user == null)
       {
-        return new ServiceResponse<bool?>(
-          false,
-          404,
-          false,
-          "User with that id not found"
-        );
+        throw new BadHttpRequestException("User with that email is not found");
       }
 
       if (user.IsEmailVerified)
@@ -52,24 +47,14 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       if (user.Auth0Id == null)
       {
-        return new ServiceResponse<bool?>(
-          false,
-          400,
-          false,
-          "User does not have an Auth0Id"
-        );
+        throw new BadHttpRequestException("User doesn't have an account.");
       }
 
       var isEmailVerified = await auth0Service.IsEmailVerified(user.Auth0Id);
 
       if (isEmailVerified == null)
       {
-        return new ServiceResponse<bool?>(
-          false,
-          500,
-          false,
-          "Failed to check email verification"
-        );
+        throw new Exception("Failed to verify email.");
       }
 
       // Sync the auth0 email verification status with the user entity
@@ -88,12 +73,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
     {
       logger.LogError(ex, "Failed to check email verification");
 
-      return new ServiceResponse<bool?>(
-        false,
-        500,
-        false,
-        "An error occured trying to check email verification."
-      );
+      throw;
     }
   }
 
