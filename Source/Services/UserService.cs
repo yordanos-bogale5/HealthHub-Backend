@@ -16,7 +16,10 @@ namespace HealthHub.Source.Services;
 /// <param name="appContext"></param>
 /// <param name="auth0Service"></param>
 /// <param name="logger"></param>
-public class UserService(ApplicationContext appContext, Auth0Service auth0Service, ILogger<UserService> logger, PatientService patientService, DoctorService doctorService, AdminService adminService)
+/// <param name="patientService"></param>
+/// <param name="doctorService"></param>
+/// <param name="adminService"></param>
+public class UserService(ApplicationContext appContext, Auth0Service auth0Service, ILogger<UserService> logger, PatientService patientService, DoctorService doctorService, AdminService adminService, SpecialityService specialityService)
 {
 
   /// <summary>
@@ -123,12 +126,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
       // If User is Found By That Email
       if (userByEmail)
       {
-        return new ServiceResponse<UserDto>(
-          false,
-          400,
-          null,
-          "User with that email already exists!."
-        );
+        throw new BadHttpRequestException("User with that email already exists!.");
       }
 
       // Search the User By Phone
@@ -137,12 +135,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
       // If User is Found With That Phone
       if (userByPhone)
       {
-        return new ServiceResponse<UserDto>(
-          false,
-          400,
-          null,
-          "User with that phone already exists!."
-        );
+        throw new BadHttpRequestException("User with that phone already exists!.");
       }
 
       // Create User in Auth0
@@ -169,9 +162,9 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
       var addedUser = await appContext.Users.AddAsync(user);
 
 
+      // Create a Patient table for the user
       if (registerUserDto.Role == Role.Patient)
       {
-        // Create a Patient table for the user
         await patientService.CreatePatientAsync(new CreatePatientDto
         {
           UserId = addedUser.Entity.UserId,
@@ -180,15 +173,32 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
           EmergencyContactPhone = registerUserDto.EmergencyContactPhone
         });
       }
+      // Create a Doctor table for the user
       else if (registerUserDto.Role == Role.Doctor)
       {
-        // Create a Doctor table for the user
 
+
+        var doctor = await doctorService.CreateDoctorAsync(new CreateDoctorDto
+        {
+          UserId = addedUser.Entity.UserId,
+          Biography = registerUserDto.Biography!,
+          Qualifications = registerUserDto.Qualifications!,
+        });
+
+        if (doctor == null)
+        {
+          throw new Exception("Error creating Doctor");
+        }
+
+        var speciality = await specialityService.CreateSpecialitiesAsync(registerUserDto.Specialities.ToSpecialityList(doctor.DoctorId));
       }
+      // Create a Admin table for the user
       else
       {
-        // Create a Admin table for the user
-
+        var admin = adminService.CreateAdminAsync(new CreateAdminDto
+        {
+          UserId = addedUser.Entity.UserId
+        });
       }
 
 
