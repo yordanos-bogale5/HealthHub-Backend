@@ -175,4 +175,24 @@ public class UserController(UserService userService, ILogger<UserController> log
       throw;
     }
   }
+
+  /// <summary>
+  /// Get all Doctors from the database
+  /// </summary>
+  /// <returns>An array of Doctor Users</returns>
+  /// <exception cref="Exception"></exception>
+  [HttpGet("doctors/all")]
+  public async Task<IActionResult> GetAllDoctors()
+  {
+    try
+    {
+      var response = await userService.GetAllDoctors();
+      if (!response.Success) throw new Exception(response.Message);
+      return Ok(response);
+    }
+    catch (Exception ex)
+    {
+      throw new Exception("Failed to get all doctors in controller.");
+    }
+  }
 }
