@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using HealthHub.Source;
 using HealthHub.Source.Data;
 using HealthHub.Source.Models.Enums;
+using Org.BouncyCastle.Asn1.X509.Qualified;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 namespace HealthHub.Source.Services;
 
 /// <summary>
@@ -35,7 +38,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       if (user == null)
       {
-        throw new BadHttpRequestException("User with that email is not found");
+        throw new KeyNotFoundException("User with that email is not found");
       }
 
       if (user.IsEmailVerified)
@@ -50,7 +53,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       if (user.Auth0Id == null)
       {
-        throw new BadHttpRequestException("User doesn't have an account.");
+        throw new KeyNotFoundException("User doesn't have an account.");
       }
 
       var isEmailVerified = await auth0Service.IsEmailVerified(user.Auth0Id);
@@ -76,7 +79,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
     {
       logger.LogError(ex, "Failed to check email verification");
 
-      throw;
+      throw new Exception("Failed to check email verification.");
     }
   }
 
@@ -100,12 +103,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
     catch (Exception ex)
     {
       Console.Write(ex);
-      return new ServiceResponse<List<UserDto>>(
-        Success: false,
-        StatusCode: 500,
-        Message: "Failed to retrieve users",
-        Data: null
-      );
+      throw new Exception("Failed to retrieve users.");
     }
   }
 
@@ -220,7 +218,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       logger.LogError(ex, "Failed to register user");
 
-      throw;
+      throw new Exception("Failed to register user.");
     }
   }
 
@@ -232,12 +230,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       if (user == null)
       {
-        return new ServiceResponse<Auth0LoginDto>(
-          false,
-          400,
-          null,
-          "User with that email is not found. Please register!"
-        );
+        throw new KeyNotFoundException("User with that email is not found");
       }
 
       var auth0LoginDto = await auth0Service.LoginUserAsync(loginUserDto);
@@ -254,12 +247,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
     catch (System.Exception ex)
     {
       logger.LogError(ex, "Failed to login user");
-      return new ServiceResponse<Auth0LoginDto>(
-        false,
-        500,
-        null,
-        ex.Message
-      );
+      throw new Exception("Failed to login user.");
     }
   }
 
@@ -276,11 +264,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       if (user == null)
       {
-        return new ServiceResponse(
-          false,
-          404,
-          "User not found"
-        );
+        throw new KeyNotFoundException("User Not Found!");
       }
 
       // Delete the User in Auth0
@@ -301,11 +285,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
     {
       logger.LogError(ex, "Failed to delete user");
 
-      return new ServiceResponse(
-        false,
-        500,
-        "An error occured trying to delete user."
-      );
+      throw new Exception("Failed to delete user.");
     }
   }
 
@@ -317,12 +297,7 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
 
       if (user == null)
       {
-        return new ServiceResponse<ProfileDto>(
-          false,
-          404,
-          null,
-          "User not found"
-        );
+        throw new KeyNotFoundException("User not found.");
       }
 
       return new ServiceResponse<ProfileDto>(
@@ -336,12 +311,47 @@ public class UserService(ApplicationContext appContext, Auth0Service auth0Servic
     {
       logger.LogError(ex, "Failed to retrieve user");
 
-      return new ServiceResponse<ProfileDto>(
-        false,
-        500,
-        null,
-        "An error occured trying to retrieve user profile."
-      );
+      throw new Exception("Problem occured when getting profile.");
     }
   }
+
+  public async Task<ServiceResponse<List<DoctorUser>>> GetAllDoctors()
+  {
+    try
+    {
+      List<DoctorUser> doctors = await appContext.Specialities
+      .Include(s => s.Doctor)
+          .ThenInclude(d => d.User)
+      .Select(s => new DoctorUser
+      {
+        Address = s.Doctor!.User!.Address,
+        DateOfBirth = s.Doctor.User.DateOfBirth,
+        Email = s.Doctor.User.Email,
+        FirstName = s.Doctor.User.FirstName,
+        Gender = s.Doctor.User.Gender,
+        LastName = s.Doctor.User.LastName,
+        Phone = s.Doctor.User.Phone,
+        Biography = s.Doctor.Biography,
+        DoctorStatus = s.Doctor.DoctorStatus,
+        Qualifications = s.Doctor.Qualifications,
+        Specialities = appContext.Specialities
+              .Where(spec => spec.DoctorId == s.DoctorId)
+              .Select(spec => spec.SpecialityName)
+              .ToList()
+      })
+      .ToListAsync();
+
+
+      var jsonDoc = JsonSerializer.Serialize(doctors, new JsonSerializerOptions { WriteIndented = true });
+      Console.WriteLine($"\n\n{jsonDoc}\n\n");
+
+
+      return new ServiceResponse<List<DoctorUser>>(true, 200, doctors, "All Doctors Retrieved!");
+    }
+    catch (System.Exception ex)
+    {
+      throw new Exception("Failed to Get all Doctors in User Service");
+    }
+  }
+
 }
