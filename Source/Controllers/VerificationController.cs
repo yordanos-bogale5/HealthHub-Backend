@@ -9,11 +9,11 @@ public class VerificationController(UserService userService, ILogger<Verificatio
   /// <summary>
   /// This endpoint is responsible for verifying a user's email.
   /// </summary>
-  /// <param name="userId"></param>
+  /// <param name="email"></param>
   /// <returns></returns>
   /// <exception cref="Exception"></exception>
-  [HttpGet("email/{userId}")]
-  public async Task<IApiResponse<bool>> VerifyEmailAsync(Guid userId)
+  [HttpGet("email/{email}")]
+  public async Task<IApiResponse<bool>> VerifyEmailAsync(string email)
   {
     try
     {
@@ -22,14 +22,14 @@ public class VerificationController(UserService userService, ILogger<Verificatio
         return new ApiResponse<bool>(false, "Invalid Model State", false);
       }
 
-      var result = await userService.CheckEmailVerified(userId);
+      var result = await userService.CheckEmailVerified(email);
 
       return new ApiResponse<bool>(result.Success, result.Message, result.Data ?? false);
     }
     catch (Exception ex)
     {
       logger.LogError(ex, "Failed to Check Email Verification");
-      throw new Exception("Internal Server Error ", ex);
+      throw;
     }
   }
 }
