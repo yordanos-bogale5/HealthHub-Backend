@@ -5,7 +5,7 @@ using HealthHub.Source.Models.Entities;
 
 public class DoctorService(ApplicationContext appContext, ILogger<DoctorService> logger)
 {
-  public async Task<Doctor?> CreateDoctor(CreateDoctorDto createDoctorDto)
+  public async Task<Doctor?> CreateDoctorAsync(CreateDoctorDto createDoctorDto)
   {
     try
     {
@@ -18,7 +18,9 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
     catch (Exception ex)
     {
       logger.LogError(ex, "Failed to Create Doctor");
-      throw;
+      throw new Exception("Failed to Create Doctor");
     }
   }
+
+
 }
