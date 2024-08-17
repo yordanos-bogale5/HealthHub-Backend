@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HealthHub.Source.Controllers;
 
+[ApiController]
+[Route("/api")]
 public class ErrorsController : ControllerBase
 {
-  [Route("/error")]
+  [HttpGet("error")]
   public IActionResult Error()
   {
     return Problem();
