@@ -130,14 +130,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 
-    builder.Services.AddControllers(configure =>
+    builder.Services.AddControllers()
+    .AddNewtonsoftJson(options =>
     {
-
-    }).AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+        options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
     });
+
 
 
 
