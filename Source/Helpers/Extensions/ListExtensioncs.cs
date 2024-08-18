@@ -8,7 +8,6 @@ public static class ListExtensions
   {
     return strings.Select(str => new CreateSpecialityDto
     {
-      DoctorId = doctorId,
       SpecialityName = str
     }).ToList();
   }
