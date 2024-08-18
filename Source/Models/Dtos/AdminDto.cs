@@ -1,4 +1,6 @@
+using HealthHub.Source.Models.Entities;
+
 public record CreateAdminDto
 {
-  public required Guid UserId { get; set; }
+    public required User User;
 }
