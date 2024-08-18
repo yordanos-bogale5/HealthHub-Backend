@@ -4,6 +4,7 @@ using HealthHub.Source.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240818151832_Update_BlogModel_ForeignKeySetupAppropriatelyFollowingNamingConvention")]
+    partial class Update_BlogModel_ForeignKeySetupAppropriatelyFollowingNamingConvention
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -555,9 +558,9 @@ namespace HealthHub.Migrations
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Blog", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.User", "Author")
-                        .WithMany("Blogs")
+                        .WithMany()
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Author");
@@ -566,15 +569,15 @@ namespace HealthHub.Migrations
             modelBuilder.Entity("HealthHub.Source.Models.Entities.BlogComment", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Blog", "Blog")
-                        .WithMany("BlogComments")
+                        .WithMany()
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("HealthHub.Source.Models.Entities.User", "Sender")
-                        .WithMany("BlogComments")
+                        .WithMany()
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Blog");
@@ -585,13 +588,13 @@ namespace HealthHub.Migrations
             modelBuilder.Entity("HealthHub.Source.Models.Entities.BlogLike", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Blog", "Blog")
-                        .WithMany("BlogLikes")
+                        .WithMany()
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("HealthHub.Source.Models.Entities.User", "User")
-                        .WithMany("BlogLikes")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -713,13 +716,6 @@ namespace HealthHub.Migrations
                     b.Navigation("Payment");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.Blog", b =>
-                {
-                    b.Navigation("BlogComments");
-
-                    b.Navigation("BlogLikes");
-                });
-
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Doctor", b =>
                 {
                     b.Navigation("DoctorSpecialities");
@@ -728,15 +724,6 @@ namespace HealthHub.Migrations
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Speciality", b =>
                 {
                     b.Navigation("DoctorSpecialities");
-                });
-
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.User", b =>
-                {
-                    b.Navigation("BlogComments");
-
-                    b.Navigation("BlogLikes");
-
-                    b.Navigation("Blogs");
                 });
 #pragma warning restore 612, 618
         }
