@@ -5,21 +5,21 @@ using HealthHub.Source.Models.Entities;
 
 public class PatientService(ILogger<PatientService> logger, ApplicationContext appContext)
 {
-  public async Task<Patient?> CreatePatientAsync(CreatePatientDto createPatientDto)
-  {
-    try
+    public async Task<Patient?> CreatePatientAsync(CreatePatientDto createPatientDto)
     {
-      var patientResult = await appContext.Patients.AddAsync(createPatientDto.ToPatient());
-      var patient = patientResult.Entity;
+        try
+        {
+            var patientResult = await appContext.Patients.AddAsync(createPatientDto.ToPatient());
+            var patient = patientResult.Entity;
 
-      await appContext.SaveChangesAsync();
+            await appContext.SaveChangesAsync();
 
-      return patient;
+            return patient;
+        }
+        catch (System.Exception ex)
+        {
+            logger.LogError(ex, "Failed to Create Patient");
+            throw new Exception("Failed to Create Patient");
+        }
     }
-    catch (System.Exception ex)
-    {
-      logger.LogError(ex, "Failed to Create Patient");
-      throw new Exception("Failed to Create Patient");
-    }
-  }
 }

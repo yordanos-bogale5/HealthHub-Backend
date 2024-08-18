@@ -4,20 +4,20 @@ using HealthHub.Source.Models.Entities;
 
 public class AdminService(ILogger<AdminService> logger, ApplicationContext appContext)
 {
-  public async Task<Admin?> CreateAdminAsync(CreateAdminDto createAdminDto)
-  {
-    try
+    public async Task<Admin?> CreateAdminAsync(CreateAdminDto createAdminDto)
     {
-      var adminResult = await appContext.Admins.AddAsync(createAdminDto.ToAdmin());
-      var admin = adminResult.Entity;
+        try
+        {
+            var adminResult = await appContext.Admins.AddAsync(createAdminDto.ToAdmin());
+            var admin = adminResult.Entity;
 
-      await appContext.SaveChangesAsync();
-      return admin;
+            await appContext.SaveChangesAsync();
+            return admin;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to Create Admin");
+            throw;
+        }
     }
-    catch (Exception ex)
-    {
-      logger.LogError(ex, "Failed to Create Admin");
-      throw;
-    }
-  }
 }
