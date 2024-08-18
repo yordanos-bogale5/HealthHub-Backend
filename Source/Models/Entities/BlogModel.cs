@@ -4,16 +4,23 @@ namespace HealthHub.Source.Models.Entities;
 
 public class Blog
 {
-  public Guid BlogId { get; set; }
-  [Required]
-  public Guid AuthorId { get; set; }  // <<FK>>
-  [Required]
-  public required string Title { get; set; }
-  [Required]
-  public required string Content { get; set; }
+    public Guid BlogId { get; set; }
 
-  public virtual User? User { get; set; }
+    [Required]
+    public Guid AuthorId { get; set; } // <<FK>>
 
-  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    [Required]
+    public required string Title { get; set; }
+
+    [Required]
+    public required string Content { get; set; }
+
+    public virtual required User Author { get; set; }
+
+    public virtual ICollection<BlogComment> BlogComments { get; set; } = new HashSet<BlogComment>();
+
+    public virtual ICollection<BlogLike> BlogLikes { get; set; } = new HashSet<BlogLike>();
+
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

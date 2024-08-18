@@ -4,14 +4,14 @@ namespace HealthHub.Source.Models.Entities;
 
 public class Speciality
 {
-  public Guid SpecialityId { get; set; }
-  [Required]
-  public required Guid DoctorId { get; set; } // <<FK>>
-  [Required]
-  public required string SpecialityName { get; set; }
+    public Guid SpecialityId { get; set; }
 
-  public virtual Doctor? Doctor { get; set; } // Nav
+    [Required]
+    public required string SpecialityName { get; set; }
 
-  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    public virtual ICollection<DoctorSpeciality> DoctorSpecialities { get; set; } =
+        new HashSet<DoctorSpeciality>();
 }
