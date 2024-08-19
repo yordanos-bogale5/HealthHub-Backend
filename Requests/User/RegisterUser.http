@@ -2,19 +2,19 @@ POST {{apiHostUrl}}/api/users/register
 Content-Type: application/json
 
 {
-  "FirstName": "Kennedy",
-  "LastName" : "Bomb",
-  "Email"    : "dagtef@gmail.com",
+  "FirstName": "Jeffrey",
+  "LastName" : "Doe",
+  "Email"    : "dagtef3@gmail.com",
   "Password" : "12345678Ab@",
   "Gender"   : "Male",
   "DateOfBirth" : "2005-01-01", 
-  "Role"     : "Patient",
-  "Phone"    : "12345678",
+  "Role"     : "Doctor",
+  "Phone"    : "1234567",
   "Address"  : "Addis Ababa",
   "Biography" : "This is my biography",
   "Qualifications" : "This is supposed to be a qualification!",
   "Specialities": [ 
-    "Cardiologist", "Surgeon", "Heart Specialist"
+    "Brain", "Surgeon", "Brain Specialist"
   ],
   "EmergencyContactName" : "John Doe",
   "EmergencyContactPhone" : "12345678",

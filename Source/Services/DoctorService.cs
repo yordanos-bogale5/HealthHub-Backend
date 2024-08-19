@@ -80,24 +80,43 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         }
     }
 
-    public async Task<ServiceResponse<List<DoctorSpeciality>>> GetDoctorsBySpecialityAsync(
+    public async Task<ServiceResponse<List<DoctorUser>>> GetDoctorsBySpecialityAsync(
         string specialityName
     )
     {
         try
         {
-            var doctors = await appContext
-                .DoctorSpecialities.Where(ds =>
-                    EF.Functions.Like("SpecialityName", $"%{specialityName}%")
+            var doctorUsers = await appContext
+                .Doctors.Include(d => d.User) // Ensure the related User entity is loaded
+                .Include(d => d.DoctorSpecialities)
+                .ThenInclude(ds => ds.Speciality)
+                .Where(d =>
+                    d.DoctorSpecialities.Any(ds =>
+                        EF.Functions.Like(ds.Speciality.SpecialityName, $"%{specialityName}%")
+                    )
                 )
-                .Include(ds => ds.Doctor)
-                .ThenInclude(d => d.User)
-                .Include(ds => ds.Speciality)
+                .Select(d => new DoctorUser
+                {
+                    FirstName = d.User.FirstName,
+                    LastName = d.User.LastName,
+                    Email = d.User.Email,
+                    Phone = d.User.Phone,
+                    Gender = d.User.Gender,
+                    DateOfBirth = d.User.DateOfBirth,
+                    Address = d.User.Address,
+                    Specialities = d
+                        .DoctorSpecialities.Select(ds => ds.Speciality.SpecialityName)
+                        .ToList(),
+                    Qualifications = d.Qualifications,
+                    Biography = d.Biography,
+                    DoctorStatus = d.DoctorStatus
+                })
                 .ToListAsync();
-            return new ServiceResponse<List<DoctorSpeciality>>(
+
+            return new ServiceResponse<List<DoctorUser>>(
                 true,
                 200,
-                doctors,
+                doctorUsers,
                 "Doctors with speciality name retrieved"
             );
         }
