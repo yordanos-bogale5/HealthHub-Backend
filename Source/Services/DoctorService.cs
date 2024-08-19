@@ -15,14 +15,14 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         {
             var doctorResult = await appContext.Doctors.AddAsync(createDoctorDto.ToDoctor());
             var doctor = doctorResult.Entity;
-
+            logger.LogInformation($"\nCreate Doctor Result: \n {doctorResult}");
             await appContext.SaveChangesAsync();
             return doctor;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to Create Doctor");
-            throw new Exception("Failed to Create Doctor");
+            throw;
         }
     }
 
@@ -44,40 +44,39 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
     {
         try
         {
-            var doctors = await appContext
-                .DoctorSpecialities.Include(ds => ds.Doctor)
-                .ThenInclude(d => d.User)
-                .Select(result => new DoctorUser
+            var doctorUsers = await appContext
+                .Doctors.Include(d => d.User) // Ensure the related User entity is loaded
+                .Include(d => d.DoctorSpecialities)
+                .ThenInclude(ds => ds.Speciality)
+                .Select(d => new DoctorUser
                 {
-                    Address = result.Doctor.User!.Address,
-                    DateOfBirth = result.Doctor.User.DateOfBirth,
-                    Email = result.Doctor.User.Email,
-                    FirstName = result.Doctor.User.Email,
-                    Gender = result.Doctor.User.Gender,
-                    LastName = result.Doctor.User.LastName,
-                    Phone = result.Doctor.User.Phone,
-                    Biography = result.Doctor.Biography,
-                    DoctorStatus = result.Doctor.DoctorStatus,
-                    Qualifications = result.Doctor.Qualifications,
-                    Specialities = appContext
-                        .DoctorSpecialities.Include(ds => ds.Speciality)
-                        .Where(sp => sp.DoctorId == result.DoctorId)
-                        .Select(res => res.Speciality.SpecialityName)
-                        .ToList()
+                    FirstName = d.User.FirstName,
+                    LastName = d.User.LastName,
+                    Email = d.User.Email,
+                    Phone = d.User.Phone,
+                    Gender = d.User.Gender,
+                    DateOfBirth = d.User.DateOfBirth,
+                    Address = d.User.Address,
+                    Specialities = d
+                        .DoctorSpecialities.Select(ds => ds.Speciality.SpecialityName)
+                        .ToList(),
+                    Qualifications = d.Qualifications,
+                    Biography = d.Biography,
+                    DoctorStatus = d.DoctorStatus
                 })
                 .ToListAsync();
 
             return new ServiceResponse<List<DoctorUser>>(
                 true,
                 200,
-                doctors,
+                doctorUsers,
                 "All Doctors Retrieved!"
             );
         }
         catch (System.Exception ex)
         {
             logger.LogError($"Failed to get all Doctors in User Service: {ex}");
-            throw new Exception("Failed to Get all Doctors in User Service");
+            throw;
         }
     }
 
@@ -105,7 +104,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         catch (System.Exception ex)
         {
             logger.LogError($"Failed to get doctors by speciality in doctor service {ex}");
-            throw new Exception("Failed to get doctors by speciality in doctor service.");
+            throw;
         }
     }
 

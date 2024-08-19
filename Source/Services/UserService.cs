@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text.Json;
 using HealthHub.Source;
 using HealthHub.Source.Data;
@@ -172,14 +173,16 @@ public class UserService(
             // Create a Patient table for the user
             if (registerUserDto.Role == Role.Patient)
             {
-                await patientService.CreatePatientAsync(registerUserDto.ToCreatePatientDto());
+                await patientService.CreatePatientAsync(
+                    registerUserDto.ToCreatePatientDto(addedUser.Entity)
+                );
             }
             // Create a Doctor table for the user
             else if (registerUserDto.Role == Role.Doctor)
             {
                 // Create the doctor
                 var doctor = await doctorService.CreateDoctorAsync(
-                    registerUserDto.ToCreateDoctorDto()
+                    registerUserDto.ToCreateDoctorDto(addedUser.Entity)
                 );
 
                 if (doctor == null)
@@ -218,7 +221,9 @@ public class UserService(
             // Create a Admin table for the user
             else
             {
-                var admin = adminService.CreateAdminAsync(registerUserDto.ToCreateAdminDto());
+                var admin = adminService.CreateAdminAsync(
+                    registerUserDto.ToCreateAdminDto(addedUser.Entity)
+                );
             }
 
             // Save the Changes
@@ -239,7 +244,7 @@ public class UserService(
 
             logger.LogError(ex, "Failed to register user");
 
-            throw new Exception("Failed to register user.");
+            throw;
         }
     }
 
@@ -265,7 +270,7 @@ public class UserService(
         catch (System.Exception ex)
         {
             logger.LogError(ex, "Failed to login user");
-            throw new Exception("Failed to login user.");
+            throw;
         }
     }
 
@@ -299,7 +304,7 @@ public class UserService(
         {
             logger.LogError(ex, "Failed to delete user");
 
-            throw new Exception("Failed to delete user.");
+            throw;
         }
     }
 
