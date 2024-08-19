@@ -18,24 +18,30 @@ namespace HealthHub.Source.Helpers.Extensions
             );
         }
 
-        public static CreatePatientDto ToCreatePatientDto(this RegisterUserDto registerUserDto)
+        public static CreatePatientDto ToCreatePatientDto(
+            this RegisterUserDto registerUserDto,
+            User user
+        )
         {
             return new CreatePatientDto
             {
-                User = registerUserDto.ToUser(),
+                User = user,
                 EmergencyContactName = registerUserDto.EmergencyContactName,
                 EmergencyContactPhone = registerUserDto.EmergencyContactPhone,
                 MedicalHistory = registerUserDto.MedicalHistory
             };
         }
 
-        public static CreateDoctorDto ToCreateDoctorDto(this RegisterUserDto registerUserDto)
+        public static CreateDoctorDto ToCreateDoctorDto(
+            this RegisterUserDto registerUserDto,
+            User user
+        )
         {
             return new CreateDoctorDto
             {
                 Biography = registerUserDto.Biography ?? "None",
                 Qualifications = registerUserDto.Qualifications ?? "None",
-                User = registerUserDto.ToUser()
+                User = user
             };
         }
 
@@ -72,9 +78,12 @@ namespace HealthHub.Source.Helpers.Extensions
             };
         }
 
-        public static CreateAdminDto ToCreateAdminDto(this RegisterUserDto registerUserDto)
+        public static CreateAdminDto ToCreateAdminDto(
+            this RegisterUserDto registerUserDto,
+            User user
+        )
         {
-            return new CreateAdminDto { User = registerUserDto.ToUser() };
+            return new CreateAdminDto { User = user };
         }
     }
 }
