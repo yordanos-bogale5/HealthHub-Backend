@@ -4,6 +4,8 @@ using FluentValidation.Results;
 using HealthHub.Source.Config;
 using HealthHub.Source.Helpers.Constants;
 using HealthHub.Source.Models.Dtos;
+using HealthHub.Source.Models.Enums;
+using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -43,8 +45,8 @@ public class UserController(
         {
             if (!ModelState.IsValid)
             {
-                HttpContext.Items[ErrorConstants.ModelStateErrors] = ModelState;
-                throw new BadHttpRequestException(ErrorConstants.ModelValidationError);
+                HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
+                throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
             }
 
             // Role based validation of payload
@@ -52,9 +54,9 @@ public class UserController(
 
             if (!validation.IsValid)
             {
-                HttpContext.Items[ErrorConstants.FluentValidationErrors] =
+                HttpContext.Items[ErrorFieldConstants.FluentValidationErrors] =
                     validation.ToFluentValidationErrorResult();
-                throw new BadHttpRequestException(ErrorConstants.ModelValidationError);
+                throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
             }
 
             var response = await userService.RegisterUser(registerUserDto);
@@ -195,13 +197,21 @@ public class UserController(
     /// <returns>An array of Doctor Users</returns>
     /// <exception cref="Exception"></exception>
     [HttpGet("doctors/all")]
-    public async Task<IActionResult> GetAllDoctors()
+    public async Task<IActionResult> GetAllDoctors([FromQuery] Gender? gender = null)
     {
         try
         {
-            var response = await doctorService.GetAllDoctors();
+            IServiceResponse response;
+            if (gender != null)
+            {
+                response = await doctorService.GetDoctorsByGenderAsync((Gender)gender);
+            }
+            else
+                response = await doctorService.GetAllDoctors();
+
             if (!response.Success)
                 throw new Exception(response.Message);
+
             return Ok(response);
         }
         catch (Exception ex)
@@ -211,6 +221,11 @@ public class UserController(
         }
     }
 
+    /// <summary>
+    /// Get all doctors with the specified speciality
+    /// </summary>
+    /// <param name="specialityName"></param>
+    /// <returns></returns>
     [HttpGet("doctors/speciality/{specialityName}")]
     public async Task<IActionResult> GetDoctorsBySpeciality(string specialityName)
     {
@@ -228,19 +243,33 @@ public class UserController(
         }
     }
 
-    // [HttpGet("doctors/name/{doctorName}")]
-    // public async Task<IActionResult> GetDoctorsByName(string doctorName)
-    // {
-    //   try
-    //   {
-    //     var response = await doctorService.GetDoctorsByNameAsync(doctorName);
-    //     if (!response.Success) throw new Exception(response.Message);
-    //     return Ok(response);
-    //   }
-    //   catch (Exception ex)
-    //   {
-    //     logger.LogError($"Internal Server Error: {ex}");
-    //     throw new Exception("Error getting doctors by name");
-    //   }
-    // }
+    /// <summary>
+    /// Get all doctors with the specified name
+    /// </summary>
+    /// <param name="doctorName"></param>
+    /// <returns></returns>
+    /// <exception cref="BadHttpRequestException"></exception>
+    [HttpGet("doctors/name/{doctorName}")]
+    public async Task<IActionResult> GetDoctorsByName(
+        [FromRoute] [Required] [MinLength(1)] string doctorName
+    )
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
+                throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
+            }
+            var response = await doctorService.GetDoctorsByNameAsync(doctorName);
+            if (!response.Success)
+                throw new Exception(response.Message);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Internal Server Error: {ex}");
+            throw;
+        }
+    }
 }
