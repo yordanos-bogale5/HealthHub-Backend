@@ -68,7 +68,7 @@ public class UserController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to Register User");
+            logger.LogError(ex, "Failed to Register User\n\n");
             throw;
         }
     }
@@ -207,7 +207,7 @@ public class UserController(
         catch (Exception ex)
         {
             logger.LogError($"Internal Server Error: {ex}");
-            throw new Exception("Failed to get all doctors in controller.");
+            throw;
         }
     }
 
@@ -224,7 +224,7 @@ public class UserController(
         catch (Exception ex)
         {
             logger.LogError($"Internal Server Error: {ex}");
-            throw new Exception("Error getting doctors by speciality");
+            throw;
         }
     }
 
