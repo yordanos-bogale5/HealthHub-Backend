@@ -1,0 +1,1 @@
+GET {{apiHostUrl}}/api/users/patients/all
