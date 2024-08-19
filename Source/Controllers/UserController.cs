@@ -27,6 +27,7 @@ namespace HealthHub.Source.Controllers;
 public class UserController(
     UserService userService,
     DoctorService doctorService,
+    PatientService patientService,
     ILogger<UserController> logger,
     AppConfig appConfig,
     IValidator<RegisterUserDto> registerUserValidator
@@ -269,6 +270,23 @@ public class UserController(
         catch (Exception ex)
         {
             logger.LogError($"Internal Server Error: {ex}");
+            throw;
+        }
+    }
+
+    [HttpGet("patients/all")]
+    public async Task<IActionResult> GetAllPatients()
+    {
+        try
+        {
+            var response = await patientService.GetAllPatientsAsync();
+            if (!response.Success)
+                throw new Exception(response.Message);
+            return Ok(response);
+        }
+        catch (System.Exception ex)
+        {
+            logger.LogError($"Failed to get all patients: {ex}");
             throw;
         }
     }
