@@ -85,5 +85,29 @@ namespace HealthHub.Source.Helpers.Extensions
         {
             return new CreateAdminDto { User = user };
         }
+
+        public static DoctorDto ToDoctorDto(this Doctor d)
+        {
+            return new DoctorDto
+            {
+                UserId = d.UserId,
+                DoctorId = d.DoctorId,
+                FirstName = d.User.FirstName,
+                LastName = d.User.LastName,
+                Email = d.User.Email,
+                IsEmailVerified = d.User.IsEmailVerified,
+                Phone = d.User.Phone,
+                Gender = d.User.Gender,
+                DateOfBirth = d.User.DateOfBirth,
+                Address = d.User.Address,
+                Specialities = d
+                    .DoctorSpecialities.Select(ds => ds.Speciality.SpecialityName)
+                    .ToList(),
+                Qualifications = d.Qualifications,
+                Biography = d.Biography,
+                DoctorStatus = d.DoctorStatus,
+                ProfilePicture = d.User.ProfilePicture ?? ""
+            };
+        }
     }
 }
