@@ -41,7 +41,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         }
     }
 
-    public async Task<ServiceResponse<List<DoctorUser>>> GetAllDoctors()
+    public async Task<ServiceResponse<List<DoctorDto>>> GetAllDoctors()
     {
         try
         {
@@ -49,25 +49,10 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
                 .Doctors.Include(d => d.User) // Ensure the related User entity is loaded
                 .Include(d => d.DoctorSpecialities)
                 .ThenInclude(ds => ds.Speciality)
-                .Select(d => new DoctorUser
-                {
-                    FirstName = d.User.FirstName,
-                    LastName = d.User.LastName,
-                    Email = d.User.Email,
-                    Phone = d.User.Phone,
-                    Gender = d.User.Gender,
-                    DateOfBirth = d.User.DateOfBirth,
-                    Address = d.User.Address,
-                    Specialities = d
-                        .DoctorSpecialities.Select(ds => ds.Speciality.SpecialityName)
-                        .ToList(),
-                    Qualifications = d.Qualifications,
-                    Biography = d.Biography,
-                    DoctorStatus = d.DoctorStatus
-                })
+                .Select(d => d.ToDoctorDto())
                 .ToListAsync();
 
-            return new ServiceResponse<List<DoctorUser>>(
+            return new ServiceResponse<List<DoctorDto>>(
                 true,
                 200,
                 doctorUsers,
@@ -81,7 +66,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         }
     }
 
-    public async Task<ServiceResponse<List<DoctorUser>>> GetDoctorsBySpecialityAsync(
+    public async Task<ServiceResponse<List<DoctorDto>>> GetDoctorsBySpecialityAsync(
         string specialityName
     )
     {
@@ -96,25 +81,10 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
                         EF.Functions.Like(ds.Speciality.SpecialityName, $"%{specialityName}%")
                     )
                 )
-                .Select(d => new DoctorUser
-                {
-                    FirstName = d.User.FirstName,
-                    LastName = d.User.LastName,
-                    Email = d.User.Email,
-                    Phone = d.User.Phone,
-                    Gender = d.User.Gender,
-                    DateOfBirth = d.User.DateOfBirth,
-                    Address = d.User.Address,
-                    Specialities = d
-                        .DoctorSpecialities.Select(ds => ds.Speciality.SpecialityName)
-                        .ToList(),
-                    Qualifications = d.Qualifications,
-                    Biography = d.Biography,
-                    DoctorStatus = d.DoctorStatus
-                })
+                .Select(d => d.ToDoctorDto())
                 .ToListAsync();
 
-            return new ServiceResponse<List<DoctorUser>>(
+            return new ServiceResponse<List<DoctorDto>>(
                 true,
                 200,
                 doctorUsers,
@@ -128,7 +98,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         }
     }
 
-    public async Task<ServiceResponse<List<DoctorUser>>> GetDoctorsByNameAsync(string doctorName)
+    public async Task<ServiceResponse<List<DoctorDto>>> GetDoctorsByNameAsync(string doctorName)
     {
         try
         {
@@ -144,25 +114,10 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
                         )
                     )
                 )
-                .Select(d => new DoctorUser
-                {
-                    FirstName = d.User.FirstName,
-                    LastName = d.User.LastName,
-                    Email = d.User.Email,
-                    Phone = d.User.Phone,
-                    Gender = d.User.Gender,
-                    DateOfBirth = d.User.DateOfBirth,
-                    Address = d.User.Address,
-                    Specialities = d
-                        .DoctorSpecialities.Select(ds => ds.Speciality.SpecialityName)
-                        .ToList(),
-                    Qualifications = d.Qualifications,
-                    Biography = d.Biography,
-                    DoctorStatus = d.DoctorStatus
-                })
+                .Select(d => d.ToDoctorDto())
                 .ToListAsync();
 
-            return new ServiceResponse<List<DoctorUser>>(
+            return new ServiceResponse<List<DoctorDto>>(
                 true,
                 200,
                 doctorUsers,
@@ -175,7 +130,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         }
     }
 
-    public async Task<ServiceResponse<List<DoctorUser>>> GetDoctorsByGenderAsync(Gender gender)
+    public async Task<ServiceResponse<List<DoctorDto>>> GetDoctorsByGenderAsync(Gender gender)
     {
         try
         {
@@ -184,25 +139,10 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
                 .Include(d => d.DoctorSpecialities)
                 .ThenInclude(ds => ds.Speciality)
                 .Where(d => d.User.Gender == gender)
-                .Select(d => new DoctorUser
-                {
-                    FirstName = d.User.FirstName,
-                    LastName = d.User.LastName,
-                    Email = d.User.Email,
-                    Phone = d.User.Phone,
-                    Gender = d.User.Gender,
-                    DateOfBirth = d.User.DateOfBirth,
-                    Address = d.User.Address,
-                    Specialities = d
-                        .DoctorSpecialities.Select(ds => ds.Speciality.SpecialityName)
-                        .ToList(),
-                    Qualifications = d.Qualifications,
-                    Biography = d.Biography,
-                    DoctorStatus = d.DoctorStatus
-                })
+                .Select(d => d.ToDoctorDto())
                 .ToListAsync();
 
-            return new ServiceResponse<List<DoctorUser>>(
+            return new ServiceResponse<List<DoctorDto>>(
                 true,
                 200,
                 doctorUsers,
