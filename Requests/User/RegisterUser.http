@@ -5,15 +5,17 @@ Content-Type: application/json
   "FirstName": "Kennedy",
   "LastName" : "Bomb",
   "Email"    : "dagtef@gmail.com",
-  "Password" : "12345678Ab",
+  "Password" : "12345678Ab@",
   "Gender"   : "Male",
   "DateOfBirth" : "2005-01-01", 
-  "Role"     : "Doctor",
+  "Role"     : "Patient",
   "Phone"    : "12345678",
   "Address"  : "Addis Ababa",
   "Biography" : "This is my biography",
   "Qualifications" : "This is supposed to be a qualification!",
   "Specialities": [ 
     "Cardiologist", "Surgeon", "Heart Specialist"
-  ]
+  ],
+  "EmergencyContactName" : "John Doe",
+  "EmergencyContactPhone" : "12345678",
 }
