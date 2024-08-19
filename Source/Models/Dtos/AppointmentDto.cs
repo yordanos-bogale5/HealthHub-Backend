@@ -22,3 +22,12 @@ public record CreateAppointmentDto
     [Required]
     public AppointmentType AppointmentType { get; init; }
 }
+
+public record AppointmentDto
+{
+    public required PatientDto Patient { get; init; }
+    public required DoctorDto Doctor { get; init; }
+    public DateTime AppointmentDate { get; init; }
+    public TimeOnly AppointmentTime { get; init; }
+    public AppointmentType AppointmentType { get; init; }
+}
