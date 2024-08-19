@@ -31,10 +31,10 @@ public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
             object errors = new { };
 
             // Map Errors Correctly for Model State Errors
-            if (httpContext.Items.ContainsKey(ErrorConstants.ModelStateErrors))
+            if (httpContext.Items.ContainsKey(ErrorFieldConstants.ModelStateErrors))
             {
                 var data = (ModelStateDictionary)
-                    httpContext.Items[ErrorConstants.ModelStateErrors]!;
+                    httpContext.Items[ErrorFieldConstants.ModelStateErrors]!;
                 errors = data.ToDictionary(
                     kvp => kvp.Key,
                     kvp =>
@@ -47,11 +47,11 @@ public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
                 );
             }
             // Map Errors Correctly for Fluent Validation Errors
-            else if (httpContext.Items.ContainsKey(ErrorConstants.FluentValidationErrors))
+            else if (httpContext.Items.ContainsKey(ErrorFieldConstants.FluentValidationErrors))
             {
                 errors =
                     (IDictionary<string, string[]>)
-                        httpContext.Items[ErrorConstants.FluentValidationErrors]!;
+                        httpContext.Items[ErrorFieldConstants.FluentValidationErrors]!;
             }
 
             await httpContext.Response.WriteAsync(
