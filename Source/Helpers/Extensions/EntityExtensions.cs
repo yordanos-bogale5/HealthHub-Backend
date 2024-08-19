@@ -109,5 +109,26 @@ namespace HealthHub.Source.Helpers.Extensions
                 ProfilePicture = d.User.ProfilePicture ?? ""
             };
         }
+
+        public static PatientDto ToPatientDto(this Patient patient)
+        {
+            return new PatientDto
+            {
+                UserId = patient.UserId,
+                PatientId = patient.PatientId,
+                FirstName = patient.User.FirstName,
+                LastName = patient.User.LastName,
+                Email = patient.User.Email,
+                IsEmailVerified = patient.User.IsEmailVerified,
+                Phone = patient.User.Phone,
+                Gender = patient.User.Gender,
+                DateOfBirth = patient.User.DateOfBirth,
+                Address = patient.User.Address,
+                EmergencyContactName = patient.EmergencyContactName ?? "",
+                EmergencyContactPhone = patient.EmergencyContactPhone ?? "",
+                MedicalHistory = patient.MedicalHistory ?? "",
+                ProfilePicture = patient.User.ProfilePicture ?? "",
+            };
+        }
     }
 }
