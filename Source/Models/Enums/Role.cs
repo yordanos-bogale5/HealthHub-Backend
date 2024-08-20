@@ -1,6 +1,5 @@
 namespace HealthHub.Source.Models.Enums;
-public enum Role
-{
+public enum Role {
   Admin,
   Patient,
   Doctor

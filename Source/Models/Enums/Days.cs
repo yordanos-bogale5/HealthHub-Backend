@@ -1,6 +1,5 @@
 namespace HealthHub.Source.Models.Enums;
-public enum Days
-{
+public enum Days {
   Sunday,
   Monday,
   Tuesday,

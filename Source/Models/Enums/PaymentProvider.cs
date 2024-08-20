@@ -1,5 +1,4 @@
 namespace HealthHub.Source.Models.Enums;
-public enum PaymentProvider
-{
+public enum PaymentProvider {
   Chapa
 }

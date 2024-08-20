@@ -1,6 +1,5 @@
 namespace HealthHub.Source.Models.Enums;
-public enum PaymentStatus
-{
+public enum PaymentStatus {
   Pending,
   Success,
   Failed

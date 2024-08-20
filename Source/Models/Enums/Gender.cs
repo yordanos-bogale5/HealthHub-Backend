@@ -1,7 +1,6 @@
 namespace HealthHub.Source.Models.Enums;
 
-public enum Gender
-{
+public enum Gender {
   Male,
   Female
 }

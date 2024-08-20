@@ -1,6 +1,5 @@
 namespace HealthHub.Source.Models.Enums;
-public enum AppointmentStatus
-{
+public enum AppointmentStatus {
   Scheduled,
   Completed,
   Cancelled
