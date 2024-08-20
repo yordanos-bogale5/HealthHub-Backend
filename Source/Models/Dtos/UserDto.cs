@@ -79,7 +79,7 @@ public record RegisterUserDto
   // If the user is a doctor, they may/may-not specify the following
   // Note the following fields MUST be validated in the controller based on the Role field provided as payload
   public List<string> Specialities { get; set; } = [];
-  public List<Tuple<Days, TimeOnly, TimeOnly>> Availabilities { get; set; } = [];
+  public List<Availability> Availabilities { get; set; } = [];
   public string? Qualifications { get; set; }
   public string? Biography { get; set; }
   public DoctorStatus DoctorStatus { get; set; } = DoctorStatus.Active;
