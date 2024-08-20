@@ -69,6 +69,27 @@ public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
           .WithMessage("Doctor status must be a valid enum value.");
       }
     );
+
+    // Availabilities Validation
+    When(
+      u => u.Availabilities.Count > 0,
+      () =>
+      {
+        RuleFor(u => u.Availabilities)
+          .Must(availabilities => availabilities.Count > 0)
+          .WithMessage("At least one availability is required for doctors.");
+
+        RuleForEach(u => u.Availabilities)
+          .Must(avail => Enum.TryParse<Days>(avail.Day.ToString(), true, out _))
+          .WithMessage(
+            "Day must be valid! (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)"
+          )
+          .Must(avail => TimeOnly.TryParse(avail.StartTime.ToString(), out _))
+          .WithMessage("Start time must be valid! (HH:mm)")
+          .Must(avail => TimeOnly.TryParse(avail.EndTime.ToString(), out _))
+          .WithMessage("End time must be valid! (HH:mm)");
+      }
+    );
   }
 
   private bool BeAValidDateTimeString(string dateString)
