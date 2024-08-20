@@ -3,7 +3,8 @@ namespace HealthHub.Source.Config;
 public class AppConfig(IConfiguration configuration)
 {
   public string? Port { get; set; } = configuration["PORT"];
-  public bool? IsProduction { get; set; } = bool.TryParse(configuration["IS_PRODUCTION"], out var isProduction) ? isProduction : null;
+  public bool? IsProduction { get; set; } =
+    bool.TryParse(configuration["IS_PRODUCTION"], out var isProduction) ? isProduction : null;
   public string? DatabaseConnection { get; set; } = configuration["DB_CONNECTION"];
   public string? MailSenderEmail { get; set; } = configuration["MAIL_SENDER_EMAIL"];
   public string? MailSenderPassword { get; set; } = configuration["MAIL_SENDER_PASSWORD"];
