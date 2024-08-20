@@ -2,25 +2,24 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Blog
-{
-    public Guid BlogId { get; set; }
+public class Blog {
+  public Guid BlogId { get; set; }
 
-    [Required]
-    public Guid AuthorId { get; set; } // <<FK>>
+  [Required]
+  public Guid AuthorId { get; set; } // <<FK>>
 
-    [Required]
-    public required string Title { get; set; }
+  [Required]
+  public required string Title { get; set; }
 
-    [Required]
-    public required string Content { get; set; }
+  [Required]
+  public required string Content { get; set; }
 
-    public virtual required User Author { get; set; }
+  public virtual required User Author { get; set; }
 
-    public virtual ICollection<BlogComment> BlogComments { get; set; } = new HashSet<BlogComment>();
+  public virtual ICollection<BlogComment> BlogComments { get; set; } = new HashSet<BlogComment>();
 
-    public virtual ICollection<BlogLike> BlogLikes { get; set; } = new HashSet<BlogLike>();
+  public virtual ICollection<BlogLike> BlogLikes { get; set; } = new HashSet<BlogLike>();
 
-    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
