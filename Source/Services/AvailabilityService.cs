@@ -1,4 +1,5 @@
 using HealthHub.Source.Data;
+using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Responses;
@@ -13,7 +14,7 @@ public class AvailabilityService(ApplicationContext appContext, ILogger<Availabi
   /// <returns></returns>
   /// <exception cref="Exception"></exception>
   public async Task<ServiceResponse<List<DoctorAvailability>>> AddDoctorAvailabilityAsync(
-    List<Tuple<Days, TimeOnly, TimeOnly>> doctorAvailabilities,
+    List<Availability> doctorAvailabilities,
     Doctor doctor
   )
   {
@@ -39,7 +40,7 @@ public class AvailabilityService(ApplicationContext appContext, ILogger<Availabi
             {
               Doctor = doctor,
               DoctorId = doctor.DoctorId,
-              AvailableDay = Days.Monday,
+              AvailableDay = day,
               StartTime = new TimeOnly(10, 0),
               EndTime = new TimeOnly(17, 0)
             }
@@ -55,9 +56,9 @@ public class AvailabilityService(ApplicationContext appContext, ILogger<Availabi
             {
               Doctor = doctor,
               DoctorId = doctor.DoctorId,
-              AvailableDay = day,
-              StartTime = startTime,
-              EndTime = endTime
+              AvailableDay = day.ConvertToEnum<Days>(),
+              StartTime = TimeOnly.Parse(startTime),
+              EndTime = TimeOnly.Parse(endTime)
             }
           );
         }
