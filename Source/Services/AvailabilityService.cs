@@ -1,0 +1,83 @@
+using HealthHub.Source.Data;
+using HealthHub.Source.Models.Entities;
+using HealthHub.Source.Models.Enums;
+using HealthHub.Source.Models.Responses;
+
+public class AvailabilityService(ApplicationContext appContext, ILogger<AvailabilityService> logger)
+{
+  /// <summary>
+  /// Creates doctor availability entries given a List of tuple having (Day, StartTime, EndTime)
+  /// </summary>
+  /// <param name="doctorAvailabilities"></param>
+  /// <param name="doctor"></param>
+  /// <returns></returns>
+  /// <exception cref="Exception"></exception>
+  public async Task<ServiceResponse<List<DoctorAvailability>>> AddDoctorAvailabilityAsync(
+    List<Tuple<Days, TimeOnly, TimeOnly>> doctorAvailabilities,
+    Doctor doctor
+  )
+  {
+    try
+    {
+      List<DoctorAvailability> dbDoctorAvailabilities = [];
+
+      if (doctorAvailabilities.Count == 0)
+      {
+        foreach (
+          Days day in new List<Days>
+          {
+            Days.Monday,
+            Days.Tuesday,
+            Days.Wednesday,
+            Days.Thursday,
+            Days.Friday
+          }
+        )
+        {
+          dbDoctorAvailabilities.Add(
+            new DoctorAvailability
+            {
+              Doctor = doctor,
+              DoctorId = doctor.DoctorId,
+              AvailableDay = Days.Monday,
+              StartTime = new TimeOnly(10, 0),
+              EndTime = new TimeOnly(17, 0)
+            }
+          );
+        }
+      }
+      else
+      {
+        foreach (var (day, startTime, endTime) in doctorAvailabilities)
+        {
+          dbDoctorAvailabilities.Add(
+            new DoctorAvailability
+            {
+              Doctor = doctor,
+              DoctorId = doctor.DoctorId,
+              AvailableDay = day,
+              StartTime = startTime,
+              EndTime = endTime
+            }
+          );
+        }
+      }
+
+      await appContext.DoctorAvailabilities.AddRangeAsync(dbDoctorAvailabilities);
+      await appContext.SaveChangesAsync();
+
+      return new ServiceResponse<List<DoctorAvailability>>
+      {
+        Data = dbDoctorAvailabilities,
+        Message = "Doctor availabilities created successfully",
+        StatusCode = 204,
+        Success = true
+      };
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"An error occured when trying to add doctor availability {ex}");
+      throw new Exception("An error occured when trying to add doctor availability");
+    }
+  }
+}

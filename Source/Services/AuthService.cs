@@ -18,52 +18,45 @@ public class AuthService(
     EmailService emailService,
     RenderingService renderingService,
     ILogger<AuthService> logger
-)
-{
-    public async Task SendOtp(Guid userId)
-    {
-        try
-        {
-            // Generate OTP
-            var otp = new Random().Next(100000, 999999);
+) {
+  public async Task SendOtp(Guid userId) {
+    try {
+      // Generate OTP
+      var otp = new Random().Next(100000, 999999);
 
-            User? user = await appContext.Users.FindAsync(userId);
-            logger.LogInformation($"FIRSTNAME : {user?.FirstName}");
+      User? user = await appContext.Users.FindAsync(userId);
+      logger.LogInformation($"FIRSTNAME : {user?.FirstName}");
 
-            if (user == null)
-            {
-                logger.LogError("User with that id is not found!");
-                throw new ArgumentException("User with that id is not found!");
-            }
+      if (user == null) {
+        logger.LogError("User with that id is not found!");
+        throw new ArgumentException("User with that id is not found!");
+      }
 
-            appContext.Entry(user).Property(u => u.Otp).CurrentValue = otp;
+      appContext.Entry(user).Property(u => u.Otp).CurrentValue = otp;
 
-            // Generate the Email Template with appropriate model fields
-            var emailBody = await renderingService.RenderRazorPage(
-                "Source/Views/WelcomeEmail.cshtml",
-                new WelcomeEmailModel()
-                {
-                    Email = user.Email,
-                    Name = $"{user.FirstName} {user.LastName}",
-                    Otp = otp,
-                    SupportEmail = "healthhub.support@gmail.com"
-                }
-            );
+      // Generate the Email Template with appropriate model fields
+      var emailBody = await renderingService.RenderRazorPage(
+          "Source/Views/WelcomeEmail.cshtml",
+          new WelcomeEmailModel() {
+            Email = user.Email,
+            Name = $"{user.FirstName} {user.LastName}",
+            Otp = otp,
+            SupportEmail = "healthhub.support@gmail.com"
+          }
+      );
 
-            // Send an OTP message to the users email
-            await emailService.SendEmail(
-                user.Email,
-                $"{user.FirstName} {user.LastName}",
-                "Verify Registration",
-                emailBody
-            );
+      // Send an OTP message to the users email
+      await emailService.SendEmail(
+          user.Email,
+          $"{user.FirstName} {user.LastName}",
+          "Verify Registration",
+          emailBody
+      );
 
-            await appContext.SaveChangesAsync();
-        }
-        catch (System.Exception ex)
-        {
-            logger.LogError(ex, "Failed to send OTP");
-            throw new Exception("Internal Error", ex);
-        }
+      await appContext.SaveChangesAsync();
+    } catch (System.Exception ex) {
+      logger.LogError(ex, "Failed to send OTP");
+      throw new Exception("Internal Error", ex);
     }
+  }
 }
