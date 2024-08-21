@@ -14,7 +14,8 @@ namespace HealthHub.Source.Controllers;
 public class AppointmentController(
   AppointmentService appointmentService,
   ILogger<AppointmentController> logger,
-  IValidator<CreateAppointmentDto> createAppointmentDtoValidator
+  IValidator<CreateAppointmentDto> createAppointmentDtoValidator,
+  IValidator<EditAppointmentDto> editAppointmentDtoValidator
 ) : ControllerBase
 {
   /// <summary>
@@ -130,6 +131,47 @@ public class AppointmentController(
     catch (System.Exception ex)
     {
       logger.LogError($"Error occured trying to delete appointment {ex}");
+      throw;
+    }
+  }
+
+  [HttpPatch("{appointmentId}")]
+  public async Task<IActionResult> EditAppointment(
+    [FromBody] EditAppointmentDto editAppointmentDto,
+    [FromRoute] Guid appointmentId
+  )
+  {
+    try
+    {
+      if (!ModelState.IsValid)
+      {
+        HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
+        throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
+      }
+
+      // Model validation here
+      var fluentValidation = await editAppointmentDtoValidator.ValidateAsync(editAppointmentDto);
+
+      if (!fluentValidation.IsValid)
+      {
+        HttpContext.Items[ErrorFieldConstants.FluentValidationErrors] =
+          fluentValidation.ToFluentValidationErrorResult();
+        throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
+      }
+
+      // Past validation, proceed service invocation
+      var response = await appointmentService.EditAppointmentAsync(
+        editAppointmentDto,
+        appointmentId
+      );
+      if (!response.Success)
+        throw new Exception(response.Message);
+
+      return StatusCode(response.StatusCode, response);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"Error occured when trying to edit appointment {ex}");
       throw;
     }
   }
