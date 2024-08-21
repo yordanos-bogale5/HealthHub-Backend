@@ -1,7 +1,9 @@
+using FluentValidation;
 using HealthHub.Source.Config;
 using HealthHub.Source.Helpers.Constants;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Services;
+using HealthHub.Source.Validation.AppointmentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthHub.Source.Controllers;
@@ -9,19 +11,34 @@ namespace HealthHub.Source.Controllers;
 [ApiController]
 [Route("api/appointments")]
 public class AppointmentController(
-    UserService userService,
-    DoctorService doctorService,
-    AppointmentService appointmentService,
-    ILogger<UserController> logger,
-    AppConfig appConfig
-) : ControllerBase {
-  [HttpPost("create")]
+  AppointmentService appointmentService,
+  IValidator<CreateAppointmentDto> createAppointmentDtoValidator
+) : ControllerBase
+{
+  /// <summary>
+  /// Allows booking of appointment for patients and doctors
+  /// </summary>
+  /// <param name="createAppointmentDto"></param>
+  /// <returns></returns>
+  [HttpPost("book")]
   public async Task<IActionResult> CreateAppointment(
-      [FromBody] CreateAppointmentDto createAppointmentDto
-  ) {
-    try {
-      if (!ModelState.IsValid) {
+    [FromBody] CreateAppointmentDto createAppointmentDto
+  )
+  {
+    try
+    {
+      if (!ModelState.IsValid)
+      {
         HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
+        throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
+      }
+
+      var fluentValidation = createAppointmentDtoValidator.Validate(createAppointmentDto);
+
+      if (!fluentValidation.IsValid)
+      {
+        HttpContext.Items[ErrorFieldConstants.FluentValidationErrors] =
+          fluentValidation.ToFluentValidationErrorResult();
         throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
       }
 
@@ -29,7 +46,9 @@ public class AppointmentController(
       if (!response.Success)
         throw new BadHttpRequestException(response.Message!);
       return Ok(response);
-    } catch (System.Exception ex) {
+    }
+    catch (System.Exception ex)
+    {
       throw;
     }
   }
