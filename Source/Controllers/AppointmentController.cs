@@ -77,6 +77,53 @@ public class AppointmentController(
     }
   }
 
+  /// <summary>
+  /// Gets all appointments for a specific doctor
+  /// </summary>
+  /// <returns></returns>
+  [HttpGet("doctor/{doctorId}")]
+  public async Task<IActionResult> GetDoctorAppointments([FromRoute] Guid doctorId)
+  {
+    try
+    {
+      var response = await appointmentService.GetDoctorAppointmentsAsync(doctorId);
+      if (!response.Success)
+        throw new Exception(response.Message);
+      return StatusCode(response.StatusCode, response);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"An error occured while trying to get patient appointments {ex}");
+      throw new Exception("An error occured while trying to get doctor appointments", ex);
+    }
+  }
+
+  /// <summary>
+  /// Gets all appointments for a specific patient
+  /// </summary>
+  /// <returns></returns>
+  [HttpGet("patient/{patientId}")]
+  public async Task<IActionResult> GetPatientAppointments([FromRoute] Guid patientId)
+  {
+    try
+    {
+      var response = await appointmentService.GetPatientAppointmentsAsync(patientId);
+      if (!response.Success)
+        throw new Exception(response.Message);
+      return StatusCode(response.StatusCode, response);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"An error occured while trying to get patient appointments {ex}");
+      throw new Exception("An error occured while trying to get patient appointments", ex);
+    }
+  }
+
+  /// <summary>
+  /// Deletes an appointment from the database
+  /// </summary>
+  /// <param name="appointmentId"></param>
+  /// <returns></returns>
   [HttpDelete("{appointmentId}")]
   public async Task<IActionResult> DeleteAppointment([FromRoute] Guid appointmentId)
   {
