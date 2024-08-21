@@ -1,0 +1,7 @@
+@appointmentId = d8663145-0e94-40bc-9213-845d8cdcee85
+PATCH  {{apiHostUrl}}/api/appointments/{{appointmentId}}
+Content-Type: application/json
+
+{
+  "AppointmentTime" : "17:00"
+}
