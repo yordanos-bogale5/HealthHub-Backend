@@ -156,7 +156,7 @@ public class UserController(
       {
         return StatusCode(response.StatusCode, response.Message);
       }
-      return Ok(response);
+      return StatusCode(204, response);
     }
     catch (Exception ex)
     {
@@ -274,6 +274,10 @@ public class UserController(
     }
   }
 
+  /// <summary>
+  /// Retrieves all patients from the database
+  /// </summary>
+  /// <returns></returns>
   [HttpGet("patients/all")]
   public async Task<IActionResult> GetAllPatients()
   {
