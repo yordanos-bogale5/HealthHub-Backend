@@ -4,14 +4,16 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Dtos;
 
-public record CreateDoctorDto {
+public record CreateDoctorDto
+{
   public required User User { get; init; }
   public required string Qualifications { get; init; }
   public required string Biography { get; init; }
   public DoctorStatus DoctorStatus { get; init; } = DoctorStatus.Active;
 }
 
-public record DoctorDto {
+public record DoctorDto
+{
   public required Guid UserId { get; init; }
   public required Guid DoctorId { get; init; }
   public required string FirstName { get; init; }
