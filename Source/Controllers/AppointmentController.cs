@@ -2,6 +2,7 @@ using FluentValidation;
 using HealthHub.Source.Config;
 using HealthHub.Source.Helpers.Constants;
 using HealthHub.Source.Models.Dtos;
+using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services;
 using HealthHub.Source.Validation.AppointmentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ namespace HealthHub.Source.Controllers;
 [Route("api/appointments")]
 public class AppointmentController(
   AppointmentService appointmentService,
+  ILogger<AppointmentController> logger,
   IValidator<CreateAppointmentDto> createAppointmentDtoValidator
 ) : ControllerBase
 {
@@ -49,6 +51,46 @@ public class AppointmentController(
     }
     catch (System.Exception ex)
     {
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Gets all appointments from the database
+  /// </summary>
+  /// <returns></returns>
+  [HttpGet("all")]
+  public async Task<IActionResult> GetAllAppointments()
+  {
+    try
+    {
+      var response = await appointmentService.GetAllAppointmentsAsync();
+      if (!response.Success)
+        throw new Exception(response.Message);
+
+      return Ok(response);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"Error occured trying to get all appointments {ex}");
+      throw;
+    }
+  }
+
+  [HttpDelete("{appointmentId}")]
+  public async Task<IActionResult> DeleteAppointment([FromRoute] Guid appointmentId)
+  {
+    try
+    {
+      var response = await appointmentService.DeleteAppointmentAsync(appointmentId);
+      if (!response.Success)
+        throw new Exception(response.Message);
+
+      return StatusCode(response.StatusCode, response);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"Error occured trying to delete appointment {ex}");
       throw;
     }
   }
