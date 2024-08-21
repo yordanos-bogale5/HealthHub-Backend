@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Dtos;
@@ -32,10 +33,9 @@ public record CreateAppointmentDto
 
 public record AppointmentDto
 {
-  // public required PatientDto Patient { get; init; }
-  // public required DoctorDto Doctor { get; init; }
-  public required Guid PatientId { get; init; }
-  public required Guid DoctorId { get; init; }
+  public required Guid AppointmentId { get; init; }
+  public PatientDto? Patient { get; init; }
+  public DoctorDto? Doctor { get; init; }
   public required DateTime AppointmentDate { get; init; }
   public required TimeOnly AppointmentTime { get; init; }
   public required AppointmentType AppointmentType { get; init; }
