@@ -3,6 +3,7 @@ using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Responses;
+using Microsoft.EntityFrameworkCore;
 
 public class AvailabilityService(ApplicationContext appContext, ILogger<AvailabilityService> logger)
 {
@@ -79,6 +80,29 @@ public class AvailabilityService(ApplicationContext appContext, ILogger<Availabi
     {
       logger.LogError($"An error occured when trying to add doctor availability {ex}");
       throw new Exception("An error occured when trying to add doctor availability");
+    }
+  }
+
+  public async Task<bool> CheckDoctorAvailabilityAsync(
+    Guid doctorId,
+    Days appointmentDay,
+    TimeOnly appointmentTime,
+    TimeSpan appointmentTimeSpan
+  )
+  {
+    try
+    {
+      return await appContext.DoctorAvailabilities.AnyAsync(da =>
+        da.DoctorId == doctorId
+        && da.AvailableDay == appointmentDay
+        && da.StartTime <= appointmentTime
+        && appointmentTime.Add(appointmentTimeSpan) <= da.EndTime
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: Failed to Check doctor availability");
+      throw;
     }
   }
 }
