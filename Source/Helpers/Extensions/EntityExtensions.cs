@@ -84,8 +84,10 @@ namespace HealthHub.Source.Helpers.Extensions
       return new CreateAdminDto { User = user };
     }
 
-    public static DoctorDto ToDoctorDto(this Doctor d)
+    public static DoctorDto? ToDoctorDto(this Doctor d)
     {
+      if (d.User == null || d.DoctorSpecialities == null)
+        return null;
       return new DoctorDto
       {
         UserId = d.UserId,
@@ -106,8 +108,10 @@ namespace HealthHub.Source.Helpers.Extensions
       };
     }
 
-    public static PatientDto ToPatientDto(this Patient patient)
+    public static PatientDto? ToPatientDto(this Patient patient)
     {
+      if (patient.User == null)
+        return null;
       return new PatientDto
       {
         UserId = patient.UserId,
@@ -131,13 +135,20 @@ namespace HealthHub.Source.Helpers.Extensions
     /// Maps Appointment entity to AppointmentDto
     /// </summary>
     /// <param name="appointment">appointment</param>
+    /// <param name="doctor"></param>
+    /// <param name="patient"></param>
     /// <returns></returns>
-    public static AppointmentDto ToAppointmentDto(this Appointment appointment)
+    public static AppointmentDto ToAppointmentDto(
+      this Appointment appointment,
+      Doctor? doctor = null,
+      Patient? patient = null
+    )
     {
       return new AppointmentDto
       {
-        DoctorId = appointment.DoctorId,
-        PatientId = appointment.PatientId,
+        AppointmentId = appointment.AppointmentId,
+        Doctor = doctor?.ToDoctorDto(),
+        Patient = patient?.ToPatientDto(),
         AppointmentDate = appointment.AppointmentDate,
         AppointmentTime = appointment.AppointmentTime,
         AppointmentType = appointment.AppointmentType,
