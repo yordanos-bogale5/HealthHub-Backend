@@ -121,7 +121,7 @@ public class AppointmentService(
       {
         StatusCode = 201,
         Success = true,
-        Data = appointment.Entity.ToAppointmentDto(),
+        Data = appointment.Entity.ToAppointmentDto(doctor.Data, patient.Data),
         Message = "Appointment created successfully",
       };
     }
@@ -169,7 +169,13 @@ public class AppointmentService(
   {
     try
     {
-      var result = await appContext.Appointments.Select(a => a.ToAppointmentDto()).ToListAsync();
+      var result = await appContext
+        .Appointments.Include(a => a.Doctor)
+        .ThenInclude(d => d.User)
+        .Include(a => a.Patient)
+        .ThenInclude(p => p.User)
+        .Select(a => a.ToAppointmentDto(a.Doctor, a.Patient))
+        .ToListAsync();
 
       return new ServiceResponse<List<AppointmentDto>>(
         true,
@@ -207,6 +213,68 @@ public class AppointmentService(
     catch (System.Exception ex)
     {
       logger.LogError($"Error occured trying to delete appointment in service: {ex}");
+      throw;
+    }
+  }
+
+  public async Task<ServiceResponse<List<AppointmentDto>>> GetPatientAppointmentsAsync(
+    Guid patientId
+  )
+  {
+    try
+    {
+      if (!await doctorService.CheckDoctorExistsAsync(patientId))
+      {
+        return new ServiceResponse<List<AppointmentDto>>(false, 404, null, "Patient not found");
+      }
+
+      var result = await appContext
+        .Appointments.Where(ap => ap.PatientId == patientId)
+        .Include(ap => ap.Doctor)
+        .ThenInclude(d => d.User)
+        .Select(ap => ap.ToAppointmentDto(ap.Doctor, null))
+        .ToListAsync();
+
+      return new ServiceResponse<List<AppointmentDto>>(
+        true,
+        200,
+        result,
+        "Fetched all patient appointments."
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"An error occured while trying to get patient appointments {ex}");
+      throw;
+    }
+  }
+
+  public async Task<ServiceResponse<List<AppointmentDto>>> GetDoctorAppointmentsAsync(Guid doctorId)
+  {
+    try
+    {
+      if (!await doctorService.CheckDoctorExistsAsync(doctorId))
+      {
+        return new ServiceResponse<List<AppointmentDto>>(false, 404, null, "Doctor not found");
+      }
+
+      var result = await appContext
+        .Appointments.Where(ap => ap.DoctorId == doctorId)
+        .Include(ap => ap.Patient)
+        .ThenInclude(p => p.User)
+        .Select(ap => ap.ToAppointmentDto(null, ap.Patient))
+        .ToListAsync();
+
+      return new ServiceResponse<List<AppointmentDto>>(
+        true,
+        200,
+        result,
+        "Fetched all doctor appointments."
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"An error occured while trying to get doctor appointments {ex}");
       throw;
     }
   }
