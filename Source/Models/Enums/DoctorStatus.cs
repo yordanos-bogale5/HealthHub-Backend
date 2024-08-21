@@ -1,5 +1,7 @@
 namespace HealthHub.Source.Models.Enums;
-public enum DoctorStatus {
+
+public enum DoctorStatus
+{
   Active,
   Inactive,
   Onleave
