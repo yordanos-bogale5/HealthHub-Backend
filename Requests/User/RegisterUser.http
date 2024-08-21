@@ -2,32 +2,20 @@ POST {{apiHostUrl}}/api/users/register
 Content-Type: application/json
 
 {
-  "FirstName": "Patrick",
-  "LastName" : "Eisenhardt",
-  "Email"    : "dagtef@gmail.com",
+  "FirstName": "Ivalk",
+  "LastName" : "Kamilu",
+  "Email"    : "dagtef3@gmail.com",
   "Password" : "12345678Ab@",
   "Gender"   : "Male",
-  "DateOfBirth" : "2004-10-20",
-  "Role"     : "Doctor",
-  "Phone"    : "4151955090",
-  "Address"  : "Dublin",
-  "Biography" : "This is my biography",
-  "Qualifications" : "This is supposed to be a qualification!",
-  "Specialities": [
-    "Plastic Surgery", "Surgeon"
-  ],
-  "EmergencyContactName" : "John Doe",
-  "EmergencyContactPhone" : "12345678",
-  "Availabilities" : [
-    {
-      "Day" : "Monday",
-      "StartTime" : "08:00",
-      "EndTime" : "17:40"
-    },
-    {
-      "Day": "Tuesday",
-      "StartTime": "08:00",
-      "EndTime": "12:00"
-    }
-  ],
+  "DateOfBirth" : "2002-12-10",
+  "Role"     : "Patient",
+  "Phone"    : "41519550535",
+  "Address"  : "Budapest",
+  # "Biography" : "This is my biography",
+  # "Qualifications" : "This is supposed to be a qualification!",
+  # "Specialities": [
+  #   "Plastic Surgery", "Surgeon"
+  # ],
+  "EmergencyContactName" : "Jerry Doe",
+  "EmergencyContactPhone" : "12345678"
 }

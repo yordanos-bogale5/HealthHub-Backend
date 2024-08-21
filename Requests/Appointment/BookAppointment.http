@@ -1,0 +1,10 @@
+POST {{apiHostUrl}}/api/appointments/book
+Content-Type: application/json
+
+{
+  "DoctorId": "65B6CD9B-77E2-4B8B-BBE6-08DCC15FB211",
+  "PatientId": "07914252-5BC6-47F1-5B88-08DCC16013F6",
+  "AppointmentDate": "2025-12-22",
+  "AppointmentTime": "16:00",
+  "AppointmentType": "2"
+}
