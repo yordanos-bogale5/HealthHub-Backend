@@ -9,6 +9,15 @@ public static class StringExtensions
     return Regex.Replace(phone, @"[^0-9]+", "");
   }
 
+  public static Guid ToGuid(this string str)
+  {
+    if (Guid.TryParse(str, out Guid result))
+    {
+      return result;
+    }
+    throw new ArgumentException($"'{str}' is not a valid GUID.");
+  }
+
   public static T ConvertTo<T>(this string value)
   {
     try
