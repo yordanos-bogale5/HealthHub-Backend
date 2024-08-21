@@ -3,7 +3,8 @@ using HealthHub.Source.Attributes;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Review {
+public class Review
+{
   public Guid ReviewId { get; set; }
 
   [Required]

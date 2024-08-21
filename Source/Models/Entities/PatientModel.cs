@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Patient {
+public class Patient
+{
   public Guid PatientId { get; set; }
 
   [Required]

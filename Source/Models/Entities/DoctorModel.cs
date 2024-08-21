@@ -4,7 +4,8 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Doctor {
+public class Doctor
+{
   public Guid DoctorId { get; set; }
 
   [Required]
@@ -23,8 +24,8 @@ public class Doctor {
   public virtual required User User { get; set; } // <<NAV>>
 
   public virtual ICollection<DoctorSpeciality> DoctorSpecialities { get; set; } =
-      new HashSet<DoctorSpeciality>();
+    new HashSet<DoctorSpeciality>();
 
   public virtual ICollection<DoctorAvailability> DoctorAvailabilities { get; set; } =
-      new HashSet<DoctorAvailability>();
+    new HashSet<DoctorAvailability>();
 }

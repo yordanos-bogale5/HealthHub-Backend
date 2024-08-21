@@ -4,7 +4,8 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Message {
+public class Message
+{
   public Guid MessageId { get; set; } = Guid.NewGuid(); // <<PK>>
 
   [Required]
