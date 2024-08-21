@@ -6,5 +6,5 @@ Content-Type: application/json
   "PatientId": "07914252-5BC6-47F1-5B88-08DCC16013F6",
   "AppointmentDate": "2025-12-22",
   "AppointmentTime": "16:00",
-  "AppointmentType": "2"
+  "AppointmentType": "Online"
 }
