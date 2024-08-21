@@ -32,9 +32,11 @@ public record CreateAppointmentDto
 
 public record AppointmentDto
 {
-  public required PatientDto Patient { get; init; }
-  public required DoctorDto Doctor { get; init; }
-  public DateTime AppointmentDate { get; init; }
-  public TimeOnly AppointmentTime { get; init; }
-  public AppointmentType AppointmentType { get; init; }
+  // public required PatientDto Patient { get; init; }
+  // public required DoctorDto Doctor { get; init; }
+  public required Guid PatientId { get; init; }
+  public required Guid DoctorId { get; init; }
+  public required DateTime AppointmentDate { get; init; }
+  public required TimeOnly AppointmentTime { get; init; }
+  public required AppointmentType AppointmentType { get; init; }
 }
