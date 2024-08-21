@@ -3,24 +3,31 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Dtos;
 
+/// <summary>
+/// This is what the client sends to create an appointment
+/// </summary>
 public record CreateAppointmentDto
 {
-  [Required]
-  public Guid DoctorId { get; init; }
+  public required string DoctorId { get; init; }
+  public required string PatientId { get; init; }
+  public required string AppointmentDate { get; init; }
+  public required string AppointmentTime { get; init; }
+  public required string AppointmentType { get; init; }
 
-  [Required]
-  public Guid PatientId { get; init; }
-
-  [Required]
-  [DataType(DataType.Date)]
-  [NotPastDate]
-  public DateTime AppointmentDate { get; init; }
-
-  [Required]
-  public TimeOnly AppointmentTime { get; init; }
-
-  [Required]
-  public AppointmentType AppointmentType { get; init; }
+  public void Deconstruct(
+    out string doctorId,
+    out string patientId,
+    out string appointmentDate,
+    out string appointmentTime,
+    out string appointmentType
+  )
+  {
+    doctorId = DoctorId;
+    patientId = PatientId;
+    appointmentDate = AppointmentDate;
+    appointmentTime = AppointmentTime;
+    appointmentType = AppointmentType;
+  }
 }
 
 public record AppointmentDto
