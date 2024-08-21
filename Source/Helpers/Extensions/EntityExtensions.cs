@@ -126,5 +126,28 @@ namespace HealthHub.Source.Helpers.Extensions
         ProfilePicture = patient.User.ProfilePicture ?? "",
       };
     }
+
+    /// <summary>
+    /// Maps Appointment entity to AppointmentDto
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <param name="doctor"></param>
+    /// <param name="patient"></param>
+    /// <returns></returns>
+    public static AppointmentDto ToAppointmentDto(
+      this Appointment appointment,
+      Doctor doctor,
+      Patient patient
+    )
+    {
+      return new AppointmentDto
+      {
+        Doctor = doctor.ToDoctorDto(),
+        Patient = patient.ToPatientDto(),
+        AppointmentDate = appointment.AppointmentDate,
+        AppointmentTime = appointment.AppointmentTime,
+        AppointmentType = appointment.AppointmentType,
+      };
+    }
   }
 }
