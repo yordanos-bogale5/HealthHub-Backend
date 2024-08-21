@@ -78,4 +78,18 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
       throw;
     }
   }
+
+  public async Task<bool> CheckPatientExistsAsync(Guid patientId)
+  {
+    try
+    {
+      var patient = await appContext.Patients.FindAsync(patientId);
+      return patient != null;
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"Failed to check if patient exists {ex}");
+      throw;
+    }
+  }
 }
