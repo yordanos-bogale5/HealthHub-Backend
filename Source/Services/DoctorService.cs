@@ -157,4 +157,23 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
       throw;
     }
   }
+
+  /// <summary>
+  /// Checks if a doctor exists
+  /// </summary>
+  /// <param name="doctorId"></param>
+  /// <returns>True if doctor exists, otherwise False </returns>
+  public async Task<bool> CheckDoctorExistsAsync(Guid doctorId)
+  {
+    try
+    {
+      var doctor = await appContext.Doctors.FindAsync(doctorId);
+      return doctor != null;
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"Failed to check if doctor exists {ex}");
+      throw;
+    }
+  }
 }
