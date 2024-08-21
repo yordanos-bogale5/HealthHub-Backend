@@ -121,7 +121,7 @@ public class AppointmentService(
       {
         StatusCode = 201,
         Success = true,
-        Data = appointment.Entity.ToAppointmentDto(doctor.Data, patient.Data),
+        Data = appointment.Entity.ToAppointmentDto(),
         Message = "Appointment created successfully",
       };
     }
@@ -161,6 +161,52 @@ public class AppointmentService(
     catch (Exception ex)
     {
       logger.LogError(ex, "Failed to check appointment availability");
+      throw;
+    }
+  }
+
+  public async Task<ServiceResponse<List<AppointmentDto>>> GetAllAppointmentsAsync()
+  {
+    try
+    {
+      var result = await appContext.Appointments.Select(a => a.ToAppointmentDto()).ToListAsync();
+
+      return new ServiceResponse<List<AppointmentDto>>(
+        true,
+        200,
+        result,
+        "Fetched all appointments."
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"Failed to get all appointments: {ex} ");
+      throw;
+    }
+  }
+
+  public async Task<ServiceResponse> DeleteAppointmentAsync(Guid appointmentId)
+  {
+    try
+    {
+      var appointment = await appContext.Appointments.FirstOrDefaultAsync(app =>
+        app.AppointmentId == appointmentId
+      );
+
+      if (appointment == null)
+      {
+        throw new KeyNotFoundException("Appointment not found");
+      }
+
+      appContext.Remove(appointment);
+
+      await appContext.SaveChangesAsync();
+
+      return new ServiceResponse(true, 204, "Appointment deleted successfully");
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"Error occured trying to delete appointment in service: {ex}");
       throw;
     }
   }
