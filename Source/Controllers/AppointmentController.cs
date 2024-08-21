@@ -45,9 +45,8 @@ public class AppointmentController(
       }
 
       var response = await appointmentService.CreateAppointmentAsync(createAppointmentDto);
-      if (!response.Success)
-        throw new BadHttpRequestException(response.Message!);
-      return Ok(response);
+
+      return StatusCode(response.StatusCode, response);
     }
     catch (System.Exception ex)
     {
@@ -65,10 +64,7 @@ public class AppointmentController(
     try
     {
       var response = await appointmentService.GetAllAppointmentsAsync();
-      if (!response.Success)
-        throw new Exception(response.Message);
-
-      return Ok(response);
+      return StatusCode(response.StatusCode, response);
     }
     catch (System.Exception ex)
     {
@@ -87,8 +83,6 @@ public class AppointmentController(
     try
     {
       var response = await appointmentService.GetDoctorAppointmentsAsync(doctorId);
-      if (!response.Success)
-        throw new Exception(response.Message);
       return StatusCode(response.StatusCode, response);
     }
     catch (System.Exception ex)
@@ -108,8 +102,6 @@ public class AppointmentController(
     try
     {
       var response = await appointmentService.GetPatientAppointmentsAsync(patientId);
-      if (!response.Success)
-        throw new Exception(response.Message);
       return StatusCode(response.StatusCode, response);
     }
     catch (System.Exception ex)
