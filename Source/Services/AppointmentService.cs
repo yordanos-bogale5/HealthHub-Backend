@@ -18,8 +18,7 @@ public class AppointmentService(
 )
 {
   public async Task<ServiceResponse<AppointmentDto>> CreateAppointmentAsync(
-    CreateAppointmentDto createAppointmentDto,
-    int appointmentTimePeriod = 30 // Change if business logic changes
+    CreateAppointmentDto createAppointmentDto
   )
   {
     try
@@ -54,14 +53,12 @@ public class AppointmentService(
 
       DateTime appointmentDate = createAppointmentDto.AppointmentDate.ConvertTo<DateTime>();
       TimeOnly appointmentTime = TimeOnly.Parse(createAppointmentDto.AppointmentTime);
+      TimeSpan appointmentTimeSpan = TimeSpan.Parse(createAppointmentDto.AppointmentTimeSpan);
 
       AppointmentType appointmentType =
         createAppointmentDto.AppointmentType.ConvertToEnum<AppointmentType>();
 
       Days appointmentDay = appointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<Days>();
-
-      // This is the time period for each appointment
-      TimeSpan appointmentTimeSpan = TimeSpan.FromMinutes(appointmentTimePeriod);
 
       // Check if the doctor is free at that day and time (Check Doctor Availability Table)
       bool isDoctorAvail = await availabilityService.CheckDoctorAvailabilityAsync(
@@ -86,8 +83,7 @@ public class AppointmentService(
       isDoctorAvail = await CheckAppointmentAvailabilityAsync(
         doctorId,
         appointmentDate,
-        appointmentTime,
-        appointmentTimeSpan
+        appointmentTime
       );
 
       if (!isDoctorAvail)
@@ -138,24 +134,21 @@ public class AppointmentService(
   /// <param name="doctorId">The ID of the doctor whose appointment availability is being checked.</param>
   /// <param name="newAppointmentDate"></param>
   /// <param name="newAppointmentStartTime"></param>
-  /// <param name="appointmentTimeSpan"></param>
   /// <returns>True if the appointment slot is available (i.e., no appointment exists for that doctor, date, and time); otherwise, false.</returns>
   public async Task<bool> CheckAppointmentAvailabilityAsync(
     Guid doctorId,
     DateTime newAppointmentDate,
-    TimeOnly newAppointmentStartTime,
-    TimeSpan appointmentTimeSpan
+    TimeOnly newAppointmentStartTime
   )
   {
     try
     {
-      TimeOnly newAppointmentEndTime = newAppointmentStartTime.Add(appointmentTimeSpan);
       var result = await appContext.Appointments.ToListAsync();
       return !result.Any(app =>
         app.DoctorId == doctorId
         && app.AppointmentDate == newAppointmentDate
-        && newAppointmentStartTime < app.AppointmentTime.Add(appointmentTimeSpan)
-        && newAppointmentEndTime > app.AppointmentTime
+        && newAppointmentStartTime < app.AppointmentTime.Add(app.AppointmentTimeSpan)
+        && newAppointmentStartTime.Add(app.AppointmentTimeSpan) > app.AppointmentTime
       );
     }
     catch (Exception ex)
@@ -223,7 +216,7 @@ public class AppointmentService(
   {
     try
     {
-      if (!await doctorService.CheckDoctorExistsAsync(patientId))
+      if (!await patientService.CheckPatientExistsAsync(patientId))
       {
         return new ServiceResponse<List<AppointmentDto>>(false, 404, null, "Patient not found");
       }
@@ -275,6 +268,120 @@ public class AppointmentService(
     catch (System.Exception ex)
     {
       logger.LogError($"An error occured while trying to get doctor appointments {ex}");
+      throw;
+    }
+  }
+
+  public async Task<ServiceResponse<AppointmentDto>> EditAppointmentAsync(
+    EditAppointmentDto editAppointmentDto,
+    Guid appointmentId
+  )
+  {
+    try
+    {
+      // Retrieve the appointment
+      var appointment = await appContext.Appointments.FirstOrDefaultAsync(ap =>
+        ap.AppointmentId == appointmentId
+      );
+
+      // Check if the appointment exists
+      if (appointment == null)
+      {
+        return new ServiceResponse<AppointmentDto>(
+          false,
+          404,
+          null,
+          "Appointment with the specified id not found"
+        );
+      }
+
+      var doctorId = editAppointmentDto.DoctorId?.ToGuid();
+      var appointmentDate = editAppointmentDto.AppointmentDate?.ConvertTo<DateTime>();
+      Days? appointmentDay = appointmentDate?.DayOfWeek.GetDisplayName().ConvertToEnum<Days>();
+      var appointmentTime = TimeOnly.TryParse(editAppointmentDto.AppointmentTime, out var appTime)
+        ? appTime
+        : (TimeOnly?)null;
+      var appointmentType = editAppointmentDto.AppointmentType?.ConvertTo<AppointmentType>();
+
+      if (doctorId != null)
+      {
+        // Check if a doctor with the doctorId exists
+        if (!await doctorService.CheckDoctorExistsAsync(doctorId.Value))
+        {
+          return new ServiceResponse<AppointmentDto>(
+            false,
+            404,
+            null,
+            "Doctor with the specified id not found"
+          );
+        }
+
+        appointment.DoctorId = doctorId.Value;
+      }
+
+      // No need to check this part if both appointmentDate and appointmentTime aren't provided because we know its already valid if its as it is
+      if (!(appointmentDate == null && appointmentTime == null))
+      {
+        bool appointmentAvailability =
+          await CheckAppointmentAvailabilityAsync(
+            doctorId ?? appointment.DoctorId,
+            appointmentDate ?? appointment.AppointmentDate,
+            appointmentTime ?? appointment.AppointmentTime
+          )
+          || await availabilityService.CheckDoctorAvailabilityAsync(
+            doctorId ?? appointment.DoctorId,
+            appointmentDay
+              ?? appointment.AppointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<Days>(),
+            appointmentTime ?? appointment.AppointmentTime,
+            appointment.AppointmentTimeSpan
+          );
+
+        if (!appointmentAvailability)
+        {
+          return new ServiceResponse<AppointmentDto>(
+            false,
+            400,
+            null,
+            "Doctor is not available at that day or time."
+          );
+        }
+      }
+
+      if (appointmentDate != null)
+        appointment.AppointmentDate = appointmentDate.Value;
+
+      if (appointmentTime != null)
+        appointment.AppointmentTime = appointmentTime.Value;
+
+      if (appointmentType != null)
+        appointment.AppointmentType = appointmentType.Value;
+
+      await appContext.SaveChangesAsync(); // Save the updates
+
+      return new ServiceResponse<AppointmentDto>
+      {
+        StatusCode = 200,
+        Success = true,
+        Data = appointment.ToAppointmentDto(appointment.Doctor, appointment.Patient),
+        Message = "Appointment edited successfully"
+      };
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"An error occured while trying to edit appointment {ex}");
+      throw;
+    }
+  }
+
+  public async Task<bool> CheckAppointmentExistsAsync(Guid appointmentId)
+  {
+    try
+    {
+      return await appContext.Appointments.AnyAsync(ap => ap.AppointmentId == appointmentId);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"An error occured while trying to check if appointment exists {ex}");
       throw;
     }
   }
