@@ -92,7 +92,8 @@ public class AvailabilityService(ApplicationContext appContext, ILogger<Availabi
   {
     try
     {
-      return await appContext.DoctorAvailabilities.AnyAsync(da =>
+      var result = await appContext.DoctorAvailabilities.ToListAsync();
+      return result.Any(da =>
         da.DoctorId == doctorId
         && da.AvailableDay == appointmentDay
         && da.StartTime <= appointmentTime
