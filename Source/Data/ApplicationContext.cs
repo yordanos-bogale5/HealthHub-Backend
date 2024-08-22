@@ -1,4 +1,5 @@
 using HealthHub.Source.Models.Entities;
+using HealthHub.Source.Services;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Crypto.Signers;
 
@@ -144,6 +145,20 @@ internal static class EntityConfiguration
       .HasOne(da => da.Doctor)
       .WithMany(d => d.DoctorAvailabilities)
       .HasForeignKey(da => da.DoctorId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    // Doctor Appointments
+    mb.Entity<Appointment>()
+      .HasOne(a => a.Doctor)
+      .WithMany(d => d.Appointments)
+      .HasForeignKey(a => a.DoctorId)
+      .OnDelete(DeleteBehavior.Restrict);
+
+    // Patient Appointments
+    mb.Entity<Appointment>()
+      .HasOne(a => a.Patient)
+      .WithMany(p => p.Appointments)
+      .HasForeignKey(a => a.PatientId)
       .OnDelete(DeleteBehavior.Cascade);
   }
 
