@@ -20,6 +20,9 @@ public class Appointment
   public TimeOnly AppointmentTime { get; set; }
 
   [Required]
+  public TimeSpan AppointmentTimeSpan { get; set; } = TimeSpan.FromMinutes(30);
+
+  [Required]
   public AppointmentType AppointmentType { get; set; }
   public AppointmentStatus Status { get; set; } = AppointmentStatus.Scheduled;
 
