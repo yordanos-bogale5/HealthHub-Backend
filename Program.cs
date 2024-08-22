@@ -6,6 +6,7 @@ using HealthHub.Source.Data;
 using HealthHub.Source.Filters.Error;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Services;
+using HealthHub.Source.Validation;
 using HealthHub.Source.Validation.AppointmentValidation;
 using HealthHub.Source.Validation.UserValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -110,6 +111,7 @@ var builder = WebApplication.CreateBuilder(args);
   // Register Validation Services
   builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
   builder.Services.AddValidatorsFromAssemblyContaining<CreateAppointmentDtoValidator>();
+  builder.Services.AddValidatorsFromAssemblyContaining<EditAppointmentDtoValidator>();
 
   // Register the App Configuration Service
   builder.Services.AddSingleton<AppConfig>(provider =>
