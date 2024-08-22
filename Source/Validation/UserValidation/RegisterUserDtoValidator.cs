@@ -15,21 +15,21 @@ public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
     RuleFor(u => u.DateOfBirth)
       .NotEmpty()
       .WithMessage("Date of birth is required.")
-      .Must(BeAValidDateTimeString)
+      .Must(ValidationHelper.BeAValidDateTimeString)
       .WithMessage("DateOfBirth must be a valid DateTime (yyyy-MM-dd)")
-      .Must(BeAtLeast18YearsOldFromString)
+      .Must(ValidationHelper.BeAtLeast18YearsOldFromString)
       .WithMessage("User must be at least 18 years old.");
 
     RuleFor(u => u.Role)
       .NotEmpty()
       .WithMessage("Role field is required")
-      .Must(BeValidRole)
+      .Must(ValidationHelper.BeValidRole)
       .WithMessage("Role must be either Patient, Doctor, or Admin");
 
     RuleFor(u => u.Gender)
       .NotEmpty()
       .WithMessage("Gender field is required")
-      .Must(BeValidGender)
+      .Must(ValidationHelper.BeValidGender)
       .WithMessage("Gender must be either Male or Female");
 
     When(
@@ -90,34 +90,5 @@ public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
           .WithMessage("End time must be valid! (HH:mm)");
       }
     );
-  }
-
-  private bool BeAValidDateTimeString(string dateString)
-  {
-    return DateTime.TryParse(dateString, out _);
-  }
-
-  private bool BeAtLeast18YearsOldFromString(string dateString)
-  {
-    if (!DateTime.TryParse(dateString, out var date))
-      return false;
-
-    var today = DateTime.Today;
-    var age = today.Year - date.Year;
-
-    if (date > today.AddYears(-age))
-      age--;
-
-    return age >= 18;
-  }
-
-  private bool BeValidRole(string roleString)
-  {
-    return Enum.TryParse<Role>(roleString, true, out _);
-  }
-
-  public bool BeValidGender(string genderString)
-  {
-    return Enum.TryParse<Gender>(genderString, true, out _);
   }
 }
