@@ -13,7 +13,7 @@ public record CreateAppointmentDto
   public required string PatientId { get; init; }
   public required string AppointmentDate { get; init; }
   public required string AppointmentTime { get; init; }
-  public required string AppointmentTimeSpan { get; init; }
+  public string? AppointmentTimeSpan { get; init; }
   public required string AppointmentType { get; init; }
 
   public void Deconstruct(
