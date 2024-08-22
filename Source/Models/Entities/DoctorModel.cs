@@ -28,4 +28,6 @@ public class Doctor
 
   public virtual ICollection<DoctorAvailability> DoctorAvailabilities { get; set; } =
     new HashSet<DoctorAvailability>();
+
+  public virtual ICollection<Appointment> Appointments { get; set; } = new HashSet<Appointment>();
 }

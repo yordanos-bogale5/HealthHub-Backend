@@ -14,4 +14,5 @@ public class Patient
   public string? EmergencyContactPhone { get; set; }
 
   public virtual required User User { get; set; }
+  public virtual ICollection<Appointment> Appointments { get; set; } = new HashSet<Appointment>();
 }
