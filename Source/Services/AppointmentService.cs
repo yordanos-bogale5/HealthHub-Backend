@@ -53,12 +53,30 @@ public class AppointmentService(
 
       DateTime appointmentDate = createAppointmentDto.AppointmentDate.ConvertTo<DateTime>();
       TimeOnly appointmentTime = TimeOnly.Parse(createAppointmentDto.AppointmentTime);
-      TimeSpan appointmentTimeSpan = TimeSpan.Parse(createAppointmentDto.AppointmentTimeSpan);
 
       AppointmentType appointmentType =
         createAppointmentDto.AppointmentType.ConvertToEnum<AppointmentType>();
 
       Days appointmentDay = appointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<Days>();
+
+      // Create the appointment
+      Appointment appointmentData = new Appointment
+      {
+        DoctorId = doctorId,
+        PatientId = patientId,
+        AppointmentDate = appointmentDate,
+        AppointmentTime = appointmentTime,
+        AppointmentType = appointmentType,
+        Doctor = doctor.Data,
+        Patient = patient.Data
+      };
+
+      TimeSpan appointmentTimeSpan = TimeSpan.TryParse(
+        createAppointmentDto.AppointmentTimeSpan,
+        out var timeSpan
+      )
+        ? timeSpan
+        : appointmentData.AppointmentTimeSpan;
 
       // Check if the doctor is free at that day and time (Check Doctor Availability Table)
       bool isDoctorAvail = await availabilityService.CheckDoctorAvailabilityAsync(
@@ -96,18 +114,6 @@ public class AppointmentService(
           Message = "Doctor has an appointment at that day and time.",
         };
       }
-
-      // Create the appointment
-      Appointment appointmentData = new Appointment
-      {
-        DoctorId = doctorId,
-        PatientId = patientId,
-        AppointmentDate = appointmentDate,
-        AppointmentTime = appointmentTime,
-        AppointmentType = appointmentType,
-        Doctor = doctor.Data,
-        Patient = patient.Data
-      };
 
       var appointment = await appContext.Appointments.AddAsync(appointmentData);
 
@@ -319,32 +325,28 @@ public class AppointmentService(
         appointment.DoctorId = doctorId.Value;
       }
 
-      // No need to check this part if both appointmentDate and appointmentTime aren't provided because we know its already valid if its as it is
-      if (!(appointmentDate == null && appointmentTime == null))
-      {
-        bool appointmentAvailability =
-          await CheckAppointmentAvailabilityAsync(
-            doctorId ?? appointment.DoctorId,
-            appointmentDate ?? appointment.AppointmentDate,
-            appointmentTime ?? appointment.AppointmentTime
-          )
-          || await availabilityService.CheckDoctorAvailabilityAsync(
-            doctorId ?? appointment.DoctorId,
-            appointmentDay
-              ?? appointment.AppointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<Days>(),
-            appointmentTime ?? appointment.AppointmentTime,
-            appointment.AppointmentTimeSpan
-          );
+      bool isAppointmentAvailable = await CheckAppointmentAvailabilityAsync(
+        doctorId ?? appointment.DoctorId,
+        appointmentDate ?? appointment.AppointmentDate,
+        appointmentTime ?? appointment.AppointmentTime
+      );
 
-        if (!appointmentAvailability)
-        {
-          return new ServiceResponse<AppointmentDto>(
-            false,
-            400,
-            null,
-            "Doctor is not available at that day or time."
-          );
-        }
+      bool isDoctorAvailable = await availabilityService.CheckDoctorAvailabilityAsync(
+        doctorId ?? appointment.DoctorId,
+        appointmentDay
+          ?? appointment.AppointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<Days>(),
+        appointmentTime ?? appointment.AppointmentTime,
+        appointment.AppointmentTimeSpan
+      );
+
+      if (!(isAppointmentAvailable && isDoctorAvailable))
+      {
+        return new ServiceResponse<AppointmentDto>(
+          false,
+          400,
+          null,
+          "Doctor is not available at that day or time."
+        );
       }
 
       if (appointmentDate != null)
