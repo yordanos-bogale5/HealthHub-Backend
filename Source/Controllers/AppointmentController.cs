@@ -135,6 +135,12 @@ public class AppointmentController(
     }
   }
 
+  /// <summary>
+  /// Edits (Partial or Full Update) an appointment in the database
+  /// </summary>
+  /// <param name="editAppointmentDto"></param>
+  /// <param name="appointmentId"></param>
+  /// <returns></returns>
   [HttpPatch("{appointmentId}")]
   public async Task<IActionResult> EditAppointment(
     [FromBody] EditAppointmentDto editAppointmentDto,
