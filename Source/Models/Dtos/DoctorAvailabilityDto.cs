@@ -1,16 +1,17 @@
 using HealthHub.Source.Models.Enums;
+using HealthHub.Source.Models.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-public record DoctorAvailabilityDto
-{
-  public required Guid DoctorAvailabilityId { get; set; }
-  public required Guid DoctorId { get; set; }
-  public required Days AvailableDay { get; set; }
-  public required TimeOnly StartTime { get; set; }
-  public required TimeOnly EndTime { get; set; }
-}
+namespace HealthHub.Source.Models.Dtos;
 
 public record Availability
+{
+  public required Guid DoctorAvailabilityId { get; init; }
+  public required Days Day { get; init; }
+  public required List<TimeRange> AvailableTimes { get; init; }
+}
+
+public record AvailabilityDto
 {
   public required string Day { get; init; }
   public required string StartTime { get; init; }
