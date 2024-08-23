@@ -3,6 +3,7 @@ using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
+using HealthHub.Source.Models.Interfaces;
 using HealthHub.Source.Models.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Extensions;
@@ -384,6 +385,30 @@ public class AppointmentService(
     catch (System.Exception ex)
     {
       logger.LogError($"An error occured while trying to check if appointment exists {ex}");
+      throw;
+    }
+  }
+
+  public async Task<Dictionary<Days, List<TimeRange>>> GetDoctorAppointmentTimesAsync(Guid doctorId)
+  {
+    try
+    {
+      var docAppTimes = new Dictionary<Days, List<TimeRange>>();
+      await appContext
+        .Appointments.Where(ap => ap.DoctorId == doctorId)
+        .ForEachAsync(ap =>
+        {
+          Days day = ap.AppointmentDate.DayOfWeek.ToString().ConvertToEnum<Days>();
+          if (!docAppTimes.ContainsKey(day))
+            docAppTimes[day] = [];
+          docAppTimes[day]
+            .Add(new TimeRange(ap.AppointmentTime, ap.AppointmentTime.Add(ap.AppointmentTimeSpan)));
+        });
+      return docAppTimes;
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An Error occured trying to get doctor appointment times");
       throw;
     }
   }
