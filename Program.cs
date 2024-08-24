@@ -128,6 +128,7 @@ var builder = WebApplication.CreateBuilder(args);
 
   builder.Services.AddTransient<AppointmentService>();
   builder.Services.AddTransient<AvailabilityService>();
+  builder.Services.AddTransient<SchedulingService>();
 
   builder.Services.AddTransient<SpecialityService>();
   builder.Services.AddTransient<DoctorSpecialityService>();
