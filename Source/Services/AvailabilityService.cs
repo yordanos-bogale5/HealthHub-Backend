@@ -10,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 
 public class AvailabilityService(
   ApplicationContext appContext,
-  AppointmentService appointmentService,
+  SchedulingService schedulingService,
+  DoctorService doctorService,
   ILogger<AvailabilityService> logger
 )
 {
@@ -128,6 +129,16 @@ public class AvailabilityService(
   {
     try
     {
+      if (!await doctorService.CheckDoctorExistsAsync(doctorId))
+      {
+        return new ServiceResponse<Dictionary<Days, List<TimeRange>>>(
+          false,
+          404,
+          null,
+          "Doctor not found"
+        );
+      }
+
       var dayTimesMap = new Dictionary<Days, List<TimeRange>>();
 
       // Get doctor available days with start time and end time
@@ -156,8 +167,11 @@ public class AvailabilityService(
             Monday = [[10:00,17:00],[15:00,15:30],[15:30,16:00]]
           }
       */
+      Console.WriteLine($"This is doctor available days: \n\n {dayTimesMap.Count} \n\n");
 
-      var docAppTimes = await appointmentService.GetDoctorAppointmentTimesAsync(doctorId);
+      var docAppTimes = await schedulingService.GetDoctorAppointmentTimesAsync(doctorId);
+
+      Console.WriteLine($"This is doctor appointment times: \n\n {docAppTimes.Count} \n\n");
 
       // Write an algorithm that gives available remaining times for each day given the above inputs
       /*
@@ -174,6 +188,9 @@ public class AvailabilityService(
         foreach (TimeRange timeAvail in timeRangeAvail) // O(timeRangeAvail.Count)
         {
           TimeOnly startTime = timeAvail.StartTime;
+
+          if (!docAppTimes.ContainsKey(day))
+            continue;
 
           docAppTimes[day].Sort((a, b) => a.StartTime.CompareTo(b.StartTime)); // Sort the Time Array by the startTime in Ascending order
 
