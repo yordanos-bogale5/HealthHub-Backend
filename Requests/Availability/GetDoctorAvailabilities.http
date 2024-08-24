@@ -1,1 +1,1 @@
-GET {{apiHostUrl}}/api/availability/doctor
+GET {{apiHostUrl}}/api/availability/doctor/65b6cd9b-77e2-4b8b-bbe6-08dcc15fb211
