@@ -7,6 +7,7 @@ using HealthHub.Source.Models.Interfaces;
 using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.Tsp;
 
 public class AvailabilityService(
   ApplicationContext appContext,
@@ -171,6 +172,16 @@ public class AvailabilityService(
 
       var docAppTimes = await schedulingService.GetDoctorAppointmentTimesAsync(doctorId);
 
+      if (docAppTimes.Count == 0)
+      {
+        return new ServiceResponse<Dictionary<Days, List<TimeRange>>>(
+          true,
+          200,
+          null,
+          "The Doctor doesn't have any appointments"
+        );
+      }
+
       Console.WriteLine($"This is doctor appointment times: \n\n {docAppTimes.Count} \n\n");
 
       // Write an algorithm that gives available remaining times for each day given the above inputs
@@ -190,7 +201,10 @@ public class AvailabilityService(
           TimeOnly startTime = timeAvail.StartTime;
 
           if (!docAppTimes.ContainsKey(day))
+          {
+            result[day] = timeRangeAvail;
             continue;
+          }
 
           docAppTimes[day].Sort((a, b) => a.StartTime.CompareTo(b.StartTime)); // Sort the Time Array by the startTime in Ascending order
 
@@ -207,7 +221,10 @@ public class AvailabilityService(
 
             startTime = endTimeUnavail;
 
-            if (dayIndex == docAppTimes[day].Count - 1 && startTime != timeAvail.EndTime) { }
+            if (dayIndex == docAppTimes[day].Count - 1 && startTime != timeAvail.EndTime)
+            {
+              result[day].Add(new TimeRange(startTime, timeAvail.EndTime));
+            }
           }
         }
       }

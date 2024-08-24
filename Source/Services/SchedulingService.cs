@@ -12,6 +12,7 @@ public class SchedulingService(ApplicationContext appContext, ILogger<Scheduling
     try
     {
       var docAppTimes = new Dictionary<Days, List<TimeRange>>();
+
       var appointments = await appContext
         .Appointments.Where(ap => ap.DoctorId == doctorId)
         .ToListAsync();
@@ -21,7 +22,7 @@ public class SchedulingService(ApplicationContext appContext, ILogger<Scheduling
         Days day = ap.AppointmentDate.DayOfWeek.ToString().ConvertToEnum<Days>();
         if (!docAppTimes.ContainsKey(day))
           docAppTimes[day] = new List<TimeRange>();
-
+        Console.WriteLine(day);
         docAppTimes[day]
           .Add(new TimeRange(ap.AppointmentTime, ap.AppointmentTime.Add(ap.AppointmentTimeSpan)));
       }
