@@ -48,18 +48,19 @@ namespace HealthHub.Source.Helpers.Extensions
 
     public static ProfileDto ToProfileDto(this User user)
     {
-      return new ProfileDto(
-        user.UserId,
-        user.FirstName,
-        user.LastName,
-        user.Email,
-        user.ProfilePicture,
-        user.Phone,
-        user.Gender,
-        user.DateOfBirth,
-        user.Address,
-        user.Role
-      );
+      return new ProfileDto
+      {
+        UserId = user.UserId,
+        FirstName = user.FirstName,
+        LastName = user.LastName,
+        Email = user.Email,
+        ProfilePicture = user.ProfilePicture ?? "",
+        Phone = user.Phone,
+        Gender = user.Gender,
+        DateOfBirth = user.DateOfBirth,
+        Address = user.Address,
+        Role = user.Role
+      };
     }
 
     // Maps User entity to RegisterUserDto
