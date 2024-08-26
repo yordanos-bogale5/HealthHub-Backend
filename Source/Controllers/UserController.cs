@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
 using HealthHub.Source.Config;
@@ -30,7 +31,8 @@ public class UserController(
   PatientService patientService,
   ILogger<UserController> logger,
   AppConfig appConfig,
-  IValidator<RegisterUserDto> registerUserValidator
+  IValidator<RegisterUserDto> registerUserValidator,
+  IValidator<EditProfileDto> editProfileValidator
 ) : ControllerBase
 {
   /// <summary>
@@ -98,17 +100,30 @@ public class UserController(
         return StatusCode(response.StatusCode, response.Message);
       }
 
-      Response.Cookies.Append(
-        "access_token",
-        response.Data.AccessToken,
-        new CookieOptions
-        {
-          HttpOnly = true,
-          Secure = appConfig.IsProduction ?? false,
-          SameSite = SameSiteMode.None,
-          Expires = DateTime.Now.AddSeconds(response.Data.ExpiresIn)
-        }
-      );
+      var cookieOptions = new CookieOptions
+      {
+        HttpOnly = true,
+        Secure = appConfig.IsProduction ?? false,
+        SameSite = SameSiteMode.None,
+        Expires = DateTime.Now.AddSeconds(response.Data.ExpiresIn)
+      };
+
+      Response.Cookies.Append("access_token", response.Data.AccessToken, cookieOptions);
+
+      var profile = response.Data.Auth0ProfileDto;
+      Response.Cookies.Append("user_metadata", JsonSerializer.Serialize(profile), cookieOptions);
+
+      // foreach (
+      //   var field in profile
+      //     .GetType()
+      //     .GetProperties(
+      //       System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance
+      //     )
+      // )
+      // {
+      //   var value = field.GetValue(profile);
+      //   Response.Cookies.Append(field.Name, JsonSerializer.Serialize(value), cookieOptions);
+      // }
 
       return Ok(response);
     }
@@ -294,4 +309,33 @@ public class UserController(
       throw;
     }
   }
+
+  // [HttpPatch("{userId}/profile")]
+  // public async Task<IActionResult> EditProfile([FromBody] EditProfileDto editProfileDto)
+  // {
+  //   try
+  //   {
+  //     if (!ModelState.IsValid)
+  //     {
+  //       HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
+  //       throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
+  //     }
+
+  //     var validation = editProfileValidator.Validate(editProfileDto);
+  //     if (!validation.IsValid)
+  //     {
+  //       HttpContext.Items[ErrorFieldConstants.FluentValidationErrors] =
+  //         validation.ToFluentValidationErrorResult();
+  //       throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
+  //     }
+
+  //     var response = await userService.EditUserProfileAsync(editProfileDto);
+  //     return StatusCode(response.StatusCode, response);
+  //   }
+  //   catch (System.Exception ex)
+  //   {
+  //     logger.LogError($"{ex}: An error occured trying to update profile");
+  //     throw;
+  //   }
+  // }
 }
