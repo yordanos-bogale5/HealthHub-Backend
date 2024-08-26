@@ -263,7 +263,12 @@ public class UserService(
         throw new KeyNotFoundException("User with that email is not found");
       }
 
-      var auth0LoginDto = await auth0Service.LoginUserAsync(loginUserDto);
+      if (user.Auth0Id == null)
+      {
+        throw new KeyNotFoundException("Auth0Id is not found for user.");
+      }
+
+      var auth0LoginDto = await auth0Service.LoginUserAsync(loginUserDto, user.Auth0Id);
 
       logger.LogInformation($"Auth0 Login Dto: {auth0LoginDto}");
 
@@ -335,4 +340,6 @@ public class UserService(
       throw new Exception("Problem occured when getting profile.");
     }
   }
+
+  // public async Task<ProfileDto>
 }

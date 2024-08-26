@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Vf7q16Q/Sow=",
+  "dgSpecHash": "dd68tiUzv48=",
   "success": true,
-  "projectFilePath": "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
+  "projectFilePath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Dag Weg\\.nuget\\packages\\auth0.aspnetcore.authentication\\1.4.1\\auth0.aspnetcore.authentication.1.4.1.nupkg.sha512",
     "C:\\Users\\Dag Weg\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
