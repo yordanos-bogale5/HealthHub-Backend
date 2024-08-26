@@ -112,6 +112,7 @@ var builder = WebApplication.CreateBuilder(args);
   builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
   builder.Services.AddValidatorsFromAssemblyContaining<CreateAppointmentDtoValidator>();
   builder.Services.AddValidatorsFromAssemblyContaining<EditAppointmentDtoValidator>();
+  builder.Services.AddValidatorsFromAssemblyContaining<EditProfileDtoValidator>();
 
   // Register the App Configuration Service
   builder.Services.AddSingleton<AppConfig>(provider =>
