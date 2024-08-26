@@ -1,10 +1,6 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
 using HealthHub.Source.Attributes;
 using HealthHub.Source.Models.Enums;
-using Newtonsoft.Json.Serialization;
 
 namespace HealthHub.Source.Models.Dtos;
 
@@ -21,18 +17,86 @@ public record UserDto
   public required string Address { get; set; }
 };
 
-public record ProfileDto(
-  Guid UserId,
-  string FirstName,
-  string LastName,
-  string Email,
-  string? ProfilePicture,
-  string Phone,
-  Gender Gender,
-  DateTime DateOfBirth,
-  string Address,
-  Role Role
-);
+public record ProfileDto
+{
+  public required Guid UserId { get; init; }
+  public required string FirstName { get; init; }
+  public required string LastName { get; init; }
+  public required string Email { get; init; }
+  public required string ProfilePicture { get; init; }
+  public required string Phone { get; init; }
+  public required Gender Gender { get; init; }
+  public required DateTime DateOfBirth { get; init; }
+  public required string Address { get; init; }
+  public required Role Role { get; init; }
+}
+
+public record Auth0ProfileDto
+{
+  public required string FirstName { get; init; }
+  public required string LastName { get; init; }
+  public required Role Role { get; init; }
+  public required string Phone { get; init; }
+  public required Gender Gender { get; init; }
+  public required string DateOfBirth { get; init; }
+}
+
+/// <summary>
+/// The patient user profile we return to the client when requested for
+/// </summary>
+public record PatientProfileDto : ProfileDto
+{
+  public required string MedicalHistory { get; init; }
+  public required string EmergencyContactName { get; init; }
+  public required string EmergencyContactPhone { get; init; }
+};
+
+/// <summary>
+/// The doctor user profile we return to the client when requested for
+/// </summary>
+public record DoctorProfileDto : ProfileDto
+{
+  public required List<string> Specialities { get; init; }
+  public required List<AvailabilityDto> Availabilities { get; init; }
+  public required string Qualifications { get; init; }
+  public required string Biography { get; init; }
+  public required DoctorStatus DoctorStatus { get; init; }
+};
+
+/// <summary>
+/// The payload we expect the client to provide to edit the profile information of a user
+/// </summary>
+public record EditProfileDto
+{
+  public string? FirstName { get; init; }
+  public string? LastName { get; init; }
+
+  [EmailAddress]
+  public string? Email { get; init; }
+  public string? ProfilePicture { get; init; }
+
+  [Phone]
+  public string? Phone { get; init; }
+
+  public string? Gender { get; init; }
+  public string? DateOfBirth { get; init; }
+  public string? Address { get; init; }
+  public string? Role { get; init; }
+
+  // If the user is a patient, they may/may-not specify the following
+  // Note the following fields MUST be validated in the controller based on the Role field provided as payload
+  public string? MedicalHistory { get; set; }
+  public string? EmergencyContactName { get; set; }
+  public string? EmergencyContactPhone { get; set; }
+
+  // If the user is a doctor, they may/may-not specify the following
+  // Note the following fields MUST be validated in the controller based on the Role field provided as payload
+  public List<string>? Specialities { get; set; }
+  public List<AvailabilityDto>? Availabilities { get; set; }
+  public string? Qualifications { get; set; }
+  public string? Biography { get; set; }
+  public DoctorStatus? DoctorStatus { get; set; }
+}
 
 /// <summary>
 /// This is what the client sends to register a user
@@ -98,7 +162,7 @@ public record Auth0UserDto(string UserId, string Profile, bool EmailVerified);
 /// </summary>
 /// <param name="AccessToken"></param>
 /// <param name="ExpiresIn"></param>
-public record Auth0LoginDto(string AccessToken, int ExpiresIn);
+public record Auth0LoginDto(string AccessToken, int ExpiresIn, Auth0ProfileDto Auth0ProfileDto);
 
 /// <summary>
 /// Login User Data Transfer Object. Sent from the client to the server for logging in a user. Used to validate client request upon hitting login endpoint.
