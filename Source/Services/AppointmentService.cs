@@ -217,6 +217,33 @@ public class AppointmentService(
     }
   }
 
+  public async Task DeleteAppointmentWhereUserId(Guid userId)
+  {
+    try
+    {
+      var appointments = await appContext
+        .Appointments.Include(ap => ap.Doctor)
+        .Include(ap => ap.Patient)
+        .Where(ap => ap.Doctor.UserId == userId || ap.Patient.UserId == userId)
+        .ToListAsync();
+
+      if (appointments.Count == 0)
+      {
+        logger.LogInformation("No appointments found for user with the specified id");
+        return;
+      }
+
+      appContext.RemoveRange(appointments);
+
+      await appContext.SaveChangesAsync();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"Error occured trying to delete appointment in service: {ex}");
+      throw;
+    }
+  }
+
   public async Task<ServiceResponse<List<AppointmentDto>>> GetPatientAppointmentsAsync(
     Guid patientId
   )
