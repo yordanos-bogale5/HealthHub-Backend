@@ -8,7 +8,13 @@ using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services;
 using Microsoft.EntityFrameworkCore;
 
-public class DoctorService(ApplicationContext appContext, ILogger<DoctorService> logger)
+public class DoctorService(
+  ApplicationContext appContext,
+  SpecialityService specialityService,
+  DoctorSpecialityService doctorSpecialityService,
+  Lazy<AvailabilityService> availabilityService,
+  ILogger<DoctorService> logger
+)
 {
   public async Task<Doctor?> CreateDoctorAsync(CreateDoctorDto createDoctorDto)
   {
@@ -35,7 +41,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         .Doctors.Include(d => d.User) // Ensure the related User entity is loaded
         .Include(d => d.DoctorSpecialities)
         .ThenInclude(ds => ds.Speciality)
-        .Select(d => d.ToDoctorDto())
+        .Select(d => d.ToDoctorDto(d.User, d.DoctorSpecialities))
         .ToListAsync();
 
       return new ServiceResponse<List<DoctorDto>>(true, 200, doctorUsers, "All Doctors Retrieved!");
@@ -62,7 +68,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
             EF.Functions.Like(ds.Speciality.SpecialityName, $"%{specialityName}%")
           )
         )
-        .Select(d => d.ToDoctorDto())
+        .Select(d => d.ToDoctorDto(d.User, d.DoctorSpecialities))
         .ToListAsync();
 
       return new ServiceResponse<List<DoctorDto>>(
@@ -92,7 +98,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
             EF.Functions.Like(d.User.FirstName + " " + d.User.LastName, $"%{doctorName}%")
           )
         )
-        .Select(d => d.ToDoctorDto())
+        .Select(d => d.ToDoctorDto(d.User, d.DoctorSpecialities))
         .ToListAsync();
 
       return new ServiceResponse<List<DoctorDto>>(
@@ -117,7 +123,7 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
         .Include(d => d.DoctorSpecialities)
         .ThenInclude(ds => ds.Speciality)
         .Where(d => d.User.Gender == gender)
-        .Select(d => d.ToDoctorDto())
+        .Select(d => d.ToDoctorDto(d.User, d.DoctorSpecialities))
         .ToListAsync();
 
       return new ServiceResponse<List<DoctorDto>>(
@@ -173,6 +179,66 @@ public class DoctorService(ApplicationContext appContext, ILogger<DoctorService>
     catch (System.Exception ex)
     {
       logger.LogError($"Failed to check if doctor exists {ex}");
+      throw;
+    }
+  }
+
+  public async Task<DoctorDto> EditDoctorAsync(EditDoctorProfileDto editDoctorProfileDto)
+  {
+    try
+    {
+      var doctor = await appContext
+        .Doctors.Include(d => d.User)
+        .Include(d => d.DoctorSpecialities)
+        .FirstOrDefaultAsync(d => d.UserId == editDoctorProfileDto.UserId);
+
+      if (doctor == null)
+      {
+        throw new BadHttpRequestException("Doctor with that userId is not present.");
+      }
+
+      /* Creating the New Specialtities */
+      var specialities =
+        editDoctorProfileDto.Specialitites != null
+          ? await specialityService.CreateSpecialitiesAsync(
+            editDoctorProfileDto.Specialitites.ToSpecialityList(doctor.DoctorId)
+          )
+          : null;
+
+      // Create doctor specialities based on the new specialities
+      var docSpecs =
+        specialities != null
+          ? await doctorSpecialityService.CreateDoctorSpecialitiesAsync(
+            specialities.Select(s => s.ToCreateDoctorSpecialityDto(doctor)).ToList()
+          )
+          : null;
+
+      /* Creating the New Doctor Availabilities */
+      var availabilitiesResponse =
+        editDoctorProfileDto.Availabilities != null
+          ? await availabilityService.Value.AddDoctorAvailabilityAsync(
+            editDoctorProfileDto.Availabilities,
+            doctor
+          )
+          : null;
+
+      /* Perform Updates */
+      doctor.DoctorSpecialities = docSpecs ?? doctor.DoctorSpecialities;
+      doctor.Qualifications = editDoctorProfileDto.Qualifications ?? doctor.Qualifications;
+      doctor.DoctorStatus = editDoctorProfileDto.DoctorStatus ?? doctor.DoctorStatus;
+      doctor.Biography = editDoctorProfileDto.Biography ?? doctor.Biography;
+      doctor.DoctorAvailabilities =
+        availabilitiesResponse != null
+          ? availabilitiesResponse.Data ?? doctor.DoctorAvailabilities
+          : doctor.DoctorAvailabilities;
+
+      await appContext.SaveChangesAsync();
+
+      return doctor.ToDoctorDto(doctor.User, doctor.DoctorSpecialities);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured trying to edit doctor.");
       throw;
     }
   }
