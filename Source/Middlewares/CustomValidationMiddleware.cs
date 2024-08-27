@@ -68,6 +68,17 @@ public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
         JsonSerializer.Serialize(new ErrorResponse() { title = ex.Message, errors = errors })
       );
     }
+    catch (UnauthorizedAccessException ex)
+    {
+      httpContext.Response.ContentType = "application/problem+json";
+      httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+      object errors = new { };
+
+      await httpContext.Response.WriteAsync(
+        JsonSerializer.Serialize(new ErrorResponse() { title = ex.Message, errors = errors })
+      );
+    }
     catch (Exception ex)
     {
       httpContext.Response.ContentType = "application/json";
