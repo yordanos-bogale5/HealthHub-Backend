@@ -80,46 +80,53 @@ public static class EntityExtensions
     return new CreateAdminDto { User = user };
   }
 
-  public static DoctorDto? ToDoctorDto(this Doctor d)
+  /// <summary>
+  /// Make sure to populate User and Doctor Specialities Before calling this Extension Method
+  /// </summary>
+  /// <param name="d"></param>
+  /// <param name="user"></param>
+  /// <param name="doctorSpecialities"></param>
+  /// <returns></returns>
+  public static DoctorDto ToDoctorDto(
+    this Doctor d,
+    User user,
+    ICollection<DoctorSpeciality> doctorSpecialities
+  )
   {
-    if (d.User == null || d.DoctorSpecialities == null)
-      return null;
     return new DoctorDto
     {
-      UserId = d.UserId,
+      UserId = user.UserId,
       DoctorId = d.DoctorId,
-      FirstName = d.User.FirstName,
-      LastName = d.User.LastName,
-      Email = d.User.Email,
-      IsEmailVerified = d.User.IsEmailVerified,
-      Phone = d.User.Phone,
-      Gender = d.User.Gender,
-      DateOfBirth = d.User.DateOfBirth,
-      Address = d.User.Address,
-      Specialities = d.DoctorSpecialities.Select(ds => ds.Speciality.SpecialityName).ToList(),
+      FirstName = user.FirstName,
+      LastName = user.LastName,
+      Email = user.Email,
+      IsEmailVerified = user.IsEmailVerified,
+      Phone = user.Phone,
+      Gender = user.Gender,
+      DateOfBirth = user.DateOfBirth,
+      Address = user.Address,
+      Specialities = doctorSpecialities.Select(ds => ds.Speciality.SpecialityName).ToList(),
       Qualifications = d.Qualifications,
       Biography = d.Biography,
       DoctorStatus = d.DoctorStatus,
-      ProfilePicture = d.User.ProfilePicture ?? ""
+      ProfilePicture = user.ProfilePicture ?? ""
     };
   }
 
-  public static PatientDto? ToPatientDto(this Patient patient)
+  public static PatientDto ToPatientDto(this Patient patient, User user)
   {
-    if (patient.User == null)
-      return null;
     return new PatientDto
     {
-      UserId = patient.UserId,
+      UserId = user.UserId,
       PatientId = patient.PatientId,
-      FirstName = patient.User.FirstName,
-      LastName = patient.User.LastName,
-      Email = patient.User.Email,
-      IsEmailVerified = patient.User.IsEmailVerified,
-      Phone = patient.User.Phone,
-      Gender = patient.User.Gender,
-      DateOfBirth = patient.User.DateOfBirth,
-      Address = patient.User.Address,
+      FirstName = user.FirstName,
+      LastName = user.LastName,
+      Email = user.Email,
+      IsEmailVerified = user.IsEmailVerified,
+      Phone = user.Phone,
+      Gender = user.Gender,
+      DateOfBirth = user.DateOfBirth,
+      Address = user.Address,
       EmergencyContactName = patient.EmergencyContactName ?? "",
       EmergencyContactPhone = patient.EmergencyContactPhone ?? "",
       MedicalHistory = patient.MedicalHistory ?? "",
@@ -133,21 +140,33 @@ public static class EntityExtensions
   /// <param name="appointment">appointment</param>
   /// <param name="doctor"></param>
   /// <param name="patient"></param>
+  /// <param name="user"></param>
+  /// <param name="doctorSpecialities"></param>
   /// <returns></returns>
   public static AppointmentDto ToAppointmentDto(
     this Appointment appointment,
-    Doctor? doctor = null,
-    Patient? patient = null
+    Doctor doctor,
+    Patient patient,
+    User user,
+    ICollection<DoctorSpeciality> doctorSpecialities
   )
   {
     return new AppointmentDto
     {
       AppointmentId = appointment.AppointmentId,
-      Doctor = doctor?.ToDoctorDto(),
-      Patient = patient?.ToPatientDto(),
+      Doctor = doctor.ToDoctorDto(user, doctorSpecialities),
+      Patient = patient.ToPatientDto(user),
       AppointmentDate = appointment.AppointmentDate,
       AppointmentTime = appointment.AppointmentTime,
       AppointmentType = appointment.AppointmentType,
     };
+  }
+
+  public static CreateDoctorSpecialityDto ToCreateDoctorSpecialityDto(
+    this Speciality speciality,
+    Doctor doctor
+  )
+  {
+    return new CreateDoctorSpecialityDto { Doctor = doctor, Speciality = speciality };
   }
 }
