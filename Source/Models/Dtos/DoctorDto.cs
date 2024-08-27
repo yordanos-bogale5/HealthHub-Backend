@@ -12,6 +12,15 @@ public record CreateDoctorDto
   public DoctorStatus DoctorStatus { get; init; } = DoctorStatus.Active;
 }
 
+public record EditDoctorProfileDto(
+  Guid UserId,
+  List<string>? Specialitites,
+  string? Qualifications,
+  string? Biography,
+  List<AvailabilityDto>? Availabilities,
+  DoctorStatus? DoctorStatus
+);
+
 public record DoctorDto
 {
   public required Guid UserId { get; init; }

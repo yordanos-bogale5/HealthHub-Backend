@@ -11,16 +11,4 @@ public record Availability
   public required List<TimeRange> AvailableTimes { get; init; }
 }
 
-public record AvailabilityDto
-{
-  public required string Day { get; init; }
-  public required string StartTime { get; init; }
-  public required string EndTime { get; init; }
-
-  public void Deconstruct(out string day, out string startTime, out string endTime)
-  {
-    day = Day;
-    startTime = StartTime;
-    endTime = EndTime;
-  }
-}
+public record AvailabilityDto(string Day, string StartTime, string EndTime);
