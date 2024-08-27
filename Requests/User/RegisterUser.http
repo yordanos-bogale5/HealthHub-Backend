@@ -2,15 +2,15 @@ POST {{apiHostUrl}}/api/users/register
 Content-Type: application/json
 
 {
-  "FirstName": "Helsinki",
-  "LastName" : "Richardson",
-  "Email"    : "dagtef5@gmail.com",
+  "FirstName": "Emily",
+  "LastName" : "Clarke",
+  "Email"    : "dagtef3@gmail.com",
   "Password" : "12345678Ab@",
-  "Gender"   : "Male",
+  "Gender"   : "Female",
   "DateOfBirth" : "2002-12-10",
   "Role"     : "Doctor",
-  "Phone"    : "35351059059",
-  "Address"  : "Kiev",
+  "Phone"    : "35351059055",
+  "Address"  : "Houston",
   "Biography" : "This is my biography",
   "Qualifications" : "This is supposed to be a qualification!",
   "Specialities": [
