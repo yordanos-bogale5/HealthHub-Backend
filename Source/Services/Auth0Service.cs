@@ -19,7 +19,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
   /// </summary>
   /// <param name="userDto"></param>
   /// <returns>Newly created auth0 UserID</returns>
-  public async Task<Auth0UserDto?> CreateUserAsync(RegisterUserDto userDto)
+  public async Task<Auth0UserDto?> CreateUserAsync(RegisterUserDto userDto, Guid userId)
   {
     try
     {
@@ -30,6 +30,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
         connection = "Username-Password-Authentication",
         user_metadata = new
         {
+          userId,
           firstName = userDto.FirstName,
           lastName = userDto.LastName,
           role = userDto.Role.ToString(),
@@ -214,6 +215,13 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
       }
 
       // Use TryGetProperty to handle missing fields gracefully
+
+      var userId = userMetaData.TryGetProperty("userId", out var userIdElement)
+        ? Guid.TryParse(userIdElement.GetString(), out var userGuid)
+          ? userGuid
+          : Guid.Empty
+        : Guid.Empty;
+
       var firstName = userMetaData.TryGetProperty("firstName", out var firstNameElement)
         ? firstNameElement.GetString()
         : "";
@@ -235,6 +243,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
 
       return new Auth0ProfileDto
       {
+        UserId = userId,
         FirstName = firstName,
         LastName = lastName,
         Role = string.IsNullOrEmpty(role) ? default : role.ConvertToEnum<Role>(),
