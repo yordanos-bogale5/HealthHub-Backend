@@ -35,7 +35,8 @@ public class UserService(
   AvailabilityService availabilityService,
   AdminService adminService,
   SpecialityService specialityService,
-  DoctorSpecialityService doctorSpecialityService
+  DoctorSpecialityService doctorSpecialityService,
+  AppointmentService appointmentService
 )
 {
   /// <summary>
@@ -144,8 +145,10 @@ public class UserService(
         throw new BadHttpRequestException("User with that phone already exists!.");
       }
 
+      Guid userId = Guid.NewGuid();
+
       // Create User in Auth0
-      auth0User = await auth0Service.CreateUserAsync(registerUserDto);
+      auth0User = await auth0Service.CreateUserAsync(registerUserDto, userId);
 
       logger.LogInformation($"Auth0Created User in UserService \n\n:{auth0User}");
 
@@ -158,6 +161,7 @@ public class UserService(
       var user = registerUserDto.ToUser();
 
       // Populate the User Entity with the Auth0User Accordingly
+      user.UserId = userId;
       user.Auth0Id = auth0User.UserId;
       user.ProfilePicture = auth0User.Profile;
       user.IsEmailVerified = auth0User.EmailVerified;
@@ -301,8 +305,10 @@ public class UserService(
       if (user.Auth0Id != null)
         await auth0Service.DeleteUserAsync(user.Auth0Id);
 
-      appContext.Users.Remove(user);
+      // Remove user appointments if exist
+      await appointmentService.DeleteAppointmentWhereUserId(userId);
 
+      appContext.Users.Remove(user);
       await appContext.SaveChangesAsync();
 
       return new ServiceResponse(true, 204, "User Deleted");
@@ -310,7 +316,6 @@ public class UserService(
     catch (System.Exception ex)
     {
       logger.LogError(ex, "Failed to delete user");
-
       throw;
     }
   }
@@ -337,7 +342,7 @@ public class UserService(
     {
       logger.LogError(ex, "Failed to retrieve user");
 
-      throw new Exception("Problem occured when getting profile.");
+      throw;
     }
   }
 
