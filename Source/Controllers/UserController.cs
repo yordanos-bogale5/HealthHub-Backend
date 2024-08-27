@@ -22,9 +22,11 @@ namespace HealthHub.Source.Controllers;
 /// </summary>
 /// <param name="userService"></param>
 /// <param name="doctorService"></param>
+/// <param name="patientService"></param>
 /// <param name="logger"></param>
 /// <param name="appConfig"></param>
 /// <param name="registerUserValidator"></param>
+/// <param name="editProfileValidator"></param>
 [ApiController]
 [Route("api/users")]
 public class UserController(
@@ -347,32 +349,41 @@ public class UserController(
     }
   }
 
-  // [HttpPatch("{userId}/profile")]
-  // public async Task<IActionResult> EditProfile([FromBody] EditProfileDto editProfileDto)
-  // {
-  //   try
-  //   {
-  //     if (!ModelState.IsValid)
-  //     {
-  //       HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
-  //       throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
-  //     }
+  /// <summary>
+  /// Edit the profile information of the user with the given id
+  /// </summary>
+  /// <param name="editProfileDto"></param>
+  /// <param name="userId"></param>
+  /// <returns></returns>
+  [HttpPatch("profile/{userId}")]
+  public async Task<IActionResult> EditProfile(
+    [FromBody] EditProfileDto editProfileDto,
+    [FromRoute] Guid userId
+  )
+  {
+    try
+    {
+      if (!ModelState.IsValid)
+      {
+        HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
+        throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
+      }
 
-  //     var validation = editProfileValidator.Validate(editProfileDto);
-  //     if (!validation.IsValid)
-  //     {
-  //       HttpContext.Items[ErrorFieldConstants.FluentValidationErrors] =
-  //         validation.ToFluentValidationErrorResult();
-  //       throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
-  //     }
+      var validation = editProfileValidator.Validate(editProfileDto);
+      if (!validation.IsValid)
+      {
+        HttpContext.Items[ErrorFieldConstants.FluentValidationErrors] =
+          validation.ToFluentValidationErrorResult();
+        throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
+      }
 
-  //     var response = await userService.EditUserProfileAsync(editProfileDto);
-  //     return StatusCode(response.StatusCode, response);
-  //   }
-  //   catch (System.Exception ex)
-  //   {
-  //     logger.LogError($"{ex}: An error occured trying to update profile");
-  //     throw;
-  //   }
-  // }
+      var response = await userService.EditUserProfileAsync(editProfileDto, userId);
+      return StatusCode(response.StatusCode, response);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured trying to update profile");
+      throw;
+    }
+  }
 }
