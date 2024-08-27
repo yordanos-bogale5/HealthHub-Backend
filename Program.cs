@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Converters;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 using Serilog;
 
 // Load Environment Variables
@@ -166,6 +167,9 @@ var builder = WebApplication.CreateBuilder(args);
   builder.Services.AddTransient<EmailService>();
   builder.Services.AddTransient<FileService>();
   builder.Services.AddTransient<RenderingService>();
+
+  // This line registers the Lazy<T> type with the DI container to enable lazy loading for services.
+  builder.Services.AddTransient(typeof(Lazy<>), typeof(Lazy<>));
 
   builder
     .Services.AddControllers()

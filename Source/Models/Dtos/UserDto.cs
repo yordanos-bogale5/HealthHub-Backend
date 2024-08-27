@@ -163,6 +163,7 @@ public record Auth0UserDto(string UserId, string Profile, bool EmailVerified);
 /// </summary>
 /// <param name="AccessToken"></param>
 /// <param name="ExpiresIn"></param>
+/// <param name="Auth0ProfileDto"></param>
 public record Auth0LoginDto(string AccessToken, int ExpiresIn, Auth0ProfileDto Auth0ProfileDto);
 
 /// <summary>

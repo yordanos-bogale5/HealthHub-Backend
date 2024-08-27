@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj": {}
+    "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj": {}
   },
   "projects": {
-    "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj": {
+    "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
+        "projectUniqueName": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
         "projectName": "HealthHub",
-        "projectPath": "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
+        "projectPath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
         "packagesPath": "C:\\Users\\Dag Weg\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\obj\\",
+        "outputPath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Dag Weg\\AppData\\Roaming\\NuGet\\NuGet.Config",

@@ -53,6 +53,7 @@ public class AvailabilityController(AvailabilityService availabilityService) : C
   /// Gets all available times for a doctor on a specific day
   /// </summary>
   /// <param name="doctorId"></param>
+  /// <param name="day"></param>
   /// <returns></returns>
   [HttpGet("doctors/{doctorId}/times/{day}")]
   public async Task<IActionResult> GetDoctorAvailableTimesForDay(

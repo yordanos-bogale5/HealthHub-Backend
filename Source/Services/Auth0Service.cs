@@ -18,6 +18,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
   /// Responsible for creating a new user in the Auth0 database.
   /// </summary>
   /// <param name="userDto"></param>
+  /// <param name="userId"></param>
   /// <returns>Newly created auth0 UserID</returns>
   public async Task<Auth0UserDto?> CreateUserAsync(RegisterUserDto userDto, Guid userId)
   {

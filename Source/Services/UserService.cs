@@ -23,9 +23,11 @@ namespace HealthHub.Source.Services;
 /// <param name="logger"></param>
 /// <param name="patientService"></param>
 /// <param name="doctorService"></param>
+/// <param name="availabilityService"></param>
 /// <param name="adminService"></param>
 /// <param name="specialityService"></param>
 /// <param name="doctorSpecialityService"></param>
+/// <param name="appointmentService"></param>
 public class UserService(
   ApplicationContext appContext,
   Auth0Service auth0Service,
@@ -346,5 +348,75 @@ public class UserService(
     }
   }
 
-  // public async Task<ProfileDto>
+  public async Task<ServiceResponse<ProfileDto>> EditUserProfileAsync(
+    EditProfileDto editProfileDto,
+    Guid userId
+  )
+  {
+    try
+    {
+      var user = await appContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+      if (user == null)
+      {
+        throw new BadHttpRequestException("User with that id is not found.");
+      }
+
+      // Destructure the fields from dto
+      var firstName = editProfileDto.FirstName;
+      var lastName = editProfileDto.LastName;
+      DateTime dateOfBirth =
+        editProfileDto.DateOfBirth == null
+          ? user.DateOfBirth
+          : editProfileDto.DateOfBirth.ConvertTo<DateTime>();
+      var phone = editProfileDto.Phone;
+
+      // If you want to edit the email then make sure to make it unverified and prompt user to verify new email
+      if (editProfileDto.Email != null && editProfileDto.Email != user.Email)
+      {
+        user.Email = editProfileDto.Email;
+        user.IsEmailVerified = false;
+      }
+
+      if (user.Role == Role.Patient)
+      {
+        var medHis = editProfileDto.MedicalHistory;
+        var emPhone = editProfileDto.EmergencyContactPhone;
+        var emName = editProfileDto.EmergencyContactName;
+
+        // TODO : Implement a Patient Service method to update patient information given the above 3 fields
+      }
+      else if (user.Role == Role.Doctor)
+      {
+        var specialities = editProfileDto.Specialities;
+        var qualifications = editProfileDto.Qualifications;
+        var biography = editProfileDto.Biography;
+        var availabilities = editProfileDto.Availabilities;
+        var doctorStatus = editProfileDto.DoctorStatus;
+
+        await doctorService.EditDoctorAsync(
+          new EditDoctorProfileDto(
+            userId,
+            specialities,
+            qualifications,
+            biography,
+            availabilities,
+            doctorStatus
+          )
+        );
+      }
+
+      await appContext.SaveChangesAsync(); // Save all updates
+      return new ServiceResponse<ProfileDto>(
+        true,
+        200,
+        user.ToProfileDto(),
+        "Profile Update Success."
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: AN error occured when trying to edit profile information.");
+      throw;
+    }
+  }
 }
