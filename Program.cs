@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json.Serialization;
 using dotenv.net;
 using FluentValidation;
@@ -9,6 +10,7 @@ using HealthHub.Source.Services;
 using HealthHub.Source.Validation;
 using HealthHub.Source.Validation.AppointmentValidation;
 using HealthHub.Source.Validation.UserValidation;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -66,9 +68,33 @@ var builder = WebApplication.CreateBuilder(args);
   builder
     .Services.AddAuthentication(options =>
     {
+      // options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+      // options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+      // options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
       options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
       options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
+    // .AddCookie(
+    //   CookieAuthenticationDefaults.AuthenticationScheme,
+    //   option =>
+    //   {
+    //     var appConfig = new AppConfig(builder.Configuration);
+
+    //     option.Cookie.HttpOnly = true;
+    //     option.Cookie.SecurePolicy =
+    //       (appConfig.IsProduction ?? false)
+    //         ? CookieSecurePolicy.Always
+    //         : CookieSecurePolicy.SameAsRequest;
+    //     option.Cookie.SameSite = SameSiteMode.None;
+
+    //     // option.Events.OnRedirectToLogin = context =>
+    //     // {
+    //     //   context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+    //     //   Console.WriteLine($"{context.Response}");
+    //     //   return Task.CompletedTask;
+    //     // };
+    //   }
+    // );
     .AddJwtBearer(options =>
     {
       var appConfig = new AppConfig(builder.Configuration);
@@ -178,6 +204,7 @@ var app = builder.Build();
   // app.UseExceptionHandler("/error"); // Exception handling endpoint
 
   app.UseCustomValidation(); // Register the Custom Validation Middleware
+  app.UseCookieMiddleware(); // Register the Cookie Middleware
 
   app.UseAuthentication();
   app.UseAuthorization();

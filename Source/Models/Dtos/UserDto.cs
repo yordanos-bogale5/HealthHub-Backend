@@ -33,12 +33,13 @@ public record ProfileDto
 
 public record Auth0ProfileDto
 {
-  public required string FirstName { get; init; }
-  public required string LastName { get; init; }
-  public required Role Role { get; init; }
-  public required string Phone { get; init; }
-  public required Gender Gender { get; init; }
-  public required string DateOfBirth { get; init; }
+  public Guid UserId { get; init; } = Guid.Empty;
+  public string FirstName { get; init; } = string.Empty;
+  public string LastName { get; init; } = string.Empty;
+  public Role Role { get; init; }
+  public string Phone { get; init; } = string.Empty;
+  public Gender Gender { get; init; }
+  public string DateOfBirth { get; init; } = string.Empty;
 }
 
 /// <summary>
