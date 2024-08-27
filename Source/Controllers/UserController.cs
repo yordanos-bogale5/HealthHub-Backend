@@ -223,7 +223,7 @@ public class UserController(
     try
     {
       bool validGuid = Guid.TryParse(
-        HttpContext.Request.Cookies[AuthDefaults.UserId]?.ToString(),
+        HttpContext.Request.Cookies[AuthDefaults.User.UserId]?.ToString(),
         out var userId
       );
       if (!validGuid)
