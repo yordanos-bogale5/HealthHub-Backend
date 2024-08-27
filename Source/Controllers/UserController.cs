@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using Auth0.AspNetCore.Authentication.BackchannelLogout;
 using FluentValidation;
 using FluentValidation.Results;
 using HealthHub.Source.Config;
 using HealthHub.Source.Helpers.Constants;
+using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Responses;
@@ -108,22 +110,25 @@ public class UserController(
         Expires = DateTime.Now.AddSeconds(response.Data.ExpiresIn)
       };
 
-      Response.Cookies.Append("access_token", response.Data.AccessToken, cookieOptions);
+      Response.Cookies.Append(
+        AuthDefaults.AccessToken.ToSnakeCase(),
+        response.Data.AccessToken,
+        cookieOptions
+      );
 
       var profile = response.Data.Auth0ProfileDto;
-      Response.Cookies.Append("user_metadata", JsonSerializer.Serialize(profile), cookieOptions);
 
-      // foreach (
-      //   var field in profile
-      //     .GetType()
-      //     .GetProperties(
-      //       System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance
-      //     )
-      // )
-      // {
-      //   var value = field.GetValue(profile);
-      //   Response.Cookies.Append(field.Name, JsonSerializer.Serialize(value), cookieOptions);
-      // }
+      foreach (
+        var field in profile
+          .GetType()
+          .GetProperties(
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance
+          )
+      )
+      {
+        var value = field.GetValue(profile);
+        Response.Cookies.Append(field.Name.ToSnakeCase(), value?.ToString() ?? "", cookieOptions);
+      }
 
       return Ok(response);
     }
@@ -186,12 +191,44 @@ public class UserController(
   /// </summary>
   /// <param name="userId"></param>
   /// <returns></returns>
-  [HttpGet("{userId}/profile")]
+  [HttpGet("profile/{userId}")]
   [Authorize]
-  public async Task<IActionResult> Profile(Guid userId)
+  public async Task<IActionResult> GetUserProfile(Guid userId)
   {
     try
     {
+      var response = await userService.GetUserProfile(userId);
+      if (!response.Success)
+      {
+        return StatusCode(response.StatusCode, response.Message);
+      }
+      return Ok(response);
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Failed to get user profile");
+
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Endpoint responsible for getting the profile of the currently logged in user
+  /// </summary>
+  /// <returns></returns>
+  [HttpGet("profile/me")]
+  [Authorize]
+  public async Task<IActionResult> GetMyProfile()
+  {
+    try
+    {
+      bool validGuid = Guid.TryParse(
+        HttpContext.Request.Cookies[AuthDefaults.UserId]?.ToString(),
+        out var userId
+      );
+      if (!validGuid)
+        throw new UnauthorizedAccessException($"Please login again. Cookie is corrupt. {userId}");
+
       var response = await userService.GetUserProfile(userId);
       if (!response.Success)
       {
