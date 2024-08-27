@@ -12,7 +12,7 @@ using Org.BouncyCastle.Asn1.Tsp;
 public class AvailabilityService(
   ApplicationContext appContext,
   SchedulingService schedulingService,
-  DoctorService doctorService,
+  Lazy<DoctorService> doctorService,
   ILogger<AvailabilityService> logger
 )
 {
@@ -130,7 +130,7 @@ public class AvailabilityService(
   {
     try
     {
-      if (!await doctorService.CheckDoctorExistsAsync(doctorId))
+      if (!await doctorService.Value.CheckDoctorExistsAsync(doctorId))
       {
         return new ServiceResponse<Dictionary<Days, List<TimeRange>>>(
           false,
