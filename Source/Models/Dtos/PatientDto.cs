@@ -3,14 +3,23 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Dtos;
 
-public record CreatePatientDto {
+public record CreatePatientDto
+{
   public required User User { get; init; }
   public string? MedicalHistory { get; init; }
   public string? EmergencyContactName { get; init; }
   public string? EmergencyContactPhone { get; init; }
 }
 
-public record PatientDto {
+public record EditPatientProfileDto(
+  Guid UserId,
+  string? MedicalHistory,
+  string? EmergencyContactName,
+  string? EmergencyContactPhone
+);
+
+public record PatientDto
+{
   public required Guid UserId { get; init; }
   public required Guid PatientId { get; init; }
   public required string FirstName { get; init; }
