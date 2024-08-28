@@ -14,10 +14,14 @@ public class AppointmentService(
   ApplicationContext appContext,
   DoctorService doctorService,
   PatientService patientService,
-  AvailabilityService availabilityService,
   ILogger<AppointmentService> logger
 )
 {
+  /// <summary>
+  /// Creates an appointment given createAppointmentDto payload
+  /// </summary>
+  /// <param name="createAppointmentDto"></param>
+  /// <returns>The newly created appointment as dto</returns>
   public async Task<ServiceResponse<AppointmentDto>> CreateAppointmentAsync(
     CreateAppointmentDto createAppointmentDto
   )
@@ -52,6 +56,7 @@ public class AppointmentService(
         };
       }
 
+      // Destructuring and parsing
       DateTime appointmentDate = createAppointmentDto.AppointmentDate.ConvertTo<DateTime>();
       TimeOnly appointmentTime = TimeOnly.Parse(createAppointmentDto.AppointmentTime);
 
@@ -80,7 +85,7 @@ public class AppointmentService(
         : appointmentData.AppointmentTimeSpan;
 
       // Check if the doctor is free at that day and time (Check Doctor Availability Table)
-      bool isDoctorAvail = await availabilityService.CheckDoctorAvailabilityAsync(
+      bool isDoctorAvail = await doctorService.CheckDoctorAvailabilityAsync(
         doctorId,
         appointmentDay,
         appointmentTime,
@@ -124,7 +129,13 @@ public class AppointmentService(
       {
         StatusCode = 201,
         Success = true,
-        Data = appointment.Entity.ToAppointmentDto(doctor.Data, patient.Data),
+        Data = appointment.Entity.ToAppointmentDto(
+          doctor.Data,
+          patient.Data,
+          doctor.Data.User,
+          patient.Data.User,
+          doctor.Data.DoctorSpecialities
+        ),
         Message = "Appointment created successfully",
       };
     }
@@ -141,7 +152,7 @@ public class AppointmentService(
   /// <param name="doctorId">The ID of the doctor whose appointment availability is being checked.</param>
   /// <param name="newAppointmentDate"></param>
   /// <param name="newAppointmentStartTime"></param>
-  /// <returns>True if the appointment slot is available (i.e., no appointment exists for that doctor, date, and time); otherwise, false.</returns>
+  /// <returns>True if the appointment slot is available (i.e. no appointment exists for that doctor, date, and time); otherwise, false.</returns>
   public async Task<bool> CheckAppointmentAvailabilityAsync(
     Guid doctorId,
     DateTime newAppointmentDate,
@@ -165,16 +176,31 @@ public class AppointmentService(
     }
   }
 
+  /// <summary>
+  /// Retrieves all appointments from the database
+  /// </summary>
+  /// <returns>A list of appointment dtos</returns>
   public async Task<ServiceResponse<List<AppointmentDto>>> GetAllAppointmentsAsync()
   {
     try
     {
       var result = await appContext
-        .Appointments.Include(a => a.Doctor)
-        .ThenInclude(d => d.User)
-        .Include(a => a.Patient)
-        .ThenInclude(p => p.User)
-        .Select(a => a.ToAppointmentDto(a.Doctor, a.Patient))
+        .Appointments.Include(a => a.Doctor) // include doctor
+        .ThenInclude(d => d.User) // doctorUser
+        .Include(a => a.Doctor.DoctorSpecialities) // include doctor specialties
+        .Include(a => a.Patient) // include patietn
+        .ThenInclude(p => p.User) // patient user
+        .Select(a =>
+          // Map each appointment and convert each entry to appointmentDto
+          // with the above included nav models
+          a.ToAppointmentDto(
+            a.Doctor,
+            a.Patient,
+            a.Doctor.User,
+            a.Patient.User,
+            a.Doctor.DoctorSpecialities
+          )
+        )
         .ToListAsync();
 
       return new ServiceResponse<List<AppointmentDto>>(
@@ -191,6 +217,12 @@ public class AppointmentService(
     }
   }
 
+  /// <summary>
+  /// Deletes the appointment
+  /// </summary>
+  /// <param name="appointmentId"></param>
+  /// <returns>No content(204) if successful </returns>
+  /// <exception cref="KeyNotFoundException"/>
   public async Task<ServiceResponse> DeleteAppointmentAsync(Guid appointmentId)
   {
     try
@@ -217,7 +249,12 @@ public class AppointmentService(
     }
   }
 
-  public async Task DeleteAppointmentWhereUserId(Guid userId)
+  /// <summary>
+  /// Deletes all appointments of the user specified by the id (userid)
+  /// </summary>
+  /// <param name="userId"></param>
+  /// <returns>void</returns>
+  public async Task DeleteAppointmentWhereUserIdAsync(Guid userId)
   {
     try
     {
@@ -244,6 +281,11 @@ public class AppointmentService(
     }
   }
 
+  /// <summary>
+  /// Retrieves all patient appointments given by the patientId
+  /// </summary>
+  /// <param name="patientId"></param>
+  /// <returns>A list of appointment dtos</returns>
   public async Task<ServiceResponse<List<AppointmentDto>>> GetPatientAppointmentsAsync(
     Guid patientId
   )
@@ -259,7 +301,8 @@ public class AppointmentService(
         .Appointments.Where(ap => ap.PatientId == patientId)
         .Include(ap => ap.Doctor)
         .ThenInclude(d => d.User)
-        .Select(ap => ap.ToAppointmentDto(ap.Doctor, null))
+        .Include(ap => ap.Doctor.DoctorSpecialities)
+        .Select(ap => ap.ToAppointmentDto(ap.Doctor, ap.Doctor.User, ap.Doctor.DoctorSpecialities))
         .ToListAsync();
 
       return new ServiceResponse<List<AppointmentDto>>(
@@ -276,6 +319,11 @@ public class AppointmentService(
     }
   }
 
+  /// <summary>
+  /// Retrieves all appointments for the specified doctorId
+  /// </summary>
+  /// <param name="doctorId"></param>
+  /// <returns>A list of appointment dtos</returns>
   public async Task<ServiceResponse<List<AppointmentDto>>> GetDoctorAppointmentsAsync(Guid doctorId)
   {
     try
@@ -288,8 +336,8 @@ public class AppointmentService(
       var result = await appContext
         .Appointments.Where(ap => ap.DoctorId == doctorId)
         .Include(ap => ap.Patient)
-        .ThenInclude(p => p.User)
-        .Select(ap => ap.ToAppointmentDto(null, ap.Patient))
+        .ThenInclude(p => p.User) // populate user
+        .Select(ap => ap.ToAppointmentDto(ap.Patient, ap.Patient.User))
         .ToListAsync();
 
       return new ServiceResponse<List<AppointmentDto>>(
@@ -306,6 +354,12 @@ public class AppointmentService(
     }
   }
 
+  /// <summary>
+  /// Edits the appointment information for the specified appointmentId
+  /// </summary>
+  /// <param name="editAppointmentDto"></param>
+  /// <param name="appointmentId"></param>
+  /// <returns>The newly updated appointment</returns>
   public async Task<ServiceResponse<AppointmentDto>> EditAppointmentAsync(
     EditAppointmentDto editAppointmentDto,
     Guid appointmentId
@@ -314,9 +368,13 @@ public class AppointmentService(
     try
     {
       // Retrieve the appointment
-      var appointment = await appContext.Appointments.FirstOrDefaultAsync(ap =>
-        ap.AppointmentId == appointmentId
-      );
+      var appointment = await appContext
+        .Appointments.Include(ap => ap.Patient) // include patient
+        .ThenInclude(p => p.User) // include patientUser
+        .Include(ap => ap.Doctor) // include doctor
+        .ThenInclude(d => d.User) // include doctorUser
+        .Include(ap => ap.Doctor.DoctorSpecialities) // include doctor specialities
+        .FirstOrDefaultAsync(ap => ap.AppointmentId == appointmentId);
 
       // Check if the appointment exists
       if (appointment == null)
@@ -359,7 +417,7 @@ public class AppointmentService(
         appointmentTime ?? appointment.AppointmentTime
       );
 
-      bool isDoctorAvailable = await availabilityService.CheckDoctorAvailabilityAsync(
+      bool isDoctorAvailable = await doctorService.CheckDoctorAvailabilityAsync(
         doctorId ?? appointment.DoctorId,
         appointmentDay
           ?? appointment.AppointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<Days>(),
@@ -392,7 +450,13 @@ public class AppointmentService(
       {
         StatusCode = 200,
         Success = true,
-        Data = appointment.ToAppointmentDto(appointment.Doctor, appointment.Patient),
+        Data = appointment.ToAppointmentDto(
+          appointment.Doctor,
+          appointment.Patient,
+          appointment.Doctor.User,
+          appointment.Patient.User,
+          appointment.Doctor.DoctorSpecialities
+        ),
         Message = "Appointment edited successfully"
       };
     }
