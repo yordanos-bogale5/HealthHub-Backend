@@ -1,5 +1,6 @@
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
+using Microsoft.OpenApi.Extensions;
 
 public static class EntityExtensions
 {
@@ -140,6 +141,8 @@ public static class EntityExtensions
   /// <param name="appointment">appointment</param>
   /// <param name="doctor"></param>
   /// <param name="patient"></param>
+  /// <param name="doctorUser"></param>
+  /// <param name="patientUser"></param>
   /// <param name="user"></param>
   /// <param name="doctorSpecialities"></param>
   /// <returns></returns>
@@ -147,15 +150,49 @@ public static class EntityExtensions
     this Appointment appointment,
     Doctor doctor,
     Patient patient,
-    User user,
+    User doctorUser,
+    User patientUser,
     ICollection<DoctorSpeciality> doctorSpecialities
   )
   {
     return new AppointmentDto
     {
       AppointmentId = appointment.AppointmentId,
-      Doctor = doctor.ToDoctorDto(user, doctorSpecialities),
-      Patient = patient.ToPatientDto(user),
+      Doctor = doctor.ToDoctorDto(doctorUser, doctorSpecialities),
+      Patient = patient.ToPatientDto(patientUser),
+      AppointmentDate = appointment.AppointmentDate,
+      AppointmentTime = appointment.AppointmentTime,
+      AppointmentType = appointment.AppointmentType,
+    };
+  }
+
+  public static AppointmentDto ToAppointmentDto(
+    this Appointment appointment,
+    Patient patient,
+    User patientUser
+  )
+  {
+    return new AppointmentDto
+    {
+      AppointmentId = appointment.AppointmentId,
+      Patient = patient.ToPatientDto(patientUser),
+      AppointmentDate = appointment.AppointmentDate,
+      AppointmentTime = appointment.AppointmentTime,
+      AppointmentType = appointment.AppointmentType,
+    };
+  }
+
+  public static AppointmentDto ToAppointmentDto(
+    this Appointment appointment,
+    Doctor doctor,
+    User doctorUser,
+    ICollection<DoctorSpeciality> doctorSpecialities
+  )
+  {
+    return new AppointmentDto
+    {
+      AppointmentId = appointment.AppointmentId,
+      Doctor = doctor.ToDoctorDto(doctorUser, doctorSpecialities),
       AppointmentDate = appointment.AppointmentDate,
       AppointmentTime = appointment.AppointmentTime,
       AppointmentType = appointment.AppointmentType,
@@ -168,5 +205,66 @@ public static class EntityExtensions
   )
   {
     return new CreateDoctorSpecialityDto { Doctor = doctor, Speciality = speciality };
+  }
+
+  public static DoctorProfileDto ToDoctorProfileDto(
+    this Doctor doctor,
+    User user,
+    ICollection<DoctorAvailability> doctorAvailability,
+    ICollection<Speciality> specialities
+  )
+  {
+    return new DoctorProfileDto
+    {
+      UserId = user.UserId,
+      Address = user.Address,
+      Availabilities = doctorAvailability.Select(da => da.ToAvailabilityDto()).ToList(),
+      Biography = doctor.Biography,
+      DateOfBirth = user.DateOfBirth,
+      DoctorStatus = doctor.DoctorStatus,
+      Email = user.Email,
+      FirstName = user.FirstName,
+      Gender = user.Gender,
+      LastName = user.LastName,
+      Phone = user.Phone,
+      ProfilePicture = user.ProfilePicture ?? "",
+      Qualifications = doctor.Qualifications,
+      Role = user.Role,
+      Specialities = specialities.Select(s => s.ToSpecialityDto()).ToList()
+    };
+  }
+
+  public static PatientProfileDto ToPatientProfileDto(this Patient patient, User user)
+  {
+    return new PatientProfileDto
+    {
+      UserId = user.UserId,
+      Address = user.Address,
+      DateOfBirth = user.DateOfBirth,
+      Email = user.Email,
+      FirstName = user.FirstName,
+      Gender = user.Gender,
+      LastName = user.LastName,
+      Phone = user.Phone,
+      ProfilePicture = user.ProfilePicture ?? "",
+      Role = user.Role,
+      EmergencyContactName = patient.EmergencyContactName ?? "",
+      EmergencyContactPhone = patient.EmergencyContactPhone ?? "",
+      MedicalHistory = patient.MedicalHistory ?? ""
+    };
+  }
+
+  public static AvailabilityDto ToAvailabilityDto(this DoctorAvailability doctorAvailability)
+  {
+    return new AvailabilityDto(
+      doctorAvailability.AvailableDay.GetDisplayName(),
+      doctorAvailability.StartTime.ToString(),
+      doctorAvailability.EndTime.ToString()
+    );
+  }
+
+  public static string ToSpecialityDto(this Speciality speciality)
+  {
+    return speciality.SpecialityName;
   }
 }
