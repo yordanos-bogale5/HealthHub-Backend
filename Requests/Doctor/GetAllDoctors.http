@@ -1,1 +1,1 @@
-GET {{apiHostUrl}}/api/users/doctors/all
+GET {{apiHostUrl}}/api/doctors/all

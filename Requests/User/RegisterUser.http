@@ -2,20 +2,32 @@ POST {{apiHostUrl}}/api/users/register
 Content-Type: application/json
 
 {
-  "FirstName": "Emily",
-  "LastName" : "Clarke",
-  "Email"    : "dagtef3@gmail.com",
+  "FirstName": "Bob",
+  "LastName" : "Juan",
+  "Email"    : "dagtef@gmail.com",
   "Password" : "12345678Ab@",
-  "Gender"   : "Female",
+  "Gender"   : "Male",
   "DateOfBirth" : "2002-12-10",
   "Role"     : "Doctor",
   "Phone"    : "35351059055",
-  "Address"  : "Houston",
+  "Address"  : "Kentucky",
+  "ProfilePicture" : "PROFILE_DATA_GOES_HERE",
+
+  # Doctor Specific Payload
   "Biography" : "This is my biography",
   "Qualifications" : "This is supposed to be a qualification!",
   "Specialities": [
-    "Physician", "Therapist"
+    "Brain SPecialist", "Tumor Specialist", "Surgeon"
   ],
-  "EmergencyContactName" : "Albery Wankie",
+  "Availabilities" : [
+    ["Monday","10:00","17:00"],
+    ["Wednesday","12:00","15:00"]
+    ["Saturday","8:00","14:00"]
+  ],
+  "Cv":"CV_FILE_DATA_GOES_HERE",
+
+  # Patient Specific Payload
+  "MedicalHistory": "Had severe brain trauma multiple times.",
+  "EmergencyContactName" : "Albert Menlo",
   "EmergencyContactPhone" : "12345678"
 }

@@ -1,0 +1,7 @@
+PATCH {{apiHostUrl}}/api/users/profile
+Content-Type: application/json
+
+{
+  "UserId":"9cac0417-f1e2-4b2e-a6e6-3529d74fdf97",
+  "Gender":"M"
+}
