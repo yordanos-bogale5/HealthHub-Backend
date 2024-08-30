@@ -21,7 +21,6 @@ namespace HealthHub.Source.Controllers;
 /// User Controller handles routes related to a user from the client.
 /// </summary>
 /// <param name="userService"></param>
-/// <param name="doctorService"></param>
 /// <param name="patientService"></param>
 /// <param name="logger"></param>
 /// <param name="appConfig"></param>
@@ -31,7 +30,6 @@ namespace HealthHub.Source.Controllers;
 [Route("api/users")]
 public class UserController(
   UserService userService,
-  DoctorService doctorService,
   PatientService patientService,
   ILogger<UserController> logger,
   AppConfig appConfig,
@@ -247,119 +245,12 @@ public class UserController(
   }
 
   /// <summary>
-  /// Get all Doctors from the database
-  /// </summary>
-  /// <returns>An array of Doctor Users</returns>
-  /// <exception cref="Exception"></exception>
-  [HttpGet("doctors/all")]
-  public async Task<IActionResult> GetAllDoctors([FromQuery] Gender? gender = null)
-  {
-    try
-    {
-      IServiceResponse response;
-      if (gender != null)
-      {
-        response = await doctorService.GetDoctorsByGenderAsync((Gender)gender);
-      }
-      else
-        response = await doctorService.GetAllDoctors();
-
-      if (!response.Success)
-        throw new Exception(response.Message);
-
-      return Ok(response);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError($"Internal Server Error: {ex}");
-      throw;
-    }
-  }
-
-  /// <summary>
-  /// Get all doctors with the specified speciality
-  /// </summary>
-  /// <param name="specialityName"></param>
-  /// <returns></returns>
-  [HttpGet("doctors/speciality/{specialityName}")]
-  public async Task<IActionResult> GetDoctorsBySpeciality(string specialityName)
-  {
-    try
-    {
-      var response = await doctorService.GetDoctorsBySpecialityAsync(specialityName);
-      if (!response.Success)
-        throw new Exception(response.Message);
-      return Ok(response);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError($"Internal Server Error: {ex}");
-      throw;
-    }
-  }
-
-  /// <summary>
-  /// Get all doctors with the specified name
-  /// </summary>
-  /// <param name="doctorName"></param>
-  /// <returns></returns>
-  /// <exception cref="BadHttpRequestException"></exception>
-  [HttpGet("doctors/name/{doctorName}")]
-  public async Task<IActionResult> GetDoctorsByName(
-    [FromRoute] [Required] [MinLength(1)] string doctorName
-  )
-  {
-    try
-    {
-      if (!ModelState.IsValid)
-      {
-        HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
-        throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
-      }
-      var response = await doctorService.GetDoctorsByNameAsync(doctorName);
-      if (!response.Success)
-        throw new Exception(response.Message);
-      return Ok(response);
-    }
-    catch (Exception ex)
-    {
-      logger.LogError($"Internal Server Error: {ex}");
-      throw;
-    }
-  }
-
-  /// <summary>
-  /// Retrieves all patients from the database
-  /// </summary>
-  /// <returns></returns>
-  [HttpGet("patients/all")]
-  public async Task<IActionResult> GetAllPatients()
-  {
-    try
-    {
-      var response = await patientService.GetAllPatientsAsync();
-      if (!response.Success)
-        throw new Exception(response.Message);
-      return Ok(response);
-    }
-    catch (System.Exception ex)
-    {
-      logger.LogError($"Failed to get all patients: {ex}");
-      throw;
-    }
-  }
-
-  /// <summary>
   /// Edit the profile information of the user with the given id
   /// </summary>
   /// <param name="editProfileDto"></param>
-  /// <param name="userId"></param>
   /// <returns></returns>
-  [HttpPatch("profile/{userId}")]
-  public async Task<IActionResult> EditProfile(
-    [FromBody] EditProfileDto editProfileDto,
-    [FromRoute] Guid userId
-  )
+  [HttpPatch("profile")]
+  public async Task<IActionResult> EditProfile([FromBody] EditProfileDto editProfileDto)
   {
     try
     {
@@ -369,7 +260,7 @@ public class UserController(
         throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
       }
 
-      var validation = editProfileValidator.Validate(editProfileDto);
+      var validation = await editProfileValidator.ValidateAsync(editProfileDto);
       if (!validation.IsValid)
       {
         HttpContext.Items[ErrorFieldConstants.FluentValidationErrors] =
@@ -377,7 +268,7 @@ public class UserController(
         throw new BadHttpRequestException(ErrorMessages.ModelValidationError);
       }
 
-      var response = await userService.EditUserProfileAsync(editProfileDto, userId);
+      var response = await userService.EditUserProfileAsync(editProfileDto);
       return StatusCode(response.StatusCode, response);
     }
     catch (System.Exception ex)
