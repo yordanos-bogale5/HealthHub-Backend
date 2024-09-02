@@ -69,6 +69,7 @@ public record DoctorProfileDto : ProfileDto
 /// </summary>
 public record EditProfileDto
 {
+  public required string UserId { get; init; }
   public string? FirstName { get; init; }
   public string? LastName { get; init; }
 
@@ -82,7 +83,6 @@ public record EditProfileDto
   public string? Gender { get; init; }
   public string? DateOfBirth { get; init; }
   public string? Address { get; init; }
-  public string? Role { get; init; }
 
   // If the user is a patient, they may/may-not specify the following
   // Note the following fields MUST be validated in the controller based on the Role field provided as payload
@@ -96,7 +96,7 @@ public record EditProfileDto
   public List<AvailabilityDto>? Availabilities { get; set; }
   public string? Qualifications { get; set; }
   public string? Biography { get; set; }
-  public DoctorStatus? DoctorStatus { get; set; }
+  public string? DoctorStatus { get; set; }
 }
 
 /// <summary>
