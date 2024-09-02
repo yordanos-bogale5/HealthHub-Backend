@@ -148,6 +148,10 @@ var builder = WebApplication.CreateBuilder(args);
     return new AppConfig(config);
   });
 
+  // This service allows you to access the HttpContext in classes that
+  // are not directly part of the HTTP request pipeline
+  builder.Services.AddHttpContextAccessor();
+
   // Register Services
   builder.Services.AddTransient<UserService>();
   builder.Services.AddTransient<DoctorService>();
@@ -155,8 +159,6 @@ var builder = WebApplication.CreateBuilder(args);
   builder.Services.AddTransient<AdminService>();
 
   builder.Services.AddTransient<AppointmentService>();
-  builder.Services.AddTransient<AvailabilityService>();
-  builder.Services.AddTransient<SchedulingService>();
 
   builder.Services.AddTransient<SpecialityService>();
   builder.Services.AddTransient<DoctorSpecialityService>();
