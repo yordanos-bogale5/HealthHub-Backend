@@ -230,9 +230,16 @@ public class DoctorService(
 
       /* Perform Updates */
       doctor.DoctorSpecialities = docSpecs ?? doctor.DoctorSpecialities;
+
       doctor.Qualifications = editDoctorProfileDto.Qualifications ?? doctor.Qualifications;
-      doctor.DoctorStatus = editDoctorProfileDto.DoctorStatus ?? doctor.DoctorStatus;
+
+      doctor.DoctorStatus =
+        editDoctorProfileDto.DoctorStatus != null
+          ? editDoctorProfileDto.DoctorStatus.ConvertToEnum<DoctorStatus>()
+          : doctor.DoctorStatus;
+
       doctor.Biography = editDoctorProfileDto.Biography ?? doctor.Biography;
+
       doctor.DoctorAvailabilities =
         availabilitiesResponse != null
           ? availabilitiesResponse.Data ?? doctor.DoctorAvailabilities
@@ -243,7 +250,7 @@ public class DoctorService(
       return doctor.ToDoctorProfileDto(
         doctor.User,
         doctor.DoctorAvailabilities,
-        doctor.DoctorSpecialities.Select(ds => ds.Speciality).ToList()
+        doctor.DoctorSpecialities.Where(s => s != null).Select(ds => ds.Speciality!).ToList()
       );
     }
     catch (System.Exception ex)
@@ -506,6 +513,46 @@ public class DoctorService(
     catch (System.Exception ex)
     {
       logger.LogError($"{ex}: An Error occured trying to get doctor appointment times");
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Retrieves the profile of the doctor specified with the userId
+  /// </summary>
+  /// <param name="userId"></param>
+  /// <returns>A <see cref="DoctorProfileDto"/> representing the doctor's profile.</returns>
+  /// <exception cref="KeyNotFoundException"/>Thrown when no doctor is found with the specified userId.<exception/>
+  public async Task<DoctorProfileDto> GetDoctorProfileAsync(Guid userId)
+  {
+    try
+    {
+      var doctor = await appContext
+        .Doctors.Where(d => d.UserId == userId)
+        .Include(d => d.User)
+        .Include(d => d.DoctorAvailabilities)
+        .Include(d => d.DoctorSpecialities)
+        .SingleOrDefaultAsync();
+
+      if (doctor == null)
+      {
+        throw new KeyNotFoundException(
+          "Doctor with that user id is not found. Couldn't retrieve profile information."
+        );
+      }
+
+      return doctor.ToDoctorProfileDto(
+        doctor.User,
+        doctor.DoctorAvailabilities,
+        doctor
+          .DoctorSpecialities.Where(ds => ds.Speciality != null)
+          .Select(ds => ds.Speciality!)
+          .ToList()
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured tring to get doctor profile");
       throw;
     }
   }
