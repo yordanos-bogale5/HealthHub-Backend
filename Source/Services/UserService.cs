@@ -23,7 +23,6 @@ namespace HealthHub.Source.Services;
 /// <param name="logger"></param>
 /// <param name="patientService"></param>
 /// <param name="doctorService"></param>
-/// <param name="availabilityService"></param>
 /// <param name="adminService"></param>
 /// <param name="specialityService"></param>
 /// <param name="doctorSpecialityService"></param>
@@ -34,7 +33,6 @@ public class UserService(
   ILogger<UserService> logger,
   PatientService patientService,
   DoctorService doctorService,
-  AvailabilityService availabilityService,
   AdminService adminService,
   SpecialityService specialityService,
   DoctorSpecialityService doctorSpecialityService,
@@ -99,22 +97,37 @@ public class UserService(
   /// </summary>
   /// <returns>A list of all users</returns>
   /// <exception cref="Exception"></exception>
-  public async Task<ServiceResponse<List<UserDto>>> GetAllUsers()
+  public async Task<ServiceResponse<List<ProfileDto?>>> GetAllUsers()
   {
     try
     {
-      List<UserDto> users = await appContext.Users.Select(User => User.ToUserDto()).ToListAsync();
-      return new ServiceResponse<List<UserDto>>(
+      var users = await appContext.Users.ToListAsync();
+
+      List<ProfileDto?> profiles = [];
+
+      foreach (User u in users)
+      {
+        if (u.Role == Role.Patient)
+        {
+          profiles.Add(await patientService.GetPatientProfileAsync(u.UserId));
+        }
+        else if (u.Role == Role.Doctor)
+        {
+          profiles.Add(await doctorService.GetDoctorProfileAsync(u.UserId));
+        }
+      }
+
+      return new ServiceResponse<List<ProfileDto?>>(
         Success: true,
         StatusCode: 200,
         Message: "Users Retrieved",
-        Data: users
+        Data: profiles
       );
     }
     catch (Exception ex)
     {
       Console.Write(ex);
-      throw new Exception("Failed to retrieve users.");
+      throw;
     }
   }
 
@@ -206,7 +219,11 @@ public class UserService(
         }
 
         var createDoctorSpecialityDtos = specialities
-          .Select(s => new CreateDoctorSpecialityDto { Doctor = doctor, Speciality = s })
+          .Select(s => new CreateDoctorSpecialityDto
+          {
+            DoctorId = doctor.DoctorId,
+            SpecialityId = s.SpecialityId
+          })
           .ToList();
 
         var doctorSpecialities = await doctorSpecialityService.CreateDoctorSpecialitiesAsync(
@@ -218,7 +235,7 @@ public class UserService(
           throw new Exception("Error creating doctor-specialities in service.");
         }
 
-        var availabilities = await availabilityService.AddDoctorAvailabilityAsync(
+        var availabilities = await doctorService.AddDoctorAvailabilityAsync(
           registerUserDto.Availabilities,
           doctor
         );
@@ -308,7 +325,7 @@ public class UserService(
         await auth0Service.DeleteUserAsync(user.Auth0Id);
 
       // Remove user appointments if exist
-      await appointmentService.DeleteAppointmentWhereUserId(userId);
+      await appointmentService.DeleteAppointmentWhereUserIdAsync(userId);
 
       appContext.Users.Remove(user);
       await appContext.SaveChangesAsync();
@@ -333,12 +350,18 @@ public class UserService(
         throw new KeyNotFoundException("User not found.");
       }
 
-      return new ServiceResponse<ProfileDto>(
-        true,
-        200,
-        user.ToProfileDto(),
-        "User Profile Retrieved"
-      );
+      ProfileDto? profileDto = null;
+
+      if (user.Role == Role.Patient)
+      {
+        profileDto = await patientService.GetPatientProfileAsync(userId);
+      }
+      else if (user.Role == Role.Doctor)
+      {
+        profileDto = await doctorService.GetDoctorProfileAsync(userId);
+      }
+
+      return new ServiceResponse<ProfileDto>(true, 200, profileDto, "User Profile Retrieved");
     }
     catch (System.Exception ex)
     {
@@ -348,70 +371,91 @@ public class UserService(
     }
   }
 
-  public async Task<ServiceResponse<ProfileDto>> EditUserProfileAsync(
-    EditProfileDto editProfileDto,
-    Guid userId
-  )
+  /// <summary>
+  /// Returns the edited profile of a user. Whether be it a patient or a doctor.
+  /// It returns a polymorphic profile dto (doctorProfile or patientProfile) that
+  /// depends on the user role associated with the userId
+  /// </summary>
+  /// <param name="editProfileDto"></param>
+  /// <returns>Either returns PatientProfileDto or DoctorProfileDto</returns>
+  /// <exception cref="KeyNotFoundException"/>
+  public async Task<ServiceResponse<ProfileDto>> EditUserProfileAsync(EditProfileDto editProfileDto)
   {
     try
     {
+      Guid userId = editProfileDto.UserId.ToGuid();
       var user = await appContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
       if (user == null)
       {
-        throw new BadHttpRequestException("User with that id is not found.");
+        throw new KeyNotFoundException("User with that id is not found.");
       }
 
-      // Destructure the fields from dto
-      var firstName = editProfileDto.FirstName;
-      var lastName = editProfileDto.LastName;
-      DateTime dateOfBirth =
+      // Update Firstname
+      user.FirstName = editProfileDto.FirstName ?? user.FirstName;
+
+      // Update LastName
+      user.LastName = editProfileDto.LastName ?? user.LastName;
+
+      // Update Date of birth
+      user.DateOfBirth =
         editProfileDto.DateOfBirth == null
           ? user.DateOfBirth
           : editProfileDto.DateOfBirth.ConvertTo<DateTime>();
-      var phone = editProfileDto.Phone;
 
-      // If you want to edit the email then make sure to make it unverified and prompt user to verify new email
+      // Update phone number
+      user.Phone = editProfileDto.Phone ?? user.Phone;
+
+      // Update ProfilePicture
+      user.ProfilePicture = editProfileDto.ProfilePicture ?? user.ProfilePicture;
+
+      // Update Gender
+      user.Gender =
+        editProfileDto.Gender != null ? editProfileDto.Gender.ConvertToEnum<Gender>() : user.Gender;
+
+      // Update Address
+      user.Address = editProfileDto.Address ?? user.Address;
+
+      // If you want to edit the email then make sure to make the current
+      // email unverified for prompting user to verify (the new email)
       if (editProfileDto.Email != null && editProfileDto.Email != user.Email)
       {
+        // Update the email
         user.Email = editProfileDto.Email;
         user.IsEmailVerified = false;
       }
 
+      // Used to store the return value
+      ProfileDto? profileDto = null;
+
       if (user.Role == Role.Patient)
       {
-        var medHis = editProfileDto.MedicalHistory;
-        var emPhone = editProfileDto.EmergencyContactPhone;
-        var emName = editProfileDto.EmergencyContactName;
-
-        // TODO : Implement a Patient Service method to update patient information given the above 3 fields
+        // Edit the Patient Profile and store to profileDto
+        profileDto = await patientService.EditPatientProfileAsync(
+          new EditPatientProfileDto(
+            userId,
+            editProfileDto.MedicalHistory,
+            editProfileDto.EmergencyContactName,
+            editProfileDto.EmergencyContactPhone
+          )
+        );
       }
       else if (user.Role == Role.Doctor)
       {
-        var specialities = editProfileDto.Specialities;
-        var qualifications = editProfileDto.Qualifications;
-        var biography = editProfileDto.Biography;
-        var availabilities = editProfileDto.Availabilities;
-        var doctorStatus = editProfileDto.DoctorStatus;
-
-        await doctorService.EditDoctorAsync(
+        // Edit Doctor Profile and store to profileDto
+        profileDto = await doctorService.EditDoctorProfileAsync(
           new EditDoctorProfileDto(
             userId,
-            specialities,
-            qualifications,
-            biography,
-            availabilities,
-            doctorStatus
+            editProfileDto.Specialities,
+            editProfileDto.Qualifications,
+            editProfileDto.Biography,
+            editProfileDto.Availabilities,
+            editProfileDto.DoctorStatus
           )
         );
       }
 
       await appContext.SaveChangesAsync(); // Save all updates
-      return new ServiceResponse<ProfileDto>(
-        true,
-        200,
-        user.ToProfileDto(),
-        "Profile Update Success."
-      );
+      return new ServiceResponse<ProfileDto>(true, 200, profileDto, "Profile Update Success.");
     }
     catch (System.Exception ex)
     {
