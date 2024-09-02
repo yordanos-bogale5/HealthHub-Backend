@@ -21,6 +21,53 @@ public static class EntityExtensions
     };
   }
 
+  public static PatientProfileDto ToPatientProfileDto(this User user, Patient patient)
+  {
+    return new PatientProfileDto
+    {
+      UserId = user.UserId,
+      Address = user.Address,
+      DateOfBirth = user.DateOfBirth,
+      Email = user.Email,
+      FirstName = user.FirstName,
+      Gender = user.Gender,
+      LastName = user.LastName,
+      Phone = user.Phone,
+      ProfilePicture = user.ProfilePicture ?? "",
+      Role = user.Role,
+      EmergencyContactName = patient.EmergencyContactName ?? "",
+      EmergencyContactPhone = patient.EmergencyContactPhone ?? "",
+      MedicalHistory = patient.MedicalHistory ?? ""
+    };
+  }
+
+  public static DoctorProfileDto ToDoctorProfileDto(
+    this User user,
+    Doctor doctor,
+    ICollection<DoctorAvailability> doctorAvailability,
+    ICollection<Speciality> specialities
+  )
+  {
+    return new DoctorProfileDto
+    {
+      UserId = user.UserId,
+      Address = user.Address,
+      Availabilities = doctorAvailability.Select(da => da.ToAvailabilityDto()).ToList(),
+      Biography = doctor.Biography,
+      DateOfBirth = user.DateOfBirth,
+      DoctorStatus = doctor.DoctorStatus,
+      Email = user.Email,
+      FirstName = user.FirstName,
+      Gender = user.Gender,
+      LastName = user.LastName,
+      Phone = user.Phone,
+      ProfilePicture = user.ProfilePicture ?? "",
+      Qualifications = doctor.Qualifications,
+      Role = user.Role,
+      Specialities = specialities.Select(s => s.ToSpecialityDto()).ToList()
+    };
+  }
+
   public static CreatePatientDto ToCreatePatientDto(this RegisterUserDto registerUserDto, User user)
   {
     return new CreatePatientDto
@@ -204,7 +251,11 @@ public static class EntityExtensions
     Doctor doctor
   )
   {
-    return new CreateDoctorSpecialityDto { Doctor = doctor, Speciality = speciality };
+    return new CreateDoctorSpecialityDto
+    {
+      DoctorId = doctor.DoctorId,
+      SpecialityId = speciality.SpecialityId
+    };
   }
 
   public static DoctorProfileDto ToDoctorProfileDto(

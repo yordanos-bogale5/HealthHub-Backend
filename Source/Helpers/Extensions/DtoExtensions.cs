@@ -77,15 +77,11 @@ public static class DtoExtensions
   }
 
   public static DoctorSpeciality ToDoctorSpeciality(
-    this CreateDoctorSpecialityDto createDoctorSpecialityDto
+    this CreateDoctorSpecialityDto createDoctorSpecialityDto,
+    Guid doctorId,
+    Guid specialityId
   )
   {
-    return new DoctorSpeciality()
-    {
-      SpecialityId = createDoctorSpecialityDto.Speciality.SpecialityId,
-      DoctorId = createDoctorSpecialityDto.Doctor.DoctorId,
-      Doctor = createDoctorSpecialityDto.Doctor,
-      Speciality = createDoctorSpecialityDto.Speciality
-    };
+    return new DoctorSpeciality() { DoctorId = doctorId, SpecialityId = specialityId };
   }
 }
