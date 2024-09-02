@@ -2,6 +2,7 @@ using HealthHub.Source.Data;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace HealthHub.Source.Services;
 
@@ -16,8 +17,21 @@ public class DoctorSpecialityService(
   {
     try
     {
+      var existentDoctorSpeciality = await appContext.DoctorSpecialities.FirstOrDefaultAsync(ds =>
+        ds.DoctorId == doctorSpecialityDto.DoctorId
+        && ds.SpecialityId == doctorSpecialityDto.SpecialityId
+      );
+
+      if (existentDoctorSpeciality != null)
+      {
+        return existentDoctorSpeciality;
+      }
+
       var doctorSpeciality = await appContext.DoctorSpecialities.AddAsync(
-        doctorSpecialityDto.ToDoctorSpeciality()
+        doctorSpecialityDto.ToDoctorSpeciality(
+          doctorSpecialityDto.DoctorId,
+          doctorSpecialityDto.SpecialityId
+        )
       );
       await appContext.SaveChangesAsync();
       return doctorSpeciality.Entity;
@@ -25,7 +39,7 @@ public class DoctorSpecialityService(
     catch (System.Exception ex)
     {
       logger.LogError(ex, "Error creating Doctor Speciality!");
-      throw new Exception("Error creating Doctor Speciality!");
+      throw;
     }
   }
 
