@@ -18,7 +18,7 @@ public record EditDoctorProfileDto(
   string? Qualifications,
   string? Biography,
   List<AvailabilityDto>? Availabilities,
-  DoctorStatus? DoctorStatus
+  string? DoctorStatus
 );
 
 public record DoctorDto
