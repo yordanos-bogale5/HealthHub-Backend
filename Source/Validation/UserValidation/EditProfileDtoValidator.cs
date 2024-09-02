@@ -1,38 +1,82 @@
 using FluentValidation;
+using FluentValidation.Results;
+using HealthHub.Source.Data;
+using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Validation;
 
 public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
 {
-  public EditProfileDtoValidator()
+  ApplicationContext appContext;
+
+  public EditProfileDtoValidator(ApplicationContext appContext)
   {
-    When(
-      u =>
-        u.FirstName == null
-        && u.LastName == null
-        && u.Email == null
-        && u.ProfilePicture == null
-        && u.Phone == null
-        && u.Gender == null
-        && u.DateOfBirth == null
-        && u.Address == null
-        && u.Role == null
-        && u.MedicalHistory == null
-        && u.EmergencyContactName == null
-        && u.EmergencyContactPhone == null
-        && u.Specialities == null
-        && u.Availabilities == null
-        && u.Qualifications == null
-        && u.Biography == null
-        && u.DoctorStatus == null,
-      () =>
-      {
-        RuleFor(u => u)
-          .NotEmpty()
-          .WithMessage("At least one field is required to update a user profile.");
-      }
-    );
+    this.appContext = appContext;
+
+    RuleFor(u => u)
+      .Custom(
+        (u, context) =>
+        {
+          if (
+            u.FirstName == null
+            && u.LastName == null
+            && u.Email == null
+            && u.ProfilePicture == null
+            && u.Phone == null
+            && u.Gender == null
+            && u.DateOfBirth == null
+            && u.Address == null
+            && u.MedicalHistory == null
+            && u.EmergencyContactName == null
+            && u.EmergencyContactPhone == null
+            && u.Specialities == null
+            && u.Availabilities == null
+            && u.Qualifications == null
+            && u.Biography == null
+            && u.DoctorStatus == null
+          )
+          {
+            context.AddFailure(
+              "Payload",
+              @"At least one field is required to update a user profile. Valid fields are FirstName, LastName, Email, ProfilePicture, Phone, Gender, DateOfBirth, Address, MedicalHistory, EmergencyContactName, EmergencyContactPhone, Specialities, Availabilities, Qualifications, Biography and DoctorStatus"
+            );
+          }
+        }
+      );
+
+    RuleFor(u => u.UserId)
+      .NotEmpty()
+      .WithMessage("User Id must be provided to edit a profile")
+      .Must(uid => Guid.TryParse(uid, out _))
+      .WithMessage("Not valid Guid");
+  }
+
+  public override async Task<ValidationResult> ValidateAsync(
+    ValidationContext<EditProfileDto> context,
+    CancellationToken cancellation = default
+  )
+  {
+    EditProfileDto v = context.InstanceToValidate;
+
+    var preValidationResult = await base.ValidateAsync(context, cancellation);
+
+    if (!preValidationResult.IsValid)
+    {
+      return preValidationResult;
+    }
+
+    var user = appContext.Users.Where(us => us.UserId == v.UserId.ToGuid()).FirstOrDefault();
+    if (user == null)
+    {
+      return await Task.FromResult(
+        new ValidationResult(
+          new List<ValidationFailure> { new(nameof(v.UserId), "User with that Id is not found.") }
+        )
+      );
+    }
+
+    Role role = user.Role; // User Role
 
     When(
       u => u.FirstName != null,
@@ -65,18 +109,6 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
     );
 
     When(
-      u => u.Role != null,
-      () =>
-      {
-        RuleFor(u => u.Role)
-          .NotEmpty()
-          .WithMessage("Role field is required")
-          .Must(ValidationHelper.BeValidRole)
-          .WithMessage("Role must be either Patient, Doctor, or Admin");
-      }
-    );
-
-    When(
       u => u.Gender != null,
       () =>
       {
@@ -84,47 +116,53 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
           .NotEmpty()
           .WithMessage("Gender field is required")
           .Must(ValidationHelper.BeValidGender)
-          .WithMessage("Gender must be either Male or Female");
+          .WithMessage($"Gender must be {string.Join(",", Enum.GetNames(typeof(Gender)))}");
       }
     );
 
-    When(
-      u =>
-        Enum.TryParse<Role>(u.Role?.ToString(), true, out var parsedRole)
-        && parsedRole == Role.Patient,
-      () =>
-      {
-        RuleFor(u => u.EmergencyContactName)
-          .NotEmpty()
-          .WithMessage("Emergency contact name is required for patients.");
+    if (role == Role.Patient)
+    {
+      RuleFor(u => u.EmergencyContactName)
+        .NotEmpty()
+        .WithMessage("Emergency contact name is required for patients.");
 
-        RuleFor(u => u.EmergencyContactPhone)
-          .NotEmpty()
-          .WithMessage("Emergency contact phone is required for patients.");
-      }
-    );
+      RuleFor(u => u.EmergencyContactPhone)
+        .NotEmpty()
+        .WithMessage("Emergency contact phone is required for patients.");
+    }
 
-    When(
-      u =>
-        Enum.TryParse<Role>(u.Role?.ToString(), true, out var parsedRole)
-        && parsedRole == Role.Doctor,
-      () =>
-      {
-        RuleFor(u => u.Specialities)
-          .NotEmpty()
-          .WithMessage("At least one speciality is required for doctors.");
-
-        RuleFor(u => u.Qualifications)
-          .NotEmpty()
-          .WithMessage("Qualifications are required for doctors.");
-
-        RuleFor(u => u.Biography).NotEmpty().WithMessage("Biography is required for doctors.");
-
-        RuleFor(u => u.DoctorStatus)
-          .IsInEnum()
-          .WithMessage("Doctor status must be a valid enum value.");
-      }
-    );
+    if (role == Role.Doctor)
+    {
+      When(
+        u => u.Qualifications != null,
+        () =>
+        {
+          RuleFor(u => u.Qualifications)
+            .NotEmpty()
+            .WithMessage("Qualifications are required for doctors.");
+        }
+      );
+      When(
+        u => u.Biography != null,
+        () =>
+        {
+          RuleFor(u => u.Biography).NotEmpty().WithMessage("Biography is required for doctors.");
+        }
+      );
+      When(
+        u => u.DoctorStatus != null,
+        () =>
+        {
+          RuleFor(u => u.DoctorStatus)
+            .NotEmpty()
+            .WithMessage(
+              $"Doctor status cannot be empty. Choose either {string.Join(",", Enum.GetNames(typeof(DoctorStatus)))}"
+            )
+            .Must(ValidationHelper.BeValidDoctorStatus)
+            .WithMessage("Doctor status must be a valid enum value.");
+        }
+      );
+    }
 
     // Availabilities Validation
     When(
@@ -146,5 +184,7 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
           .WithMessage("End time must be valid! (HH:mm)");
       }
     );
+
+    return await base.ValidateAsync(context);
   }
 }
