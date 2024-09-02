@@ -27,7 +27,7 @@ public class SpecialityService(ApplicationContext appContext, ILogger<Speciality
     catch (System.Exception ex)
     {
       logger.LogError(ex, "Error creating Speciality!");
-      throw new Exception("Error creating Speciality!");
+      throw;
     }
   }
 

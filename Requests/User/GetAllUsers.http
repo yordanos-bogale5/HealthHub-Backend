@@ -1,1 +1,1 @@
-GET {{apiHostUrl}}/api/users/all?Gender=
+GET {{apiHostUrl}}/api/users/all

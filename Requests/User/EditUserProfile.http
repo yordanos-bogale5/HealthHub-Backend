@@ -3,5 +3,20 @@ Content-Type: application/json
 
 {
   "UserId":"9cac0417-f1e2-4b2e-a6e6-3529d74fdf97",
-  "Gender":"M"
+  "Gender":"Male",
+  "Address":"Houston, Texas PO 2511 Xylo Street",
+  "Specialities": ["Oncologist","Brain Therapist"],
+  "Qualifications":"This is My Qualification",
+  "Biography":"I'm a doctor with 10 years of experience",
+  "DoctorStatus":"Active",
+  # "Phone":"",
+  "Gender":"Female",
+  "DateOfBirth":"2002-11-20",
+  "Availabilities": [
+    {
+      "day":"Saturday",
+      "startTime":"1:00",
+      "endTime":"7:00"
+    }
+  ]
 }
