@@ -61,4 +61,11 @@ public static class ValidationHelper
       return false;
     return Enum.TryParse<Gender>(genderString, true, out _);
   }
+
+  public static bool BeValidDoctorStatus(string? doctorStatusString)
+  {
+    if (doctorStatusString == null)
+      return false;
+    return Enum.TryParse<DoctorStatus>(doctorStatusString, true, out _);
+  }
 }
