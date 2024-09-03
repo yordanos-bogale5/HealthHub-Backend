@@ -4,6 +4,7 @@ using HealthHub.Source.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240902124204_Added_StartDate_And_EndDate_To_EducationModel")]
+    partial class Added_StartDate_And_EndDate_To_EducationModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -233,9 +236,6 @@ namespace HealthHub.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("CvId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("DoctorStatus")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -251,9 +251,6 @@ namespace HealthHub.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("DoctorId");
-
-                    b.HasIndex("CvId")
-                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -328,16 +325,9 @@ namespace HealthHub.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<byte[]>("FileData")
                         .IsRequired()
-                        .HasMaxLength(5242880)
                         .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MimeType")
                         .IsRequired()
@@ -717,19 +707,11 @@ namespace HealthHub.Migrations
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Doctor", b =>
                 {
-                    b.HasOne("HealthHub.Source.Models.Entities.File", "Cv")
-                        .WithOne()
-                        .HasForeignKey("HealthHub.Source.Models.Entities.Doctor", "CvId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("HealthHub.Source.Models.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Cv");
 
                     b.Navigation("User");
                 });
