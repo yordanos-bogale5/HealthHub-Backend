@@ -1,6 +1,7 @@
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Org.BouncyCastle.Crypto.Signers;
 
 namespace HealthHub.Source.Data
@@ -29,6 +30,10 @@ namespace HealthHub.Source.Data
     public DbSet<Admin> Admins { get; set; }
     public DbSet<Speciality> Specialities { get; set; }
     public DbSet<DoctorSpeciality> DoctorSpecialities { get; set; }
+
+    public DbSet<Education> Educations { get; set; }
+    public DbSet<Experience> Experiences { get; set; }
+
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<DoctorAvailability> DoctorAvailabilities { get; set; }
     public DbSet<Blog> Blogs { get; set; }
@@ -175,7 +180,7 @@ internal static class EntityConfiguration
     mb.Entity<Appointment>().Property(a => a.AppointmentType).HasConversion<string>();
     mb.Entity<Appointment>().Property(a => a.Status).HasConversion<string>();
 
-    // For Payment
+    // For Paymentt
     mb.Entity<Payment>().Property(r => r.PaymentStatus).HasConversion<string>();
     mb.Entity<Payment>().Property(r => r.PaymentProvider).HasConversion<string>();
 
@@ -184,5 +189,26 @@ internal static class EntityConfiguration
 
     // For DoctorAvailability
     mb.Entity<DoctorAvailability>().Property(da => da.AvailableDay).HasConversion<string>();
+
+    // Configure Doctor education relationship
+    mb.Entity<Doctor>()
+      .HasMany(d => d.Educations)
+      .WithOne(e => e.Doctor)
+      .HasForeignKey(e => e.DoctorId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    // Configure doctor experience relationship
+    mb.Entity<Doctor>()
+      .HasMany(d => d.Experiences)
+      .WithOne(e => e.Doctor)
+      .HasForeignKey(e => e.DoctorId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    // Configure Cv relationship with doctor
+    mb.Entity<Doctor>()
+      .HasOne(d => d.Cv)
+      .WithOne()
+      .HasForeignKey<Doctor>(d => d.CvId)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }
