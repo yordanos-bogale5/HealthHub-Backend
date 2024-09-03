@@ -1,3 +1,4 @@
+using HealthHub.Source.Models.Defaults;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
@@ -57,7 +58,9 @@ public static class DtoExtensions
       UserId = createDoctorDto.User.UserId,
       Qualifications = createDoctorDto.Qualifications,
       Biography = createDoctorDto.Biography,
-      DoctorStatus = createDoctorDto.DoctorStatus
+      DoctorStatus = createDoctorDto.DoctorStatus,
+      CvId = createDoctorDto.Cv.FileId,
+      Cv = createDoctorDto.Cv
     };
   }
 
@@ -83,5 +86,39 @@ public static class DtoExtensions
   )
   {
     return new DoctorSpeciality() { DoctorId = doctorId, SpecialityId = specialityId };
+  }
+
+  public static Education ToEducation(this CreateEducationDto createEducationDto)
+  {
+    return new Education
+    {
+      Degree = createEducationDto.Degree,
+      Institution = createEducationDto.Institution,
+      DoctorId = createEducationDto.DoctorId,
+      StartDate = createEducationDto.StartDate,
+      EndDate = createEducationDto.EndDate
+    };
+  }
+
+  public static Experience ToExperience(this CreateExperienceDto createExperienceDto)
+  {
+    return new Experience
+    {
+      Institution = createExperienceDto.Institution,
+      EndDate = createExperienceDto.EndDate,
+      StartDate = createExperienceDto.StartDate,
+      Description = createExperienceDto.Description,
+      DoctorId = createExperienceDto.DoctorId
+    };
+  }
+
+  public static Models.Entities.File ToFile(this CreateFileDto createFileDto)
+  {
+    return new Models.Entities.File
+    {
+      FileData = FileHelper.ToByteStream(createFileDto.FileDataBase64),
+      FileName = createFileDto.FileName,
+      MimeType = Mime.GetMime(createFileDto.MimeType)
+    };
   }
 }

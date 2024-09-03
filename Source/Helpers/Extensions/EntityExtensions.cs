@@ -79,13 +79,18 @@ public static class EntityExtensions
     };
   }
 
-  public static CreateDoctorDto ToCreateDoctorDto(this RegisterUserDto registerUserDto, User user)
+  public static CreateDoctorDto ToCreateDoctorDto(
+    this RegisterUserDto registerUserDto,
+    User user,
+    HealthHub.Source.Models.Entities.File cv
+  )
   {
     return new CreateDoctorDto
     {
       Biography = registerUserDto.Biography ?? "None",
       Qualifications = registerUserDto.Qualifications ?? "None",
-      User = user
+      User = user,
+      Cv = cv
     };
   }
 
@@ -317,5 +322,29 @@ public static class EntityExtensions
   public static string ToSpecialityDto(this Speciality speciality)
   {
     return speciality.SpecialityName;
+  }
+
+  public static EducationDto ToEducationDto(this Education education)
+  {
+    return new EducationDto(
+      education.EducationId,
+      education.Degree,
+      education.Institution,
+      education.StartDate,
+      education.EndDate,
+      education.DoctorId
+    );
+  }
+
+  public static ExperienceDto ToExperienceDto(this Experience experience)
+  {
+    return new ExperienceDto(
+      experience.ExperienceId,
+      experience.Institution,
+      experience.StartDate,
+      experience.EndDate,
+      experience.Description,
+      experience.DoctorId
+    );
   }
 }
