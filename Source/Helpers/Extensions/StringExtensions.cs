@@ -22,6 +22,18 @@ public static class StringExtensions
   {
     try
     {
+      var targetType = typeof(T);
+
+      if (targetType == typeof(DateOnly))
+      {
+        return (T)(object)DateOnly.Parse(value);
+      }
+
+      if (targetType == typeof(DateTime))
+      {
+        return (T)(object)DateTime.Parse(value);
+      }
+
       return (T)Convert.ChangeType(value, typeof(T));
     }
     catch (Exception ex)

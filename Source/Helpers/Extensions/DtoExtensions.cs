@@ -24,7 +24,7 @@ public static class DtoExtensions
       Address = userDto.Address,
       Gender = userDto.Gender.ConvertToEnum<Gender>(),
       Role = userDto.Role.ConvertToEnum<Role>(),
-      DateOfBirth = userDto.DateOfBirth.ConvertTo<DateTime>()
+      DateOfBirth = userDto.DateOfBirth.ConvertTo<DateOnly>()
     };
   }
 
@@ -118,7 +118,7 @@ public static class DtoExtensions
     {
       FileData = FileHelper.ToByteStream(createFileDto.FileDataBase64),
       FileName = createFileDto.FileName,
-      MimeType = Mime.GetMime(createFileDto.MimeType)
+      MimeType = createFileDto.MimeType
     };
   }
 }
