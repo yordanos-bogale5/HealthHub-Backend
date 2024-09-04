@@ -1,11 +1,14 @@
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Auth0.AspNetCore.Authentication.BackchannelLogout;
 using HealthHub.Source.Helpers.Constants;
+using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Org.BouncyCastle.Asn1.Cmp;
 
 namespace HealthHub.Source.Middlewares;
 
@@ -31,6 +34,7 @@ public class CustomValidationMiddleware(RequestDelegate next) : ControllerBase
     }
     catch (Exception ex)
     {
+      Console.WriteLine($"Caught exception of type: {ex.GetType()}");
       await ExceptionHandler.HandleInternalException(httpContext, ex);
     }
   }
@@ -53,7 +57,7 @@ internal static class ExceptionHandler
     BadHttpRequestException ex
   )
   {
-    httpContext.Response.ContentType = "application/problem+json";
+    httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.ProblemJson;
     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
 
     object errors = new { };
@@ -62,6 +66,7 @@ internal static class ExceptionHandler
     if (httpContext.Items.ContainsKey(ErrorFieldConstants.ModelStateErrors))
     {
       var data = (ModelStateDictionary)httpContext.Items[ErrorFieldConstants.ModelStateErrors]!;
+
       errors = data.ToDictionary(
         kvp => kvp.Key,
         kvp =>
@@ -91,7 +96,7 @@ internal static class ExceptionHandler
     KeyNotFoundException ex
   )
   {
-    httpContext.Response.ContentType = "application/problem+json";
+    httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.ProblemJson;
     httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
 
     object errors = new { };
@@ -106,7 +111,7 @@ internal static class ExceptionHandler
     UnauthorizedAccessException ex
   )
   {
-    httpContext.Response.ContentType = "application/problem+json";
+    httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.ProblemJson;
     httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
 
     object errors = new { };
@@ -118,7 +123,7 @@ internal static class ExceptionHandler
 
   internal static async Task HandleInternalException(HttpContext httpContext, Exception ex)
   {
-    httpContext.Response.ContentType = "application/json";
+    httpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Application.ProblemJson;
     httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
     var errorResponse = new { title = "An unexpected error occurred.", errors = ex.Message };
