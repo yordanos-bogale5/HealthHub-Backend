@@ -20,7 +20,7 @@ public enum MimeDefaults
 
 public static class Mime
 {
-  private static Dictionary<MimeDefaults, string> Mimes =
+  public static readonly Dictionary<MimeDefaults, string> Mimes =
     new()
     {
       { MimeDefaults.Jpeg, "image/jpeg" },
@@ -39,8 +39,26 @@ public static class Mime
       { MimeDefaults.Ogg, "audio/ogg" },
     };
 
+  // For performing reverse lookup efficiently
+  public static readonly Dictionary<string, MimeDefaults> ReverseMimes = Mimes.ToDictionary(
+    kvp => kvp.Value,
+    kvp => kvp.Key
+  );
+
   public static string GetMime(MimeDefaults mimeDefault)
   {
     return Mimes[mimeDefault];
+  }
+
+  public static string? GetMime(string mimeDefault)
+  {
+    if (!Enum.TryParse(mimeDefault, out MimeDefaults md))
+      return null;
+    return Mimes[md];
+  }
+
+  public static List<MimeDefaults> GetImageMimes()
+  {
+    return Mimes.Where(kvp => kvp.Value.StartsWith("image")).Select(kvp => kvp.Key).ToList();
   }
 }
