@@ -28,7 +28,7 @@ public record PatientDto
   public required bool IsEmailVerified { get; set; }
   public required string Phone { get; init; }
   public required Gender Gender { get; init; }
-  public required DateTime DateOfBirth { get; init; }
+  public required DateOnly DateOfBirth { get; init; }
   public required string ProfilePicture { get; set; }
   public required string Address { get; init; }
 

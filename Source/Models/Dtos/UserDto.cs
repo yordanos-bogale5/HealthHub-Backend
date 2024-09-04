@@ -12,7 +12,7 @@ public record UserDto
   public required string Email { get; set; }
   public required string Phone { get; set; }
   public required Gender Gender { get; set; }
-  public required DateTime DateOfBirth { get; set; }
+  public required DateOnly DateOfBirth { get; set; }
   public required string ProfilePicture { get; set; }
   public required string Address { get; set; }
 };
@@ -26,7 +26,7 @@ public record ProfileDto
   public required string ProfilePicture { get; init; }
   public required string Phone { get; init; }
   public required Gender Gender { get; init; }
-  public required DateTime DateOfBirth { get; init; }
+  public required DateOnly DateOfBirth { get; init; }
   public required string Address { get; init; }
   public required Role Role { get; init; }
 }
@@ -148,6 +148,7 @@ public record RegisterUserDto
   public string? Qualifications { get; set; }
   public string? Biography { get; set; }
   public DoctorStatus DoctorStatus { get; set; } = DoctorStatus.Active;
+  public CreateFileDto? Cv { get; set; }
 }
 
 /// <summary>
