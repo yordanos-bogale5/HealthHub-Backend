@@ -14,7 +14,7 @@ public class Appointment
   public Guid PatientId { get; set; } // <<FK>>
 
   [Required]
-  public DateTime AppointmentDate { get; set; }
+  public DateOnly AppointmentDate { get; set; }
 
   [Required]
   public TimeOnly AppointmentTime { get; set; }

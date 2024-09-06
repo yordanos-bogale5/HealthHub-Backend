@@ -61,7 +61,7 @@ public record AppointmentDto
   public required Guid AppointmentId { get; init; }
   public PatientDto? Patient { get; init; }
   public DoctorDto? Doctor { get; init; }
-  public required DateTime AppointmentDate { get; init; }
+  public required DateOnly AppointmentDate { get; init; }
   public required TimeOnly AppointmentTime { get; init; }
   public required AppointmentType AppointmentType { get; init; }
 }
