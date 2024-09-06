@@ -31,7 +31,7 @@ public class SpecialityService(ApplicationContext appContext, ILogger<Speciality
     }
   }
 
-  public async Task<List<Speciality>?> CreateSpecialitiesAsync(
+  public async Task<List<Speciality>> CreateSpecialitiesAsync(
     List<CreateSpecialityDto> specialityDtos
   )
   {

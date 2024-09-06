@@ -11,7 +11,7 @@ public class DoctorSpecialityService(
   ApplicationContext appContext
 )
 {
-  public async Task<DoctorSpeciality?> CreateDoctorSpecialityAsync(
+  public async Task<DoctorSpeciality> CreateDoctorSpecialityAsync(
     CreateDoctorSpecialityDto doctorSpecialityDto
   )
   {
@@ -43,7 +43,7 @@ public class DoctorSpecialityService(
     }
   }
 
-  public async Task<List<DoctorSpeciality>?> CreateDoctorSpecialitiesAsync(
+  public async Task<List<DoctorSpeciality>> CreateDoctorSpecialitiesAsync(
     List<CreateDoctorSpecialityDto> doctorSpecialityDtos
   )
   {

@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using System.Text.Json;
+using AutoMapper;
 using HealthHub.Source;
 using HealthHub.Source.Data;
+using HealthHub.Source.Helpers;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
@@ -36,108 +38,17 @@ public class UserService(
   AdminService adminService,
   SpecialityService specialityService,
   DoctorSpecialityService doctorSpecialityService,
-  AppointmentService appointmentService
+  AppointmentService appointmentService,
+  FileService fileService
 )
 {
-  /// <summary>
-  /// Check if Email is Verified by Auth0
-  /// </summary>
-  /// <param name="email"></param>
-  /// <returns></returns>
-  public async Task<ServiceResponse<bool?>> CheckEmailVerified(string email)
-  {
-    try
-    {
-      var user = await appContext.Users.FirstOrDefaultAsync(u => u.Email == email);
-
-      if (user == null)
-      {
-        throw new KeyNotFoundException("User with that email is not found");
-      }
-
-      if (user.IsEmailVerified)
-      {
-        return new ServiceResponse<bool?>(true, 200, true, "Email is verified");
-      }
-
-      if (user.Auth0Id == null)
-      {
-        throw new KeyNotFoundException("User doesn't have an account.");
-      }
-
-      var isEmailVerified = await auth0Service.IsEmailVerified(user.Auth0Id);
-
-      if (isEmailVerified == null)
-      {
-        throw new Exception("Failed to verify email.");
-      }
-
-      // Sync the auth0 email verification status with the user entity
-      user.IsEmailVerified = (bool)isEmailVerified;
-
-      await appContext.SaveChangesAsync();
-
-      return new ServiceResponse<bool?>(
-        true,
-        200,
-        isEmailVerified,
-        (bool)isEmailVerified ? "Email is verified" : "Email is not verified"
-      );
-    }
-    catch (System.Exception ex)
-    {
-      logger.LogError(ex, "Failed to check email verification");
-
-      throw new Exception("Failed to check email verification.");
-    }
-  }
-
-  /// <summary>
-  /// Get All Users
-  /// </summary>
-  /// <returns>A list of all users</returns>
-  /// <exception cref="Exception"></exception>
-  public async Task<ServiceResponse<List<ProfileDto?>>> GetAllUsers()
-  {
-    try
-    {
-      var users = await appContext.Users.ToListAsync();
-
-      List<ProfileDto?> profiles = [];
-
-      foreach (User u in users)
-      {
-        if (u.Role == Role.Patient)
-        {
-          profiles.Add(await patientService.GetPatientProfileAsync(u.UserId));
-        }
-        else if (u.Role == Role.Doctor)
-        {
-          profiles.Add(await doctorService.GetDoctorProfileAsync(u.UserId));
-        }
-      }
-
-      return new ServiceResponse<List<ProfileDto?>>(
-        Success: true,
-        StatusCode: 200,
-        Message: "Users Retrieved",
-        Data: profiles
-      );
-    }
-    catch (Exception ex)
-    {
-      Console.Write(ex);
-      throw;
-    }
-  }
-
   /// <summary>
   /// Register User Service
   /// </summary>
   /// <param name="registerUserDto"></param>
   /// <returns>The Guid of the newly created user.</returns>
   /// <exception cref="Exception"></exception>
-  public async Task<ServiceResponse<UserDto>> RegisterUser(RegisterUserDto registerUserDto)
+  public async Task<ServiceResponse<ProfileDto>> RegisterUser(RegisterUserDto registerUserDto)
   {
     Auth0UserDto? auth0User = null;
     try
@@ -186,37 +97,40 @@ public class UserService(
 
       Role role = registerUserDto.Role.ConvertToEnum<Role>();
 
-      // Create a Patient table for the user
+      ProfileDto? userProfile = null;
+
       if (role == Role.Patient)
       {
-        await patientService.CreatePatientAsync(
+        Patient patient = await patientService.CreatePatientAsync(
           registerUserDto.ToCreatePatientDto(addedUser.Entity)
         );
+        userProfile = addedUser.Entity.ToPatientProfileDto(patient);
       }
-      // Create a Doctor table for the user
       else if (role == Role.Doctor)
       {
-        // Create the doctor
-        var doctor = await doctorService.CreateDoctorAsync(
-          registerUserDto.ToCreateDoctorDto(addedUser.Entity)
+        // Create the CV file
+        var cvFile = await fileService.CreateFileAsync(
+          new CreateFileDto(
+            registerUserDto.Cv!.MimeType,
+            registerUserDto.Cv!.FileDataBase64,
+            registerUserDto.Cv!.FileName
+          )
         );
 
-        if (doctor == null)
-        {
-          logger.LogError("Error creating Doctor, returned null from doctor service.");
-          throw new Exception("Error creating Doctor");
-        }
+        // Create the doctor
+        Doctor doctor = await doctorService.CreateDoctorAsync(
+          registerUserDto.ToCreateDoctorDto(
+            addedUser.Entity,
+            cvFile,
+            registerUserDto.Educations,
+            registerUserDto.Experiences
+          )
+        );
 
         // Create the specialities
         var specialities = await specialityService.CreateSpecialitiesAsync(
           registerUserDto.Specialities.ToSpecialityList(doctor.DoctorId)
         );
-
-        if (specialities == null)
-        {
-          logger.LogError("Error creating specialities, returned null from speciality service.");
-          throw new Exception("Error creating specialities");
-        }
 
         var createDoctorSpecialityDtos = specialities
           .Select(s => new CreateDoctorSpecialityDto
@@ -226,24 +140,31 @@ public class UserService(
           })
           .ToList();
 
+        // Create the speciality-doctor association
         var doctorSpecialities = await doctorSpecialityService.CreateDoctorSpecialitiesAsync(
           createDoctorSpecialityDtos
         );
 
-        if (doctorSpecialities == null)
-        {
-          throw new Exception("Error creating doctor-specialities in service.");
-        }
-
+        // Create the availabilities
         var availabilities = await doctorService.AddDoctorAvailabilityAsync(
           registerUserDto.Availabilities,
           doctor
         );
 
-        if (availabilities == null)
-        {
-          throw new Exception("Error creating availabilities in service.");
-        }
+        ICollection<Education> educations = await doctorService.GetDoctorEducations(
+          doctor.DoctorId
+        );
+        ICollection<Experience> experiences = await doctorService.GetDoctorExperiences(
+          doctor.DoctorId
+        );
+
+        userProfile = addedUser.Entity.ToDoctorProfileDto(
+          doctor,
+          availabilities,
+          specialities,
+          educations,
+          experiences
+        );
       }
       // Create a Admin table for the user
       else
@@ -251,16 +172,17 @@ public class UserService(
         var admin = adminService.CreateAdminAsync(
           registerUserDto.ToCreateAdminDto(addedUser.Entity)
         );
+        userProfile = addedUser.Entity.ToProfileDto();
       }
 
       // Save the Changes
       await appContext.SaveChangesAsync();
 
-      return new ServiceResponse<UserDto>(
+      return new ServiceResponse<ProfileDto>(
         Success: true,
         StatusCode: 201,
         Message: "Registration Success!",
-        Data: addedUser.Entity.ToUserDto()
+        Data: userProfile
       );
     }
     catch (Exception ex)
@@ -400,7 +322,7 @@ public class UserService(
       user.DateOfBirth =
         editProfileDto.DateOfBirth == null
           ? user.DateOfBirth
-          : editProfileDto.DateOfBirth.ConvertTo<DateTime>();
+          : editProfileDto.DateOfBirth.ConvertTo<DateOnly>();
 
       // Update phone number
       user.Phone = editProfileDto.Phone ?? user.Phone;
@@ -449,7 +371,9 @@ public class UserService(
             editProfileDto.Qualifications,
             editProfileDto.Biography,
             editProfileDto.Availabilities,
-            editProfileDto.DoctorStatus
+            editProfileDto.DoctorStatus,
+            editProfileDto.Educations,
+            editProfileDto.Experiences
           )
         );
       }
@@ -460,6 +384,98 @@ public class UserService(
     catch (System.Exception ex)
     {
       logger.LogError($"{ex}: AN error occured when trying to edit profile information.");
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Check if Email is Verified by Auth0
+  /// </summary>
+  /// <param name="email"></param>
+  /// <returns></returns>
+  public async Task<ServiceResponse<bool?>> CheckEmailVerified(string email)
+  {
+    try
+    {
+      var user = await appContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+      if (user == null)
+      {
+        throw new KeyNotFoundException("User with that email is not found");
+      }
+
+      if (user.IsEmailVerified)
+      {
+        return new ServiceResponse<bool?>(true, 200, true, "Email is verified");
+      }
+
+      if (user.Auth0Id == null)
+      {
+        throw new KeyNotFoundException("User doesn't have an account.");
+      }
+
+      var isEmailVerified = await auth0Service.IsEmailVerified(user.Auth0Id);
+
+      if (isEmailVerified == null)
+      {
+        throw new Exception("Failed to verify email.");
+      }
+
+      // Sync the auth0 email verification status with the user entity
+      user.IsEmailVerified = (bool)isEmailVerified;
+
+      await appContext.SaveChangesAsync();
+
+      return new ServiceResponse<bool?>(
+        true,
+        200,
+        isEmailVerified,
+        (bool)isEmailVerified ? "Email is verified" : "Email is not verified"
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Failed to check email verification");
+
+      throw new Exception("Failed to check email verification.");
+    }
+  }
+
+  /// <summary>
+  /// Get All Users
+  /// </summary>
+  /// <returns>A list of all users</returns>
+  /// <exception cref="Exception"></exception>
+  public async Task<ServiceResponse<List<ProfileDto?>>> GetAllUsers()
+  {
+    try
+    {
+      var users = await appContext.Users.ToListAsync();
+
+      List<ProfileDto?> profiles = [];
+
+      foreach (User u in users)
+      {
+        if (u.Role == Role.Patient)
+        {
+          profiles.Add(await patientService.GetPatientProfileAsync(u.UserId));
+        }
+        else if (u.Role == Role.Doctor)
+        {
+          profiles.Add(await doctorService.GetDoctorProfileAsync(u.UserId));
+        }
+      }
+
+      return new ServiceResponse<List<ProfileDto?>>(
+        Success: true,
+        StatusCode: 200,
+        Message: "Users Retrieved",
+        Data: profiles
+      );
+    }
+    catch (Exception ex)
+    {
+      Console.Write(ex);
       throw;
     }
   }

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 public class PatientService(ILogger<PatientService> logger, ApplicationContext appContext)
 {
-  public async Task<Patient?> CreatePatientAsync(CreatePatientDto createPatientDto)
+  public async Task<Patient> CreatePatientAsync(CreatePatientDto createPatientDto)
   {
     try
     {
