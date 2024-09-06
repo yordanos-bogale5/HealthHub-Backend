@@ -35,7 +35,7 @@ public class User
 
   [Required]
   [AgeAbove(18)]
-  public required DateTime DateOfBirth { get; set; }
+  public required DateOnly DateOfBirth { get; set; }
 
   public string? ProfilePicture { get; set; }
 

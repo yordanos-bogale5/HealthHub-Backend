@@ -1,3 +1,3 @@
-@doctorId = 07914252-5BC6-47F1-5B88-08DCC16013F6
+@doctorId = 8d79e723-238b-4048-0b4d-08dcccd90525
 GET {{apiHostUrl}}/api/appointments/doctor/{{doctorId}}
 

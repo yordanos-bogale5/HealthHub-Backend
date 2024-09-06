@@ -1,0 +1,1 @@
+GET {{apiHostUrl}}/api/appointments/doctor/8d79e723-238b-4048-0b4d-08dcccd90525/schedules?timeFrame=Year

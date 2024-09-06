@@ -205,12 +205,14 @@ var app = builder.Build();
 
 
 {
+  // Middlewares
+  app.UseCustomValidation(); // Register the Custom Validation Middleware
+  app.UseCookieMiddleware(); // Register the Cookie Middleware
+
   app.UseSerilogRequestLogging(); // Enable Serilog Request Logging
 
   // app.UseExceptionHandler("/error"); // Exception handling endpoint
 
-  app.UseCustomValidation(); // Register the Custom Validation Middleware
-  app.UseCookieMiddleware(); // Register the Cookie Middleware
 
   app.UseAuthentication();
   app.UseAuthorization();

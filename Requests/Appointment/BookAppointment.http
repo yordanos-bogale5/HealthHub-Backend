@@ -2,9 +2,9 @@ POST {{apiHostUrl}}/api/appointments/book
 Content-Type: application/json
 
 {
-  "DoctorId": "26aeb3bc-c119-4be0-bc7c-08dcc233355d",
-  "PatientId": "3C1F43FE-49C9-4FB7-5B89-08DCC16013F6",
-  "AppointmentDate": "2024-12-23",
-  "AppointmentTime": "11:00",
+  "DoctorId": "8d79e723-238b-4048-0b4d-08dcccd90525",
+  "PatientId": "d52fdb99-c1d6-41bb-fad5-08dccda9d99e",
+  "AppointmentDate": "2024-9-7",
+  "AppointmentTime": "6:00",
   "AppointmentType": "InPerson"
 }

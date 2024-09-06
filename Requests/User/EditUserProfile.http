@@ -2,21 +2,32 @@ PATCH {{apiHostUrl}}/api/users/profile
 Content-Type: application/json
 
 {
-  "UserId":"9cac0417-f1e2-4b2e-a6e6-3529d74fdf97",
+  "UserId":"db1ca3d9-8f05-444e-9cf8-e8e3f20dd38e",
   "Gender":"Male",
   "Address":"Houston, Texas PO 2511 Xylo Street",
   "Specialities": ["Oncologist","Brain Therapist"],
   "Qualifications":"This is My Qualification",
-  "Biography":"I'm a doctor with 10 years of experience",
-  "DoctorStatus":"Active",
-  # "Phone":"",
-  "Gender":"Female",
+  "Biography":"A highly skilled family medicine physician with over a decade of experience. He completed his medical degree at Stanford University and his residency at the Mayo Clinic. Dr. Davis is dedicated to providing comprehensive care with a focus on preventive medicine and patient education. Known for his empathetic approach and thorough care, he excels in managing chronic conditions and promoting overall wellness. Outside of work, Dr. Davis enjoys hiking and volunteering at local health outreach programs",
+  "DoctorStatus":"Onleave",
+  "Gender":"Male",
   "DateOfBirth":"2002-11-20",
-  "Availabilities": [
-    {
-      "day":"Saturday",
-      "startTime":"1:00",
-      "endTime":"7:00"
-    }
-  ]
+  # "Availabilities": [
+  #   {
+  #     "day":"Saturday",
+  #     "startTime":"1:00",
+  #     "endTime":"7:00"
+  #   }
+  # ],
+  # "Educations":[{
+  #   "degree": "PHD(Post Doctoral)",
+  #   "institution": "University of Berkeley",
+  #   "startDate": "1999-10-20",
+  #   "endDate": "2001-10-10"
+  # }],
+  # "Experiences":[{
+  #   "institution":"Berkely institute of medicine (BIOM)",
+  #   "startDate":"2001-10-10",
+  #   # End date can be nullable (if so then its considered upto present time)
+  #   "endDate":null
+  # }]
 }

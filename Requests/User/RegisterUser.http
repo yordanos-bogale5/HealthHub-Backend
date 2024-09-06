@@ -2,14 +2,14 @@ POST {{apiHostUrl}}/api/users/register
 Content-Type: application/json
 
 {
-  "FirstName": "Bob",
-  "LastName" : "Juan",
-  "Email"    : "dagtef@gmail.com",
+  "FirstName": "Emilia",
+  "LastName" : "Kendle",
+  "Email"    : "dagtef2@gmail.com",
   "Password" : "12345678Ab@",
-  "Gender"   : "Male",
+  "Gender"   : "Female",
   "DateOfBirth" : "2002-12-10",
-  "Role"     : "Doctor",
-  "Phone"    : "35351059055",
+  "Role"     : "Patient",
+  "Phone"    : "3535105905",
   "Address"  : "Kentucky",
   "ProfilePicture" : "PROFILE_DATA_GOES_HERE",
 
@@ -20,11 +20,35 @@ Content-Type: application/json
     "Brain SPecialist", "Tumor Specialist", "Surgeon"
   ],
   "Availabilities" : [
-    ["Monday","10:00","17:00"],
-    ["Wednesday","12:00","15:00"]
-    ["Saturday","8:00","14:00"]
+    {
+      "day":"Monday",
+      "startTime":"1:00",
+      "endTime":"10:00"
+    }
   ],
-  "Cv":"CV_FILE_DATA_GOES_HERE",
+
+  "Cv":{
+    "MimeType":"image/png",
+    "FileDataBase64":"aa==",
+    "FileName":" f"
+  },
+
+  "Educations":[
+    {
+      "Degree":"PHD",
+      "StartDate":"10-20-2005",
+      "EndDate":"10-10-2008",
+      "Institution":"University of Berkeley"
+    }
+  ],
+
+  "Experiences": [
+    {
+      "Institution":"American Hospital Inc.",
+      "StartDate":"10-20-2008",
+      "EndDate": null
+    }
+  ],
 
   # Patient Specific Payload
   "MedicalHistory": "Had severe brain trauma multiple times.",
