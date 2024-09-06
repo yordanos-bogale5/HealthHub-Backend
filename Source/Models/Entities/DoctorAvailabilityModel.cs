@@ -11,7 +11,7 @@ public class DoctorAvailability
   public Guid DoctorId { get; set; } // <<FK>>
 
   [Required]
-  public Days AvailableDay { get; set; }
+  public DayOfWeek AvailableDay { get; set; }
   public TimeOnly StartTime { get; set; } = TimeOnly.MinValue.AddHours(6);
   public TimeOnly EndTime { get; set; } = TimeOnly.MaxValue.AddHours(-6);
 
