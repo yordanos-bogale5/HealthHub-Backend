@@ -1,3 +1,4 @@
+using HealthHub.Migrations;
 using HealthHub.Source.Data;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
@@ -5,6 +6,7 @@ using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Interfaces;
 using HealthHub.Source.Models.Responses;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Extensions;
 
@@ -57,13 +59,15 @@ public class AppointmentService(
       }
 
       // Destructuring and parsing
-      DateTime appointmentDate = createAppointmentDto.AppointmentDate.ConvertTo<DateTime>();
+      DateOnly appointmentDate = createAppointmentDto.AppointmentDate.ConvertTo<DateOnly>();
       TimeOnly appointmentTime = TimeOnly.Parse(createAppointmentDto.AppointmentTime);
 
       AppointmentType appointmentType =
         createAppointmentDto.AppointmentType.ConvertToEnum<AppointmentType>();
 
-      Days appointmentDay = appointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<Days>();
+      DayOfWeek appointmentDay = appointmentDate
+        .DayOfWeek.GetDisplayName()
+        .ConvertToEnum<DayOfWeek>();
 
       // Create the appointment
       Appointment appointmentData = new Appointment
@@ -155,7 +159,7 @@ public class AppointmentService(
   /// <returns>True if the appointment slot is available (i.e. no appointment exists for that doctor, date, and time); otherwise, false.</returns>
   public async Task<bool> CheckAppointmentAvailabilityAsync(
     Guid doctorId,
-    DateTime newAppointmentDate,
+    DateOnly newAppointmentDate,
     TimeOnly newAppointmentStartTime
   )
   {
@@ -324,13 +328,13 @@ public class AppointmentService(
   /// </summary>
   /// <param name="doctorId"></param>
   /// <returns>A list of appointment dtos</returns>
-  public async Task<ServiceResponse<List<AppointmentDto>>> GetDoctorAppointmentsAsync(Guid doctorId)
+  public async Task<List<AppointmentDto>> GetDoctorAppointmentsAsync(Guid doctorId)
   {
     try
     {
       if (!await doctorService.CheckDoctorExistsAsync(doctorId))
       {
-        return new ServiceResponse<List<AppointmentDto>>(false, 404, null, "Doctor not found");
+        throw new KeyNotFoundException("Doctor not found");
       }
 
       var result = await appContext
@@ -340,12 +344,7 @@ public class AppointmentService(
         .Select(ap => ap.ToAppointmentDto(ap.Patient, ap.Patient.User))
         .ToListAsync();
 
-      return new ServiceResponse<List<AppointmentDto>>(
-        true,
-        200,
-        result,
-        "Fetched all doctor appointments."
-      );
+      return result;
     }
     catch (System.Exception ex)
     {
@@ -388,8 +387,10 @@ public class AppointmentService(
       }
 
       var doctorId = editAppointmentDto.DoctorId?.ToGuid();
-      var appointmentDate = editAppointmentDto.AppointmentDate?.ConvertTo<DateTime>();
-      Days? appointmentDay = appointmentDate?.DayOfWeek.GetDisplayName().ConvertToEnum<Days>();
+      var appointmentDate = editAppointmentDto.AppointmentDate?.ConvertTo<DateOnly>();
+      DayOfWeek? appointmentDay = appointmentDate
+        ?.DayOfWeek.GetDisplayName()
+        .ConvertToEnum<DayOfWeek>();
       var appointmentTime = TimeOnly.TryParse(editAppointmentDto.AppointmentTime, out var appTime)
         ? appTime
         : (TimeOnly?)null;
@@ -420,7 +421,7 @@ public class AppointmentService(
       bool isDoctorAvailable = await doctorService.CheckDoctorAvailabilityAsync(
         doctorId ?? appointment.DoctorId,
         appointmentDay
-          ?? appointment.AppointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<Days>(),
+          ?? appointment.AppointmentDate.DayOfWeek.GetDisplayName().ConvertToEnum<DayOfWeek>(),
         appointmentTime ?? appointment.AppointmentTime,
         appointment.AppointmentTimeSpan
       );
@@ -476,6 +477,156 @@ public class AppointmentService(
     catch (System.Exception ex)
     {
       logger.LogError($"An error occured while trying to check if appointment exists {ex}");
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Gets the doctor appointment schedules
+  /// </summary>
+  /// <param name="doctorId"></param>
+  /// <returns><see cref="DoctorSchedules"/> if the doctor has appointments, otherwise null.</returns>
+  public DoctorSchedules? GetDoctorAppointmentSchedules(Guid doctorId)
+  {
+    try
+    {
+      Dictionary<DateOnly, List<DoctorSchedule>> result = [];
+
+      var appointments = appContext.Appointments.Where(a =>
+        a.DoctorId == doctorId && a.AppointmentDate >= DateOnly.FromDateTime(DateTime.Today)
+      );
+
+      if (!appointments.Any())
+        return null;
+
+      foreach (Appointment appointment in appointments)
+      {
+        if (result.ContainsKey(appointment.AppointmentDate))
+        {
+          result[appointment.AppointmentDate]
+            .Add(
+              new DoctorSchedule(
+                new TimeRange(
+                  appointment.AppointmentTime,
+                  appointment.AppointmentTime.Add(appointment.AppointmentTimeSpan)
+                ),
+                false // not free because he/she has an appointment
+              )
+            );
+        }
+        else
+        {
+          result[appointment.AppointmentDate] =
+          [
+            new DoctorSchedule(
+              new TimeRange(
+                appointment.AppointmentTime,
+                appointment.AppointmentTime.Add(appointment.AppointmentTimeSpan)
+              ),
+              false
+            )
+          ];
+        }
+      }
+
+      return new DoctorSchedules(result);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured trying to get doctor appointment schedules.");
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Gets all the schedules of the doctor within the given time frame
+  /// </summary>
+  /// <param name="doctorId"></param>
+  /// <param name="timeFrame"></param>
+  /// <returns></returns>
+  public async Task<DoctorSchedules?> GetDoctorSchedulesAsync(Guid doctorId, TimeFrame timeFrame)
+  {
+    try
+    {
+      // Get doctor available DayOfWeek with the time ranges they are available in
+      Dictionary<DayOfWeek, List<TimeRange>> doctorAvailabilities =
+        await doctorService.GetDoctorAvailabilitiesAsync(doctorId);
+
+      // Sort the list of time ranges in each day of doctor availabilities in ascending order of startTime
+      foreach (var da in doctorAvailabilities)
+        da.Value.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+
+      // Get doctor appointment schedules
+      var doctorAppointmentSchedulesResponse = GetDoctorAppointmentSchedules(doctorId);
+
+      Dictionary<DateOnly, List<DoctorSchedule>> doctorAppointments =
+        doctorAppointmentSchedulesResponse == null ? [] : doctorAppointmentSchedulesResponse.Data;
+
+      // Sort likewise  the doctor appointment timeranges
+      foreach (var da in doctorAppointments)
+        da.Value.Sort((a, b) => a.TimeRange.StartTime.CompareTo(b.TimeRange.StartTime));
+
+      // This is what we'll return (a date to schedules map)
+      var result = new Dictionary<DateOnly, List<DoctorSchedule>>();
+
+      var timeFrameLength = (int)timeFrame;
+
+      DateOnly curDate = DateOnly.FromDateTime(DateTime.Today);
+      for (int i = 0; i < timeFrameLength; i++)
+      {
+        if (doctorAvailabilities.ContainsKey(curDate.DayOfWeek))
+          result[curDate] = doctorAvailabilities[curDate.DayOfWeek]
+            .Select(timeRange => new DoctorSchedule(timeRange, true))
+            .ToList();
+        curDate = curDate.AddDays(1);
+      }
+
+      // TODO: Finish  the algorithm
+      // Currenlty it stops by giving default value [] for the given timeFrame
+      // Your task is to write an algorithm that will populate each date with the doctor avaiable times for that date
+      // considering also the appointments that are present on that day (marking free/notFree each doctorSchedule)
+
+      foreach (DateOnly appDate in doctorAppointments.Keys)
+      {
+        foreach (DayOfWeek day in doctorAvailabilities.Keys)
+        {
+          if (appDate.DayOfWeek != day)
+            continue;
+
+          result[appDate] = []; // Empty the result appDate entry because we will populate it dynamically from here forth
+
+          List<DoctorSchedule> appointmentSchedule = doctorAppointments[appDate];
+          List<TimeRange> availabilityScheduleRanges = doctorAvailabilities[day];
+
+          TimeOnly startTime = availabilityScheduleRanges[0].StartTime;
+          TimeOnly endTime = availabilityScheduleRanges[0].EndTime;
+
+          for (var j = 0; j < appointmentSchedule.Count; j++)
+          {
+            if (!result.ContainsKey(appDate))
+              continue;
+
+            var (timeRange, isFree) = appointmentSchedule[j];
+
+            if (startTime != timeRange.StartTime)
+              result[appDate]
+                .Add(new DoctorSchedule(new TimeRange(startTime, timeRange.StartTime), true));
+
+            result[appDate].Add(new DoctorSchedule(timeRange, isFree));
+
+            startTime = timeRange.EndTime;
+
+            if (j == appointmentSchedule.Count - 1 && startTime != endTime)
+              result[appDate].Add(new DoctorSchedule(new TimeRange(startTime, endTime), true));
+          }
+        }
+      }
+
+      return new DoctorSchedules(result);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured trying to get doctor schedules in service");
       throw;
     }
   }
