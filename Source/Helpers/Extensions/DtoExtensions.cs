@@ -88,27 +88,30 @@ public static class DtoExtensions
     return new DoctorSpeciality() { DoctorId = doctorId, SpecialityId = specialityId };
   }
 
-  public static Education ToEducation(this CreateEducationDto createEducationDto)
+  public static Education ToEducation(this CreateEducationDto createEducationDto, Guid doctorId)
   {
     return new Education
     {
       Degree = createEducationDto.Degree,
       Institution = createEducationDto.Institution,
-      DoctorId = createEducationDto.DoctorId,
-      StartDate = createEducationDto.StartDate,
-      EndDate = createEducationDto.EndDate
+      DoctorId = doctorId,
+      StartDate = createEducationDto.StartDate.ConvertTo<DateOnly>(),
+      EndDate = createEducationDto.EndDate.ConvertTo<DateOnly>()
     };
   }
 
-  public static Experience ToExperience(this CreateExperienceDto createExperienceDto)
+  public static Experience ToExperience(this CreateExperienceDto createExperienceDto, Guid doctorId)
   {
     return new Experience
     {
       Institution = createExperienceDto.Institution,
-      EndDate = createExperienceDto.EndDate,
-      StartDate = createExperienceDto.StartDate,
+      EndDate =
+        createExperienceDto.EndDate == null
+          ? null
+          : createExperienceDto.EndDate.ConvertTo<DateOnly>(),
+      StartDate = createExperienceDto.StartDate.ConvertTo<DateOnly>(),
       Description = createExperienceDto.Description,
-      DoctorId = createExperienceDto.DoctorId
+      DoctorId = doctorId
     };
   }
 

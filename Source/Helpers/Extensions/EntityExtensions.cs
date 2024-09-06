@@ -26,6 +26,7 @@ public static class EntityExtensions
     return new PatientProfileDto
     {
       UserId = user.UserId,
+      PatientId = patient.PatientId,
       Address = user.Address,
       DateOfBirth = user.DateOfBirth,
       Email = user.Email,
@@ -45,12 +46,15 @@ public static class EntityExtensions
     this User user,
     Doctor doctor,
     ICollection<DoctorAvailability> doctorAvailability,
-    ICollection<Speciality> specialities
+    ICollection<Speciality> specialities,
+    ICollection<Education> educations,
+    ICollection<Experience> experiences
   )
   {
     return new DoctorProfileDto
     {
       UserId = user.UserId,
+      DoctorId = doctor.DoctorId,
       Address = user.Address,
       Availabilities = doctorAvailability.Select(da => da.ToAvailabilityDto()).ToList(),
       Biography = doctor.Biography,
@@ -64,7 +68,9 @@ public static class EntityExtensions
       ProfilePicture = user.ProfilePicture ?? "",
       Qualifications = doctor.Qualifications,
       Role = user.Role,
-      Specialities = specialities.Select(s => s.ToSpecialityDto()).ToList()
+      Specialities = specialities.Select(s => s.ToSpecialityDto()).ToList(),
+      Educations = educations.Select(e => e.ToEducationDto()).ToList(),
+      Experiences = experiences.Select(e => e.ToExperienceDto()).ToList(),
     };
   }
 
@@ -82,7 +88,9 @@ public static class EntityExtensions
   public static CreateDoctorDto ToCreateDoctorDto(
     this RegisterUserDto registerUserDto,
     User user,
-    HealthHub.Source.Models.Entities.File cv
+    HealthHub.Source.Models.Entities.File cv,
+    List<CreateEducationDto> createEducationDtos,
+    List<CreateExperienceDto> createExperienceDtos
   )
   {
     return new CreateDoctorDto
@@ -90,7 +98,9 @@ public static class EntityExtensions
       Biography = registerUserDto.Biography ?? "None",
       Qualifications = registerUserDto.Qualifications ?? "None",
       User = user,
-      Cv = cv
+      Cv = cv,
+      Educations = createEducationDtos,
+      Experiences = createExperienceDtos
     };
   }
 
@@ -267,12 +277,15 @@ public static class EntityExtensions
     this Doctor doctor,
     User user,
     ICollection<DoctorAvailability> doctorAvailability,
-    ICollection<Speciality> specialities
+    ICollection<Speciality> specialities,
+    ICollection<Education> educations,
+    ICollection<Experience> experiences
   )
   {
     return new DoctorProfileDto
     {
       UserId = user.UserId,
+      DoctorId = doctor.DoctorId,
       Address = user.Address,
       Availabilities = doctorAvailability.Select(da => da.ToAvailabilityDto()).ToList(),
       Biography = doctor.Biography,
@@ -286,7 +299,9 @@ public static class EntityExtensions
       ProfilePicture = user.ProfilePicture ?? "",
       Qualifications = doctor.Qualifications,
       Role = user.Role,
-      Specialities = specialities.Select(s => s.ToSpecialityDto()).ToList()
+      Specialities = specialities.Select(s => s.ToSpecialityDto()).ToList(),
+      Educations = educations.Select(e => e.ToEducationDto()).ToList(),
+      Experiences = experiences.Select(e => e.ToExperienceDto()).ToList(),
     };
   }
 
@@ -295,6 +310,7 @@ public static class EntityExtensions
     return new PatientProfileDto
     {
       UserId = user.UserId,
+      PatientId = patient.PatientId,
       Address = user.Address,
       DateOfBirth = user.DateOfBirth,
       Email = user.Email,
