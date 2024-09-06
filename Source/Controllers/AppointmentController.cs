@@ -2,10 +2,13 @@ using FluentValidation;
 using HealthHub.Source.Config;
 using HealthHub.Source.Helpers.Constants;
 using HealthHub.Source.Models.Dtos;
+using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services;
+using HealthHub.Source.Validation;
 using HealthHub.Source.Validation.AppointmentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace HealthHub.Source.Controllers;
 
@@ -83,8 +86,8 @@ public class AppointmentController(
   {
     try
     {
-      var response = await appointmentService.GetDoctorAppointmentsAsync(doctorId);
-      return StatusCode(response.StatusCode, response);
+      var result = await appointmentService.GetDoctorAppointmentsAsync(doctorId);
+      return Ok(result);
     }
     catch (System.Exception ex)
     {
@@ -178,6 +181,35 @@ public class AppointmentController(
     catch (System.Exception ex)
     {
       logger.LogError($"Error occured when trying to edit appointment {ex}");
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Gets the doctor schedule for the specified time span
+  /// </summary>
+  /// <param name="doctorId"></param>
+  /// <param name="timeFrame">{"Day","Month","Year"}</param>
+  /// <returns></returns>
+  [HttpGet("doctor/{doctorId}/schedules")]
+  public async Task<IActionResult> GetDoctorSchedules(
+    [FromRoute] Guid doctorId,
+    [FromQuery] [TimeFrame] TimeFrame timeFrame = TimeFrame.Month
+  )
+  {
+    try
+    {
+      if (!ModelState.IsValid)
+      {
+        HttpContext.Items[ErrorFieldConstants.ModelStateErrors] = ModelState;
+        throw new BadHttpRequestException(ErrorMessages.ValidationError);
+      }
+      var result = await appointmentService.GetDoctorSchedulesAsync(doctorId, timeFrame);
+      return Ok(result);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured trying to get doctor schedules");
       throw;
     }
   }
