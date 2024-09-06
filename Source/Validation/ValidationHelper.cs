@@ -1,3 +1,5 @@
+using HealthHub.Source.Helpers;
+using HealthHub.Source.Models.Defaults;
 using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Validation;
@@ -16,6 +18,13 @@ public static class ValidationHelper
     if (date == null)
       return false;
     return DateTime.TryParse(date, out _);
+  }
+
+  public static bool BeAValidDateOnlyString(string? date)
+  {
+    if (date == null)
+      return false;
+    return DateOnly.TryParse(date, out _);
   }
 
   public static bool BeAValidAppointmentType(string? appointmentTypeString)
@@ -67,5 +76,37 @@ public static class ValidationHelper
     if (doctorStatusString == null)
       return false;
     return Enum.TryParse<DoctorStatus>(doctorStatusString, true, out _);
+  }
+
+  public static bool IsValidBase64(string b64String)
+  {
+    try
+    {
+      FileHelper.ToByteStream(b64String);
+      return true;
+    }
+    catch (FormatException)
+    {
+      return false;
+    }
+  }
+
+  public static bool IsImageMime(string mimeType)
+  {
+    var isValidMime = Mime.ReverseMimes.TryGetValue(mimeType, out MimeDefaults mimeDefaultType);
+
+    if (!isValidMime)
+      return false;
+
+    return mimeDefaultType switch
+    {
+      MimeDefaults.Jpeg => true,
+      MimeDefaults.Png => true,
+      MimeDefaults.Gif => true,
+      MimeDefaults.Bmp => true,
+      MimeDefaults.Webp => true,
+      MimeDefaults.Tiff => true,
+      _ => false
+    };
   }
 }
