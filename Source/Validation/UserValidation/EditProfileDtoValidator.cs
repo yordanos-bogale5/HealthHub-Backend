@@ -2,6 +2,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using HealthHub.Source.Data;
 using HealthHub.Source.Helpers.Extensions;
+using HealthHub.Source.Models.Defaults;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Validation;
@@ -134,6 +135,16 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
     if (role == Role.Doctor)
     {
       When(
+        u => u.Specialities != null,
+        () =>
+        {
+          RuleForEach(u => u.Specialities)
+            .Must(s => !string.IsNullOrEmpty(s))
+            .WithMessage("Speciality cannot be empty.");
+        }
+      );
+
+      When(
         u => u.Qualifications != null,
         () =>
         {
@@ -142,6 +153,7 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
             .WithMessage("Qualifications are required for doctors.");
         }
       );
+
       When(
         u => u.Biography != null,
         () =>
@@ -149,6 +161,7 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
           RuleFor(u => u.Biography).NotEmpty().WithMessage("Biography is required for doctors.");
         }
       );
+
       When(
         u => u.DoctorStatus != null,
         () =>
@@ -159,7 +172,9 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
               $"Doctor status cannot be empty. Choose either {string.Join(",", Enum.GetNames(typeof(DoctorStatus)))}"
             )
             .Must(ValidationHelper.BeValidDoctorStatus)
-            .WithMessage("Doctor status must be a valid enum value.");
+            .WithMessage(
+              $"Doctor status must be one of the following {string.Join(", ", Enum.GetNames<DoctorStatus>())}."
+            );
         }
       );
     }
@@ -174,7 +189,7 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
           .WithMessage("At least one availability is required for doctors.");
 
         RuleForEach(u => u.Availabilities)
-          .Must(avail => Enum.TryParse<Days>(avail.Day.ToString(), true, out _))
+          .Must(avail => Enum.TryParse<DayOfWeek>(avail.Day.ToString(), true, out _))
           .WithMessage(
             "Day must be valid! (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)"
           )
@@ -182,6 +197,87 @@ public class EditProfileDtoValidator : AbstractValidator<EditProfileDto>
           .WithMessage("Start time must be valid! (HH:mm)")
           .Must(avail => TimeOnly.TryParse(avail.EndTime.ToString(), out _))
           .WithMessage("End time must be valid! (HH:mm)");
+      }
+    );
+
+    When(
+      u => u.Cv != null,
+      () =>
+      {
+        RuleFor(u => u.Cv)
+          .NotNull()
+          .WithMessage("Cv cannot be null")
+          .NotEmpty()
+          .WithMessage("Cv is required for doctors!")
+          .Must(cv => cv != null && ValidationHelper.IsImageMime(cv.MimeType))
+          .WithMessage(
+            $"The mime type provided is not valid. Available mime-types are {string.Join(",", Mime.GetImageMimes().Select(m => Mime.GetMime(m)))}"
+          )
+          .Must(cv => cv != null && ValidationHelper.IsValidBase64(cv.FileDataBase64))
+          .WithMessage("The file data is not a valid base64.");
+      }
+    );
+
+    When(
+      u => u.Educations != null,
+      () =>
+      {
+        RuleFor(u => u.Educations)
+          .NotNull()
+          .NotEmpty()
+          .WithMessage("Educations cannot be empty.")
+          .Must(educations => educations?.Count > 0)
+          .WithMessage("At least one education is required for doctors.");
+
+        RuleForEach(u => u.Educations)
+          .NotNull()
+          .NotEmpty()
+          .WithMessage("Education is required.")
+          .Must(education => education?.Degree?.Trim().Length > 0)
+          .WithMessage("Education degree must be provided.")
+          .Must(education => education?.Institution?.Trim().Length > 0)
+          .WithMessage("Education Institution must be provided.")
+          .Must(education => ValidationHelper.BeAValidDateOnlyString(education.StartDate))
+          .WithMessage("Start date should be a valid date! (yyyy-MM-dd)")
+          .Must(education => ValidationHelper.BeAValidDateOnlyString(education.EndDate))
+          .WithMessage("End date should be a valid date! (yyyy-MM-dd)")
+          .Must(education =>
+            !string.IsNullOrEmpty(education.StartDate)
+            && !string.IsNullOrEmpty(education.EndDate)
+            && DateOnly.TryParse(education.StartDate, out var sd)
+            && DateOnly.TryParse(education.EndDate, out var ed)
+            && sd < ed
+          )
+          .WithMessage("Start date cannot be after end date!");
+      }
+    );
+
+    When(
+      u => u.Experiences != null,
+      () =>
+      {
+        RuleFor(u => u.Experiences)
+          .NotNull()
+          .NotEmpty()
+          .WithMessage("Experiences cannot be empty.")
+          .Must(experiences => experiences?.Count > 0)
+          .WithMessage("At least one experience is required for doctors.");
+
+        RuleForEach(u => u.Experiences)
+          .NotNull()
+          .WithMessage("Experiences cannot be null.")
+          .NotEmpty()
+          .Must(experience => experience?.Institution?.Trim().Length > 0)
+          .WithMessage("Please provide the institution of your experience.")
+          .Must(experience => ValidationHelper.BeAValidDateOnlyString(experience.StartDate))
+          .WithMessage("Start date should be a valid date! (yyyy-MM-dd)")
+          .Must(experience =>
+            experience.EndDate == null
+            || ValidationHelper.BeAValidDateOnlyString(experience.EndDate)
+          )
+          .WithMessage(
+            "End date should either be null or a valid date! (yyyy-MM-dd). If its null then the person is still working in the specified institute."
+          );
       }
     );
 
