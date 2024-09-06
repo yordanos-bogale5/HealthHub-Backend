@@ -7,6 +7,8 @@ using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Interfaces;
 using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 
 public class DoctorService(
@@ -16,13 +18,25 @@ public class DoctorService(
   ILogger<DoctorService> logger
 )
 {
-  public async Task<Doctor?> CreateDoctorAsync(CreateDoctorDto createDoctorDto)
+  public async Task<Doctor> CreateDoctorAsync(CreateDoctorDto createDoctorDto)
   {
     try
     {
       var doctorResult = await appContext.Doctors.AddAsync(createDoctorDto.ToDoctor());
       var doctor = doctorResult.Entity;
-      logger.LogInformation($"\nCreate Doctor Result: \n {doctorResult}");
+
+      // Create all educations for the doctor
+      foreach (CreateEducationDto createEducationDto in createDoctorDto.Educations)
+      {
+        await CreateEducationAsync(createEducationDto, doctor.DoctorId);
+      }
+
+      // Create all experiences for the doctor
+      foreach (CreateExperienceDto createExperienceDto in createDoctorDto.Experiences)
+      {
+        await CreateExperienceAsync(createExperienceDto, doctor.DoctorId);
+      }
+
       await appContext.SaveChangesAsync();
       return doctor;
     }
@@ -33,18 +47,35 @@ public class DoctorService(
     }
   }
 
-  public async Task<ServiceResponse<List<DoctorDto>>> GetAllDoctors()
+  public async Task<ServiceResponse<List<DoctorProfileDto>>> GetAllDoctors()
   {
     try
     {
-      var doctorUsers = await appContext
+      List<DoctorProfileDto> doctorUsers = await appContext
         .Doctors.Include(d => d.User) // Ensure the related User entity is loaded
         .Include(d => d.DoctorSpecialities)
         .ThenInclude(ds => ds.Speciality)
-        .Select(d => d.ToDoctorDto(d.User, d.DoctorSpecialities))
+        .Include(d => d.Educations)
+        .Include(d => d.Experiences)
+        .Select(d =>
+          d.ToDoctorProfileDto(
+            d.User,
+            d.DoctorAvailabilities,
+            d.DoctorSpecialities.Where(ds => ds.Speciality != null)
+              .Select(ds => ds.Speciality!)
+              .ToList(),
+            d.Educations,
+            d.Experiences
+          )
+        )
         .ToListAsync();
 
-      return new ServiceResponse<List<DoctorDto>>(true, 200, doctorUsers, "All Doctors Retrieved!");
+      return new ServiceResponse<List<DoctorProfileDto>>(
+        true,
+        200,
+        doctorUsers,
+        "All Doctors Retrieved!"
+      );
     }
     catch (System.Exception ex)
     {
@@ -199,6 +230,8 @@ public class DoctorService(
         .Include(d => d.DoctorSpecialities)
         .ThenInclude(ds => ds.Speciality)
         .Include(d => d.DoctorAvailabilities)
+        .Include(d => d.Educations)
+        .Include(d => d.Experiences)
         .FirstOrDefaultAsync(d => d.UserId == editDoctorProfileDto.UserId);
 
       if (doctor == null)
@@ -223,7 +256,7 @@ public class DoctorService(
           : null;
 
       /* Creating the New Doctor Availabilities */
-      var availabilitiesResponse =
+      var availabilities =
         editDoctorProfileDto.Availabilities != null
           ? await AddDoctorAvailabilityAsync(editDoctorProfileDto.Availabilities, doctor)
           : null;
@@ -241,16 +274,54 @@ public class DoctorService(
       doctor.Biography = editDoctorProfileDto.Biography ?? doctor.Biography;
 
       doctor.DoctorAvailabilities =
-        availabilitiesResponse != null
-          ? availabilitiesResponse.Data ?? doctor.DoctorAvailabilities
+        availabilities != null
+          ? availabilities ?? doctor.DoctorAvailabilities
           : doctor.DoctorAvailabilities;
+
+      if (editDoctorProfileDto.Educations != null) // If user has provided educations to be edited
+      {
+        await DeleteAllEducationsAsync(doctor.DoctorId); // Delete all educations
+
+        foreach (EditEducationDto edDto in editDoctorProfileDto.Educations) // create new educations based on the request details
+        {
+          await CreateEducationAsync(
+            new CreateEducationDto(
+              edDto.Degree!,
+              edDto.Institution!,
+              edDto.StartDate!,
+              edDto.EndDate!
+            ),
+            doctor.DoctorId
+          );
+        }
+      }
+
+      if (editDoctorProfileDto.Experiences != null)
+      {
+        await DeleteAllExperiencesAsync(doctor.DoctorId); // Delete all experiences
+
+        foreach (EditExperienceDto edDto in editDoctorProfileDto.Experiences)
+        {
+          await CreateExperienceAsync(
+            new CreateExperienceDto(
+              edDto.Institution!,
+              edDto.StartDate!,
+              edDto.EndDate!,
+              edDto.Description
+            ),
+            doctor.DoctorId
+          );
+        }
+      }
 
       await appContext.SaveChangesAsync();
 
       return doctor.ToDoctorProfileDto(
         doctor.User,
         doctor.DoctorAvailabilities,
-        doctor.DoctorSpecialities.Where(s => s != null).Select(ds => ds.Speciality!).ToList()
+        doctor.DoctorSpecialities.Where(s => s != null).Select(ds => ds.Speciality!).ToList(),
+        doctor.Educations,
+        doctor.Experiences
       );
     }
     catch (System.Exception ex)
@@ -267,7 +338,7 @@ public class DoctorService(
   /// <param name="doctor"></param>
   /// <returns></returns>
   /// <exception cref="Exception"></exception>
-  public async Task<ServiceResponse<List<DoctorAvailability>>> AddDoctorAvailabilityAsync(
+  public async Task<List<DoctorAvailability>> AddDoctorAvailabilityAsync(
     List<AvailabilityDto> doctorAvailabilities,
     Doctor doctor
   )
@@ -279,13 +350,13 @@ public class DoctorService(
       if (doctorAvailabilities.Count == 0)
       {
         foreach (
-          Days day in new List<Days>
+          DayOfWeek day in new List<DayOfWeek>
           {
-            Days.Monday,
-            Days.Tuesday,
-            Days.Wednesday,
-            Days.Thursday,
-            Days.Friday
+            DayOfWeek.Monday,
+            DayOfWeek.Tuesday,
+            DayOfWeek.Wednesday,
+            DayOfWeek.Thursday,
+            DayOfWeek.Friday
           }
         )
         {
@@ -310,7 +381,7 @@ public class DoctorService(
             {
               Doctor = doctor,
               DoctorId = doctor.DoctorId,
-              AvailableDay = day.ConvertToEnum<Days>(),
+              AvailableDay = day.ConvertToEnum<DayOfWeek>(),
               StartTime = TimeOnly.Parse(startTime),
               EndTime = TimeOnly.Parse(endTime)
             }
@@ -321,18 +392,12 @@ public class DoctorService(
       await appContext.DoctorAvailabilities.AddRangeAsync(dbDoctorAvailabilities);
       await appContext.SaveChangesAsync();
 
-      return new ServiceResponse<List<DoctorAvailability>>
-      {
-        Data = dbDoctorAvailabilities,
-        Message = "Doctor availabilities created successfully",
-        StatusCode = 204,
-        Success = true
-      };
+      return dbDoctorAvailabilities;
     }
     catch (System.Exception ex)
     {
       logger.LogError($"An error occured when trying to add doctor availability {ex}");
-      throw new Exception("An error occured when trying to add doctor availability");
+      throw;
     }
   }
 
@@ -346,7 +411,7 @@ public class DoctorService(
   /// <returns>True if he/she is available, otherwise false.</returns>
   public async Task<bool> CheckDoctorAvailabilityAsync(
     Guid doctorId,
-    Days appointmentDay,
+    DayOfWeek appointmentDay,
     TimeOnly appointmentTime,
     TimeSpan appointmentTimeSpan
   )
@@ -368,25 +433,21 @@ public class DoctorService(
     }
   }
 
-  public async Task<
-    ServiceResponse<Dictionary<Days, List<TimeRange>>>
-  > GetDoctorAvailabilitiesAsync(Guid doctorId)
+  public async Task<Dictionary<DayOfWeek, List<TimeRange>>> GetDoctorAvailabilitiesAsync(
+    Guid doctorId
+  )
   {
     try
     {
       if (!await CheckDoctorExistsAsync(doctorId))
       {
-        return new ServiceResponse<Dictionary<Days, List<TimeRange>>>(
-          false,
-          404,
-          null,
-          "Doctor not found"
-        );
+        throw new KeyNotFoundException("Doctor is not found!");
       }
 
-      var dayTimesMap = new Dictionary<Days, List<TimeRange>>();
+      var dayTimesMap = new Dictionary<DayOfWeek, List<TimeRange>>();
 
-      // Get doctor available days with start time and end time
+      // The below algorithm
+      // Gets doctor available DayOfWeek with start time and end time
       /*
         {
           Monday = [10,17]
@@ -405,81 +466,7 @@ public class DoctorService(
           dayTimesMap[da.AvailableDay].Add(new TimeRange(da.StartTime, da.EndTime));
         });
 
-      // Get doctor occupied appointment times for each days
-      /*
-      10:00 - 15:00 , 15:00 13:00 15:30
-          AppointmentTimes = {
-            Monday = [[10:00,17:00],[15:00,15:30],[15:30,16:00]]
-          }
-      */
-      Console.WriteLine($"This is doctor available days: \n\n {dayTimesMap.Count} \n\n");
-
-      var docAppTimes = await GetDoctorAppointmentTimesAsync(doctorId);
-
-      if (docAppTimes.Count == 0)
-      {
-        return new ServiceResponse<Dictionary<Days, List<TimeRange>>>(
-          true,
-          200,
-          null,
-          "The Doctor doesn't have any appointments"
-        );
-      }
-
-      Console.WriteLine($"This is doctor appointment times: \n\n {docAppTimes.Count} \n\n");
-
-      // Write an algorithm that gives available remaining times for each day given the above inputs
-      /*
-        {
-          Monday = [ [10:00,10:30],[10:30,11:00],..., [15:00,15:30],[15:30,16:00],[16:00,16:30],[16:30,17:00] ],
-          ...
-        }
-      */
-
-      var result = new Dictionary<Days, List<TimeRange>>();
-
-      foreach (var (day, timeRangeAvail) in dayTimesMap) // O(dayTimesMap.Count)
-      {
-        foreach (TimeRange timeAvail in timeRangeAvail) // O(timeRangeAvail.Count)
-        {
-          TimeOnly startTime = timeAvail.StartTime;
-
-          if (!docAppTimes.ContainsKey(day))
-          {
-            result[day] = timeRangeAvail;
-            continue;
-          }
-
-          docAppTimes[day].Sort((a, b) => a.StartTime.CompareTo(b.StartTime)); // Sort the Time Array by the startTime in Ascending order
-
-          for (int dayIndex = 0; dayIndex < docAppTimes[day].Count; dayIndex++) // O(docAppTimes.Count)
-          {
-            TimeOnly startTimeUnavail = docAppTimes[day][dayIndex].StartTime;
-            TimeOnly endTimeUnavail = docAppTimes[day][dayIndex].EndTime;
-
-            if (!result.ContainsKey(day))
-              result[day] = [];
-
-            if (startTime != startTimeUnavail)
-              result[day].Add(new TimeRange(startTime, startTimeUnavail));
-
-            startTime = endTimeUnavail;
-
-            if (dayIndex == docAppTimes[day].Count - 1 && startTime != timeAvail.EndTime)
-            {
-              result[day].Add(new TimeRange(startTime, timeAvail.EndTime));
-            }
-          }
-        }
-      }
-
-      return new ServiceResponse<Dictionary<Days, List<TimeRange>>>
-      {
-        Data = result,
-        Message = "Fetched doctor availabilities",
-        StatusCode = 200,
-        Success = true
-      };
+      return dayTimesMap;
     }
     catch (System.Exception ex)
     {
@@ -488,11 +475,13 @@ public class DoctorService(
     }
   }
 
-  public async Task<Dictionary<Days, List<TimeRange>>> GetDoctorAppointmentTimesAsync(Guid doctorId)
+  public async Task<Dictionary<DayOfWeek, List<TimeRange>>> GetDoctorAppointmentTimesAsync(
+    Guid doctorId
+  )
   {
     try
     {
-      var docAppTimes = new Dictionary<Days, List<TimeRange>>();
+      var docAppTimes = new Dictionary<DayOfWeek, List<TimeRange>>();
 
       var appointments = await appContext
         .Appointments.Where(ap => ap.DoctorId == doctorId)
@@ -500,7 +489,7 @@ public class DoctorService(
 
       foreach (var ap in appointments)
       {
-        Days day = ap.AppointmentDate.DayOfWeek.ToString().ConvertToEnum<Days>();
+        DayOfWeek day = ap.AppointmentDate.DayOfWeek.ToString().ConvertToEnum<DayOfWeek>();
         if (!docAppTimes.ContainsKey(day))
           docAppTimes[day] = new List<TimeRange>();
         Console.WriteLine(day);
@@ -532,6 +521,8 @@ public class DoctorService(
         .Include(d => d.User)
         .Include(d => d.DoctorAvailabilities)
         .Include(d => d.DoctorSpecialities)
+        .Include(d => d.Educations)
+        .Include(d => d.Experiences)
         .SingleOrDefaultAsync();
 
       if (doctor == null)
@@ -547,12 +538,125 @@ public class DoctorService(
         doctor
           .DoctorSpecialities.Where(ds => ds.Speciality != null)
           .Select(ds => ds.Speciality!)
-          .ToList()
+          .ToList(),
+        doctor.Educations,
+        doctor.Experiences
       );
     }
     catch (System.Exception ex)
     {
       logger.LogError($"{ex}: An error occured tring to get doctor profile");
+      throw;
+    }
+  }
+
+  public async Task<EducationDto> CreateEducationAsync(
+    CreateEducationDto createEducationDto,
+    Guid doctorId
+  )
+  {
+    try
+    {
+      var education = await appContext.Educations.AddAsync(
+        createEducationDto.ToEducation(doctorId)
+      );
+      await appContext.SaveChangesAsync();
+      return education.Entity.ToEducationDto();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured trying to create education");
+      throw;
+    }
+  }
+
+  public async Task DeleteAllEducationsAsync(Guid doctorId)
+  {
+    try
+    {
+      var educations = appContext.Educations.Where(e => e.DoctorId == doctorId);
+
+      if (!educations.Any())
+      {
+        throw new KeyNotFoundException($"No educations found for the given doctorId: {doctorId}");
+      }
+
+      appContext.Educations.RemoveRange(educations);
+      await appContext.SaveChangesAsync();
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(
+        ex,
+        $"An error occurred while trying to delete all educations for doctorId: {doctorId}"
+      );
+      throw;
+    }
+  }
+
+  public async Task DeleteAllExperiencesAsync(Guid doctorId)
+  {
+    try
+    {
+      var experiences = appContext.Experiences.Where(e => e.DoctorId == doctorId);
+
+      if (!experiences.Any())
+      {
+        throw new KeyNotFoundException($"No experiences found for the given doctorId: {doctorId}");
+      }
+
+      appContext.Experiences.RemoveRange(experiences);
+      await appContext.SaveChangesAsync();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: AN error occured trying to delete all experiences");
+      throw;
+    }
+  }
+
+  public async Task<ExperienceDto> CreateExperienceAsync(
+    CreateExperienceDto createExperienceDto,
+    Guid doctorId
+  )
+  {
+    try
+    {
+      var experience = await appContext.Experiences.AddAsync(
+        createExperienceDto.ToExperience(doctorId)
+      );
+      await appContext.SaveChangesAsync();
+      return experience.Entity.ToExperienceDto();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured trying to create education");
+      throw;
+    }
+  }
+
+  public async Task<List<Experience>> GetDoctorExperiences(Guid doctorId)
+  {
+    try
+    {
+      return await appContext.Experiences.Where(e => e.DoctorId == doctorId).ToListAsync();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured when getting doctor experiences.");
+      throw;
+    }
+  }
+
+  public async Task<List<Education>> GetDoctorEducations(Guid doctorId)
+  {
+    try
+    {
+      return await appContext.Educations.Where(e => e.DoctorId == doctorId).ToListAsync();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError($"{ex}: An error occured when getting doctor educations.");
       throw;
     }
   }
