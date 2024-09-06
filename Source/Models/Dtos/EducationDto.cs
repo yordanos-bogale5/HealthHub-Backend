@@ -1,16 +1,19 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace HealthHub.Source.Models.Dtos;
+
 public record CreateEducationDto(
-  Guid DoctorId,
-  string Degree,
-  string Institution,
-  DateOnly StartDate,
-  DateOnly EndDate
+  [Required] string Degree,
+  [Required] string Institution,
+  [Required] string StartDate,
+  [Required] string EndDate
 );
 
 public record EditEducationDto(
   string? Degree,
   string? Institution,
-  DateOnly? StartDate,
-  DateOnly? EndDate
+  string? StartDate,
+  string? EndDate
 );
 
 public record EducationDto(

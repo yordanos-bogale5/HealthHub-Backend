@@ -1,15 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 public record EditExperienceDto(
   string? Institution,
-  DateOnly? StartDate,
-  DateOnly? EndDate,
+  string? StartDate,
+  string? EndDate,
   string? Description
 );
 
 public record CreateExperienceDto(
-  Guid DoctorId,
-  string Institution,
-  DateOnly StartDate,
-  DateOnly EndDate,
+  [Required] string Institution,
+  [Required] string StartDate,
+  string? EndDate,
   string? Description
 );
 
@@ -18,7 +19,7 @@ public record ExperienceDto(
   Guid ExperienceId,
   string Institution,
   DateOnly StartDate,
-  DateOnly EndDate,
+  DateOnly? EndDate,
   string? Description,
   Guid DoctorId
 );

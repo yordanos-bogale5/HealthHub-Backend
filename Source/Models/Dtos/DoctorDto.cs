@@ -1,5 +1,6 @@
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
+using HealthHub.Source.Models.Interfaces;
 
 namespace HealthHub.Source.Models.Dtos;
 
@@ -9,6 +10,8 @@ public record CreateDoctorDto
   public required Entities.File Cv { get; init; }
   public required string Qualifications { get; init; }
   public required string Biography { get; init; }
+  public required List<CreateEducationDto> Educations { get; init; }
+  public required List<CreateExperienceDto> Experiences { get; init; }
   public DoctorStatus DoctorStatus { get; init; } = DoctorStatus.Active;
 }
 
@@ -42,3 +45,7 @@ public record DoctorDto
   public required string Biography { get; set; }
   public required DoctorStatus DoctorStatus { get; set; }
 }
+
+public record DoctorSchedule(TimeRange TimeRange, bool IsFree);
+
+public record DoctorSchedules(Dictionary<DateOnly, List<DoctorSchedule>> Data);

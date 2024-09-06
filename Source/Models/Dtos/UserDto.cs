@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using HealthHub.Source.Attributes;
+using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Dtos;
@@ -47,6 +48,7 @@ public record Auth0ProfileDto
 /// </summary>
 public record PatientProfileDto : ProfileDto
 {
+  public required Guid PatientId { get; init; }
   public required string MedicalHistory { get; init; }
   public required string EmergencyContactName { get; init; }
   public required string EmergencyContactPhone { get; init; }
@@ -57,11 +59,14 @@ public record PatientProfileDto : ProfileDto
 /// </summary>
 public record DoctorProfileDto : ProfileDto
 {
+  public required Guid DoctorId { get; init; }
   public required List<string> Specialities { get; init; }
   public required List<AvailabilityDto> Availabilities { get; init; }
   public required string Qualifications { get; init; }
   public required string Biography { get; init; }
   public required DoctorStatus DoctorStatus { get; init; }
+  public required List<EducationDto> Educations { get; init; }
+  public required List<ExperienceDto> Experiences { get; init; }
 };
 
 /// <summary>
@@ -97,6 +102,9 @@ public record EditProfileDto
   public string? Qualifications { get; set; }
   public string? Biography { get; set; }
   public string? DoctorStatus { get; set; }
+  public CreateFileDto? Cv { get; set; }
+  public List<EditEducationDto>? Educations { get; set; }
+  public List<EditExperienceDto>? Experiences { get; set; }
 }
 
 /// <summary>
@@ -149,6 +157,8 @@ public record RegisterUserDto
   public string? Biography { get; set; }
   public DoctorStatus DoctorStatus { get; set; } = DoctorStatus.Active;
   public CreateFileDto? Cv { get; set; }
+  public List<CreateEducationDto> Educations { get; set; } = [];
+  public List<CreateExperienceDto> Experiences { get; set; } = [];
 }
 
 /// <summary>
