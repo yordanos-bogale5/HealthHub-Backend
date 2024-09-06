@@ -7,7 +7,7 @@ namespace HealthHub.Source.Models.Dtos;
 public record Availability
 {
   public required Guid DoctorAvailabilityId { get; init; }
-  public required Days Day { get; init; }
+  public required DayOfWeek Day { get; init; }
   public required List<TimeRange> AvailableTimes { get; init; }
 }
 
