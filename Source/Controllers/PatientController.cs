@@ -13,7 +13,7 @@ public class PatientController(PatientService patientService, ILogger<PatientCon
   /// Retrieves all patients from the database
   /// </summary>
   /// <returns></returns>
-  [HttpGet("patients/all")]
+  [HttpGet("all")]
   public async Task<IActionResult> GetAllPatients()
   {
     try
