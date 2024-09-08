@@ -4,6 +4,7 @@ using HealthHub.Source.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240907152622_Message_Chat_Model_Update_Constraints")]
+    partial class Message_Chat_Model_Update_Constraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace HealthHub.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("ConversationMembership", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("UserId", "ConversationId");
-
-                    b.HasIndex("ConversationId");
-
-                    b.ToTable("ConversationMemberships");
-                });
 
             modelBuilder.Entity("DoctorSpeciality", b =>
                 {
@@ -229,14 +217,20 @@ namespace HealthHub.Migrations
                     b.ToTable("BlogLikes");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.Conversation", b =>
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Chat", b =>
                 {
-                    b.Property<Guid>("ConversationId")
+                    b.Property<Guid>("ChatId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ReceiverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -244,11 +238,15 @@ namespace HealthHub.Migrations
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("ConversationId");
+                    b.HasKey("ChatId");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Conversations");
+                    b.ToTable("Chats");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Doctor", b =>
@@ -384,7 +382,7 @@ namespace HealthHub.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ConversationId")
+                    b.Property<Guid>("ChatId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -398,7 +396,7 @@ namespace HealthHub.Migrations
 
                     b.HasKey("MessageId");
 
-                    b.HasIndex("ConversationId");
+                    b.HasIndex("ChatId");
 
                     b.ToTable("Messages");
                 });
@@ -621,25 +619,6 @@ namespace HealthHub.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ConversationMembership", b =>
-                {
-                    b.HasOne("HealthHub.Source.Models.Entities.Conversation", "Conversation")
-                        .WithMany()
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HealthHub.Source.Models.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DoctorSpeciality", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
@@ -749,11 +728,27 @@ namespace HealthHub.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.Conversation", b =>
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Chat", b =>
                 {
+                    b.HasOne("HealthHub.Source.Models.Entities.User", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HealthHub.Source.Models.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("HealthHub.Source.Models.Entities.User", null)
-                        .WithMany("Conversations")
+                        .WithMany("Chats")
                         .HasForeignKey("UserId");
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Doctor", b =>
@@ -806,13 +801,13 @@ namespace HealthHub.Migrations
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Message", b =>
                 {
-                    b.HasOne("HealthHub.Source.Models.Entities.Conversation", "Conversation")
+                    b.HasOne("HealthHub.Source.Models.Entities.Chat", "Chat")
                         .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
+                        .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Conversation");
+                    b.Navigation("Chat");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Notification", b =>
@@ -874,7 +869,7 @@ namespace HealthHub.Migrations
                     b.Navigation("BlogLikes");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.Conversation", b =>
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Chat", b =>
                 {
                     b.Navigation("Messages");
                 });
@@ -915,7 +910,7 @@ namespace HealthHub.Migrations
 
                     b.Navigation("Blogs");
 
-                    b.Navigation("Conversations");
+                    b.Navigation("Chats");
                 });
 #pragma warning restore 612, 618
         }
