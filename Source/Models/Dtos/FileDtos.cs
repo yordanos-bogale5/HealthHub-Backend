@@ -13,4 +13,10 @@ public record CreateFileDto(
 public record EditFileDto(Guid FileId, string? MimeType, string? FileDataBase64, string? FileName);
 
 // Return to the Client
-public record FileDto(Guid FileId, MimeDefaults MimeType, string FileDataBase64, string FileName);
+public record FileDto(
+  Guid FileId,
+  MimeDefaults MimeType,
+  string FileDataBase64,
+  string? FileName,
+  int fileSize
+);
