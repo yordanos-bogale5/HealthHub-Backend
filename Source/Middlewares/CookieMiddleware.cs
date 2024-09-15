@@ -1,5 +1,5 @@
 using System.Text.Json;
-using HealthHub.Source.Models.Dtos;
+using HealthHub.Source.Helpers.Defaults;
 
 public class CookieMiddleware(RequestDelegate next)
 {

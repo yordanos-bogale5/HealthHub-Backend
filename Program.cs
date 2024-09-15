@@ -6,6 +6,7 @@ using HealthHub.Source.Config;
 using HealthHub.Source.Data;
 using HealthHub.Source.Filters.Error;
 using HealthHub.Source.Helpers.Extensions;
+using HealthHub.Source.Hubs;
 using HealthHub.Source.Services;
 using HealthHub.Source.Validation;
 using HealthHub.Source.Validation.AppointmentValidation;
@@ -59,6 +60,22 @@ var builder = WebApplication.CreateBuilder(args);
     options.SuppressModelStateInvalidFilter = true;
   });
 
+  builder.Services.AddCors(
+    (options) =>
+    {
+      options.AddPolicy(
+        "AllowSpecificOrigin",
+        b =>
+        {
+          var config = new AppConfig(builder.Configuration);
+          Log.Logger.Information($"\n\nALlowedOrigins: {config.AllowedOrigins}");
+
+          b.WithOrigins(config.AllowedOrigins).AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+        }
+      );
+    }
+  );
+
   /*
       Add Services to the Container
   */
@@ -103,6 +120,7 @@ var builder = WebApplication.CreateBuilder(args);
       options.Audience = appConfig.Auth0Audience;
       options.RequireHttpsMetadata = appConfig.IsProduction ?? false;
 
+      // Log.Logger.Information($"\nOrigins: {string.Join(",", appConfig.AllowedOrigins)}");
       Log.Logger.Information($"\nAudience: {options.Audience}");
       Log.Logger.Information($"\nAuthority: {options.Authority}");
       Log.Logger.Information($"\nClientId: {appConfig.Auth0ClientId}");
@@ -152,11 +170,16 @@ var builder = WebApplication.CreateBuilder(args);
   // are not directly part of the HTTP request pipeline
   builder.Services.AddHttpContextAccessor();
 
+  // Register the signalr service for realtime comms
+  builder.Services.AddSignalR();
+
   // Register Services
   builder.Services.AddTransient<UserService>();
   builder.Services.AddTransient<DoctorService>();
   builder.Services.AddTransient<PatientService>();
   builder.Services.AddTransient<AdminService>();
+
+  builder.Services.AddTransient<ChatService>();
 
   builder.Services.AddTransient<AppointmentService>();
 
@@ -169,6 +192,8 @@ var builder = WebApplication.CreateBuilder(args);
   builder.Services.AddTransient<EmailService>();
   builder.Services.AddTransient<FileService>();
   builder.Services.AddTransient<RenderingService>();
+
+  builder.Services.AddSingleton<UserConnection>();
 
   // This line registers the Lazy<T> type with the DI container to enable lazy loading for services.
   builder.Services.AddTransient(typeof(Lazy<>), typeof(Lazy<>));
@@ -195,6 +220,13 @@ var builder = WebApplication.CreateBuilder(args);
     options.IncludeXmlComments(xmlPath);
   });
 
+  builder
+    .Services.AddRazorPages()
+    .AddRazorOptions(options =>
+    {
+      options.ViewLocationFormats.Add("/Source/Views/{0}.cshtml");
+    });
+
   // Close and Flush Serilog when the application exits
   AppDomain.CurrentDomain.ProcessExit += (s, e) => Log.CloseAndFlush();
 
@@ -205,19 +237,22 @@ var app = builder.Build();
 
 
 {
-  // Middlewares
-  app.UseCustomValidation(); // Register the Custom Validation Middleware
-  app.UseCookieMiddleware(); // Register the Cookie Middleware
+  // app.UseExceptionHandler("/error"); // Exception handling endpoint
 
   app.UseSerilogRequestLogging(); // Enable Serilog Request Logging
 
-  // app.UseExceptionHandler("/error"); // Exception handling endpoint
+  app.UseCors("AllowSpecificOrigin");
 
+  // Middlewares
+  app.UseCustomValidation(); // Register the Custom Validation Middleware
+  app.UseCookieMiddleware(); // Register the Cookie Middleware
 
   app.UseAuthentication();
   app.UseAuthorization();
 
   app.MapControllers();
+  app.MapHub<ChatHub>("/chathub"); // the chatting hub
+  app.MapHub<NotificationHub>("/notificationhub"); // the endpoint where notifications will be sent and the client listens to
 
   if (app.Environment.IsDevelopment())
   {

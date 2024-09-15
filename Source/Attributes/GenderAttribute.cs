@@ -24,7 +24,7 @@ public class GenderAttribute : ValidationAttribute
 
       return ValidationResult.Success;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       Console.WriteLine($"{ex}");
       return new ValidationResult("Invalid Gender type! Must be either Male or Female!");
