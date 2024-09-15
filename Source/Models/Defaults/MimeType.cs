@@ -61,4 +61,22 @@ public static class Mime
   {
     return Mimes.Where(kvp => kvp.Value.StartsWith("image")).Select(kvp => kvp.Key).ToList();
   }
+
+  /// <summary>
+  /// Returns true if the mime value is supported otherwise false.
+  /// </summary>
+  /// <param name="mimeValue"></param>
+  /// <returns>
+  /// image/jpeg -> return true
+  /// image/j -> retuns false
+  /// </returns>
+  public static bool IsSupportedMimeValue(string mimeValue)
+  {
+    return ReverseMimes.ContainsKey(mimeValue);
+  }
+
+  public static MimeDefaults GetReverseMime(string mimeValue)
+  {
+    return ReverseMimes[mimeValue];
+  }
 }
