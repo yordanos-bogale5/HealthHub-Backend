@@ -17,7 +17,7 @@ public static class EntityConfiguration
     speciality.HasIndex(s => s.SpecialityName).IsUnique();
   }
 
-  public static void ConfigureForeignKeys(ModelBuilder mb)
+  public static void ConfigureForeignKeyConstraints(ModelBuilder mb)
   {
     var appointment = mb.Entity<Appointment>();
 
@@ -35,8 +35,6 @@ public static class EntityConfiguration
       .HasForeignKey(a => a.PatientId)
       .OnDelete(DeleteBehavior.Restrict);
 
-    var chat = mb.Entity<Conversation>();
-
     var message = mb.Entity<Message>();
 
     // Delete cascade all messages related when a Conversation is deleted
@@ -45,6 +43,18 @@ public static class EntityConfiguration
       .WithMany(c => c.Messages)
       .HasForeignKey(m => m.ConversationId)
       .OnDelete(DeleteBehavior.Cascade);
+
+    message
+      .HasOne(m => m.Sender)
+      .WithMany()
+      .HasForeignKey(m => m.SenderId)
+      .OnDelete(DeleteBehavior.NoAction);
+
+    message
+      .HasOne(m => m.Receiver)
+      .WithMany()
+      .HasForeignKey(m => m.ReceiverId)
+      .OnDelete(DeleteBehavior.NoAction);
 
     var payment = mb.Entity<Payment>();
 
