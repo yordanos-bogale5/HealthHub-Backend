@@ -22,6 +22,7 @@ public class ChatHubTests
   private readonly Mock<ChatService> _mockChatService;
   private readonly Mock<HubCallerContext> _mockCallerContext;
   private readonly Mock<HttpContext> _mockHttpContext;
+  private readonly Mock<UserConnection> _mockUserConnection;
 
   public ChatHubTests()
   {
@@ -47,6 +48,7 @@ public class ChatHubTests
 
     _mockCallerContext = new Mock<HubCallerContext>();
     _mockHttpContext = new Mock<HttpContext>();
+    _mockUserConnection = new Mock<UserConnection>();
 
     _mockCallerContext.Setup(context => context.GetHttpContext()).Returns(_mockHttpContext.Object);
     _mockHttpContext
@@ -63,7 +65,7 @@ public class ChatHubTests
       .Returns(_mockClientProxy.Object);
 
     // Create the ChatHub instance with the mocked services
-    _chatHub = new ChatHub(_mockChatService.Object)
+    _chatHub = new ChatHub(_mockChatService.Object, _mockUserConnection.Object)
     {
       Clients = _mockClients.Object,
       Context = _mockCallerContext.Object
