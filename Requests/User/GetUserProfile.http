@@ -1,2 +1,2 @@
-@userId = 2082588E-466F-4C1B-A5DB-C352416DED60
-GET {{apiHostUrl}}/api/users/{userId}/profile
+@userId = 74d501f1-b888-41cc-acb9-230eaa17698e
+GET {{apiHostUrl}}/api/users/profile/{{userId}}
