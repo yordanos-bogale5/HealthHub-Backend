@@ -69,7 +69,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
         userData.GetProperty("email_verified").GetBoolean()
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to create user in Auth0");
       throw;
@@ -97,7 +97,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
 
       logger.LogInformation($"Auth0 Delete User Success:\n {response.Content}");
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to delete user in Auth0");
       throw;
@@ -149,7 +149,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
         profile
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to login user in Auth0");
       throw;
@@ -180,7 +180,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
         .GetProperty("email_verified")
         .GetBoolean();
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to verify email in Auth0");
       throw;
@@ -253,7 +253,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
         DateOfBirth = dateOfBirth
       };
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: AN error occured trying to get auth0 profile");
       throw;

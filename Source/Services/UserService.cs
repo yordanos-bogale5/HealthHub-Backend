@@ -219,7 +219,7 @@ public class UserService(
 
       return new ServiceResponse<Auth0LoginDto>(true, 200, auth0LoginDto, "Login success!");
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to login user");
       throw;
@@ -254,7 +254,7 @@ public class UserService(
 
       return new ServiceResponse(true, 204, "User Deleted");
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to delete user");
       throw;
@@ -285,7 +285,7 @@ public class UserService(
 
       return new ServiceResponse<ProfileDto>(true, 200, profileDto, "User Profile Retrieved");
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to retrieve user");
 
@@ -381,7 +381,7 @@ public class UserService(
       await appContext.SaveChangesAsync(); // Save all updates
       return new ServiceResponse<ProfileDto>(true, 200, profileDto, "Profile Update Success.");
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: AN error occured when trying to edit profile information.");
       throw;
@@ -433,7 +433,7 @@ public class UserService(
         (bool)isEmailVerified ? "Email is verified" : "Email is not verified"
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to check email verification");
 
@@ -476,6 +476,24 @@ public class UserService(
     catch (Exception ex)
     {
       Console.Write(ex);
+      throw;
+    }
+  }
+
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="userId"></param>
+  /// <returns>True if the user exists, otherwise False</returns>
+  public async Task<bool> UserExistsAsync(Guid userId)
+  {
+    try
+    {
+      var result = await appContext.Users.FindAsync(userId);
+      return result != null;
+    }
+    catch (System.Exception ex)
+    {
       throw;
     }
   }

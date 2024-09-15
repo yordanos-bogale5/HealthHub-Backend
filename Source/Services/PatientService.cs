@@ -18,7 +18,7 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
 
       return patient;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to Create Patient");
       throw new Exception("Failed to Create Patient");
@@ -47,7 +47,7 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
         Success = true
       };
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       throw new Exception("Failed to get all patients");
     }
@@ -72,7 +72,7 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
       }
       return new ServiceResponse<Patient>(true, 200, patient, "Patient found.");
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to Get Patient");
       throw;
@@ -86,7 +86,7 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
       var patient = await appContext.Patients.FindAsync(patientId);
       return patient != null;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Failed to check if patient exists {ex}");
       throw;
@@ -118,7 +118,7 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
       await appContext.SaveChangesAsync();
       return patient.ToPatientProfileDto(patient.User);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured trying to edit patient profile.");
       throw;
@@ -149,7 +149,7 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
 
       return patient.ToPatientProfileDto(patient.User);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured tring to get patient profile");
       throw;

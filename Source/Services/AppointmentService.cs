@@ -143,7 +143,7 @@ public class AppointmentService(
         Message = "Appointment created successfully",
       };
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to create an appointment");
       throw;
@@ -214,7 +214,7 @@ public class AppointmentService(
         "Fetched all appointments."
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Failed to get all appointments: {ex} ");
       throw;
@@ -246,7 +246,7 @@ public class AppointmentService(
 
       return new ServiceResponse(true, 204, "Appointment deleted successfully");
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Error occured trying to delete appointment in service: {ex}");
       throw;
@@ -278,7 +278,7 @@ public class AppointmentService(
 
       await appContext.SaveChangesAsync();
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Error occured trying to delete appointment in service: {ex}");
       throw;
@@ -316,7 +316,7 @@ public class AppointmentService(
         "Fetched all patient appointments."
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"An error occured while trying to get patient appointments {ex}");
       throw;
@@ -346,7 +346,7 @@ public class AppointmentService(
 
       return result;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"An error occured while trying to get doctor appointments {ex}");
       throw;
@@ -461,7 +461,7 @@ public class AppointmentService(
         Message = "Appointment edited successfully"
       };
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"An error occured while trying to edit appointment {ex}");
       throw;
@@ -474,7 +474,7 @@ public class AppointmentService(
     {
       return await appContext.Appointments.AnyAsync(ap => ap.AppointmentId == appointmentId);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"An error occured while trying to check if appointment exists {ex}");
       throw;
@@ -531,7 +531,7 @@ public class AppointmentService(
 
       return new DoctorSchedules(result);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured trying to get doctor appointment schedules.");
       throw;
@@ -624,7 +624,7 @@ public class AppointmentService(
 
       return new DoctorSchedules(result);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured trying to get doctor schedules in service");
       throw;

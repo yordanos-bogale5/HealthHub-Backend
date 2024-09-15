@@ -77,7 +77,7 @@ public class DoctorService(
         "All Doctors Retrieved!"
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Failed to get all Doctors in User Service: {ex}");
       throw;
@@ -109,7 +109,7 @@ public class DoctorService(
         "Doctors with speciality name retrieved"
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Failed to get doctors by speciality in doctor service {ex}");
       throw;
@@ -139,7 +139,7 @@ public class DoctorService(
         "Doctors with name retrieved"
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       throw;
     }
@@ -164,7 +164,7 @@ public class DoctorService(
         "Doctors with gender retrieved"
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Getting doctors by gender failed: {ex}");
       throw;
@@ -193,7 +193,7 @@ public class DoctorService(
 
       return new ServiceResponse<Doctor>(true, 200, doctor, "Doctor found");
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Failed to get doctor by id {ex}");
       throw;
@@ -212,7 +212,7 @@ public class DoctorService(
       var doctor = await appContext.Doctors.FindAsync(doctorId);
       return doctor != null;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Failed to check if doctor exists {ex}");
       throw;
@@ -324,7 +324,7 @@ public class DoctorService(
         doctor.Experiences
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured trying to edit doctor.");
       throw;
@@ -394,7 +394,7 @@ public class DoctorService(
 
       return dbDoctorAvailabilities;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"An error occured when trying to add doctor availability {ex}");
       throw;
@@ -426,7 +426,7 @@ public class DoctorService(
         && appointmentTime.Add(appointmentTimeSpan) <= da.EndTime
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: Failed to Check doctor availability");
       throw;
@@ -468,7 +468,7 @@ public class DoctorService(
 
       return dayTimesMap;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex} : An error occured trying to get doctor availabilities");
       throw;
@@ -499,7 +499,7 @@ public class DoctorService(
 
       return docAppTimes;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An Error occured trying to get doctor appointment times");
       throw;
@@ -543,7 +543,7 @@ public class DoctorService(
         doctor.Experiences
       );
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured tring to get doctor profile");
       throw;
@@ -563,7 +563,7 @@ public class DoctorService(
       await appContext.SaveChangesAsync();
       return education.Entity.ToEducationDto();
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured trying to create education");
       throw;
@@ -608,7 +608,7 @@ public class DoctorService(
       appContext.Experiences.RemoveRange(experiences);
       await appContext.SaveChangesAsync();
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: AN error occured trying to delete all experiences");
       throw;
@@ -628,7 +628,7 @@ public class DoctorService(
       await appContext.SaveChangesAsync();
       return experience.Entity.ToExperienceDto();
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured trying to create education");
       throw;
@@ -641,7 +641,7 @@ public class DoctorService(
     {
       return await appContext.Experiences.Where(e => e.DoctorId == doctorId).ToListAsync();
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured when getting doctor experiences.");
       throw;
@@ -654,7 +654,7 @@ public class DoctorService(
     {
       return await appContext.Educations.Where(e => e.DoctorId == doctorId).ToListAsync();
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured when getting doctor educations.");
       throw;

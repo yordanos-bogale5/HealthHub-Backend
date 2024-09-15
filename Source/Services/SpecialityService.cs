@@ -24,7 +24,7 @@ public class SpecialityService(ApplicationContext appContext, ILogger<Speciality
       await appContext.SaveChangesAsync();
       return speciality.Entity;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Error creating Speciality!");
       throw;
@@ -48,7 +48,7 @@ public class SpecialityService(ApplicationContext appContext, ILogger<Speciality
       }
       return createResult;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Error Creating Specialities {ex}");
       throw;

@@ -36,7 +36,7 @@ public class DoctorSpecialityService(
       await appContext.SaveChangesAsync();
       return doctorSpeciality.Entity;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Error creating Doctor Speciality!");
       throw;
@@ -60,7 +60,7 @@ public class DoctorSpecialityService(
       }
       return createResult;
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Error Creating Doctor Specialities {ex}");
       throw;
