@@ -16,7 +16,4 @@ public class DoctorAvailability
   public TimeOnly EndTime { get; set; } = TimeOnly.MaxValue.AddHours(-6);
 
   public virtual required Doctor Doctor { get; set; }
-
-  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

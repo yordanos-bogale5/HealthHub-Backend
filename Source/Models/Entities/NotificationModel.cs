@@ -3,7 +3,8 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Notification {
+public class Notification : BaseEntity
+{
   public Guid NotificationId { get; set; } = Guid.NewGuid();
 
   [Required]
@@ -15,8 +16,5 @@ public class Notification {
   [Required]
   public required string Message { get; set; }
 
-  public virtual required User User { get; set; }
-
-  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+  public virtual User? User { get; set; }
 }

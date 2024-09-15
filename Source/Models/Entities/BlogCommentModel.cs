@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class BlogComment {
+public class BlogComment : BaseEntity
+{
   public Guid BlogCommentId { get; set; }
 
   [Required]

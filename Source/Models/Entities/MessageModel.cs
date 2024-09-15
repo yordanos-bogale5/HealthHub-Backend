@@ -4,17 +4,18 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Message
+public class Message : BaseEntity
 {
   public Guid MessageId { get; set; } = Guid.NewGuid(); // <<PK>>
-
-  [Required]
-  public required Guid ChatId { get; set; } // <<FK>>
-
-  [Required]
-  public required Guid FileId { get; set; } // <<FK>>
   public string? MessageText { get; set; }
+  public virtual ICollection<File>? Files { get; set; } = new HashSet<File>();
 
-  public virtual required Chat Chat { get; set; }
-  public virtual required File File { get; set; }
+  public required Guid SenderId { get; set; }
+  public required Guid ReceiverId { get; set; }
+
+  public virtual User? Sender { get; set; }
+  public virtual User? Receiver { get; set; }
+
+  public required Guid ConversationId { get; set; }
+  public virtual Conversation? Conversation { get; set; }
 }

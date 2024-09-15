@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Blog {
+public class Blog : BaseEntity
+{
   public Guid BlogId { get; set; }
 
   [Required]
@@ -19,7 +20,4 @@ public class Blog {
   public virtual ICollection<BlogComment> BlogComments { get; set; } = new HashSet<BlogComment>();
 
   public virtual ICollection<BlogLike> BlogLikes { get; set; } = new HashSet<BlogLike>();
-
-  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

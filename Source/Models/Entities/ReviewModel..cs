@@ -3,7 +3,7 @@ using HealthHub.Source.Attributes;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Review
+public class Review : BaseEntity
 {
   public Guid ReviewId { get; set; }
 
@@ -18,7 +18,4 @@ public class Review
   public required string ReviewText { get; set; }
 
   public virtual required Payment Payment { get; set; }
-
-  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

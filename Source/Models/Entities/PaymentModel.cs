@@ -3,7 +3,8 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Payment {
+public class Payment : BaseEntity
+{
   public Guid PaymentId { get; set; } = Guid.NewGuid();
 
   [Required]
@@ -20,7 +21,6 @@ public class Payment {
 
   [Required]
   public required PaymentProvider PaymentProvider { get; set; } = PaymentProvider.Chapa;
-  public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
 
   public virtual required Doctor Doctor { get; set; } // <<NAV>>
   public virtual required Patient Patient { get; set; } // <<NAV>>

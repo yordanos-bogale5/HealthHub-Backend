@@ -3,7 +3,7 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Appointment
+public class Appointment : BaseEntity
 {
   public Guid AppointmentId { get; set; } = Guid.NewGuid();
 
@@ -28,7 +28,4 @@ public class Appointment
 
   public virtual required Doctor Doctor { get; set; } // <<NAV>>
   public virtual required Patient Patient { get; set; } // <<NAV>>
-
-  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

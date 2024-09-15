@@ -5,7 +5,7 @@ using HealthHub.Source.Models.Enums;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class User
+public class User : BaseEntity
 {
   public Guid UserId { get; set; } = Guid.NewGuid();
   public string? Auth0Id { get; set; }
@@ -46,10 +46,9 @@ public class User
   [RoleValidation]
   public Role Role { get; set; }
 
+  public virtual ICollection<Conversation> Conversations { get; set; } =
+    new HashSet<Conversation>();
   public virtual ICollection<Blog> Blogs { get; set; } = new HashSet<Blog>();
   public virtual ICollection<BlogComment> BlogComments { get; set; } = new HashSet<BlogComment>();
   public virtual ICollection<BlogLike> BlogLikes { get; set; } = new HashSet<BlogLike>();
-
-  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-  public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class BlogLike {
+public class BlogLike : BaseEntity
+{
   public Guid BlogLikeId { get; set; } = Guid.NewGuid();
 
   [Required]
