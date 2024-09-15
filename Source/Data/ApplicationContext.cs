@@ -1,4 +1,5 @@
 using HealthHub.Source.Config;
+using HealthHub.Source.Helpers.Defaults;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Services;
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +22,14 @@ public class ApplicationContext : DbContext
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     EntityConfiguration.ConfigureUniqueConstraints(modelBuilder);
-    EntityConfiguration.ConfigureForeignKeys(modelBuilder);
+    EntityConfiguration.ConfigureForeignKeyConstraints(modelBuilder);
     EntityConfiguration.ConfigureEnumConversions(modelBuilder);
+
+    modelBuilder
+      .Entity<FileAssociation>()
+      .HasDiscriminator<DiscriminatorTypes>("EntityType")
+      .HasValue<MessageFileAssociation>(DiscriminatorTypes.Message);
+    // Add more discriminators here if needed
   }
 
   public override int SaveChanges()
@@ -80,5 +87,7 @@ public class ApplicationContext : DbContext
   public DbSet<Message> Messages { get; set; }
 
   public DbSet<Notification> Notifications { get; set; }
+
   public DbSet<Models.Entities.File> Files { get; set; }
+  public DbSet<FileAssociation> FileAssociations { get; set; }
 }
