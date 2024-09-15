@@ -13,4 +13,6 @@ public class AppConfig(IConfiguration configuration)
   public string? Auth0Audience { get; set; } = configuration["AUTH0_AUDIENCE"];
   public string? Auth0ClientId { get; set; } = configuration["AUTH0_CLIENT_ID"];
   public string? Auth0ClientSecret { get; set; } = configuration["AUTH0_CLIENT_SECRET"];
+  public string[] AllowedOrigins { get; set; } =
+    configuration["ALLOWED_ORIGINS"]?.Split(",").Select(s => s.Trim()).ToArray() ?? [];
 }
