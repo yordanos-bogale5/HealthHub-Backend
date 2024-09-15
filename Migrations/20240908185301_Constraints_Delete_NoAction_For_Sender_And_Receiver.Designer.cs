@@ -4,6 +4,7 @@ using HealthHub.Source.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240908185301_Constraints_Delete_NoAction_For_Sender_And_Receiver")]
+    partial class Constraints_Delete_NoAction_For_Sender_And_Receiver
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -378,29 +381,6 @@ namespace HealthHub.Migrations
                     b.ToTable("Files");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.FileAssociation", b =>
-                {
-                    b.Property<Guid>("FileAssociationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("EntityType")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("FileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("FileAssociationId");
-
-                    b.HasIndex("FileId");
-
-                    b.ToTable("FileAssociations");
-
-                    b.HasDiscriminator<int>("EntityType");
-
-                    b.UseTphMappingStrategy();
-                });
-
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Message", b =>
                 {
                     b.Property<Guid>("MessageId")
@@ -654,18 +634,6 @@ namespace HealthHub.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.MessageFileAssociation", b =>
-                {
-                    b.HasBaseType("HealthHub.Source.Models.Entities.FileAssociation");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasIndex("MessageId");
-
-                    b.HasDiscriminator().HasValue(0);
-                });
-
             modelBuilder.Entity("ConversationMembership", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Conversation", "Conversation")
@@ -849,17 +817,6 @@ namespace HealthHub.Migrations
                         .HasForeignKey("MessageId");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.FileAssociation", b =>
-                {
-                    b.HasOne("HealthHub.Source.Models.Entities.File", "File")
-                        .WithMany()
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("File");
-                });
-
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Message", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Conversation", "Conversation")
@@ -937,17 +894,6 @@ namespace HealthHub.Migrations
                         .IsRequired();
 
                     b.Navigation("Payment");
-                });
-
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.MessageFileAssociation", b =>
-                {
-                    b.HasOne("HealthHub.Source.Models.Entities.Message", "Message")
-                        .WithMany()
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Message");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Blog", b =>
