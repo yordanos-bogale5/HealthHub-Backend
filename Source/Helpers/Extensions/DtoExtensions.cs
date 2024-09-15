@@ -124,4 +124,15 @@ public static class DtoExtensions
       MimeType = createFileDto.MimeType
     };
   }
+
+  public static Message ToMessage(this CreateMessageDto createMessageDto, Guid conversationId)
+  {
+    return new Message
+    {
+      MessageText = createMessageDto.MessageText,
+      ReceiverId = createMessageDto.ReceiverId,
+      SenderId = createMessageDto.ReceiverId,
+      ConversationId = conversationId
+    };
+  }
 }

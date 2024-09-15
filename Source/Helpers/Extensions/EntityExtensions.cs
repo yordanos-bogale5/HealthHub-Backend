@@ -1,5 +1,10 @@
+using HealthHub.Source.Helpers;
+using HealthHub.Source.Middlewares;
+using HealthHub.Source.Models.Defaults;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.OpenApi.Extensions;
 
 public static class EntityExtensions
@@ -361,6 +366,42 @@ public static class EntityExtensions
       experience.EndDate,
       experience.Description,
       experience.DoctorId
+    );
+  }
+
+  public static MessageDto ToMessageDto(
+    this Message message,
+    ICollection<HealthHub.Source.Models.Entities.File>? files
+  )
+  {
+    return new MessageDto(
+      message.SenderId,
+      message.ReceiverId,
+      message.MessageText,
+      files != null ? files.Select(f => f.ToFileDto()).ToList() : []
+    );
+  }
+
+  public static FileDto ToFileDto(this HealthHub.Source.Models.Entities.File file)
+  {
+    return new FileDto(
+      file.FileId,
+      Mime.GetReverseMime(file.MimeType),
+      FileHelper.ToBase64(file.FileData),
+      file.FileName,
+      file.FileSize
+    );
+  }
+
+  public static ConversationDto ToConversationDto(
+    this Conversation conversation,
+    ICollection<Message> messages,
+    ICollection<HealthHub.Source.Models.Entities.File>? files
+  )
+  {
+    return new ConversationDto(
+      conversation.ConversationId,
+      messages.Select(m => m.ToMessageDto(files)).ToList()
     );
   }
 }
