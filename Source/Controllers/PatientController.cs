@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using HealthHub.Source.Helpers.Constants;
+using HealthHub.Source.Helpers.Defaults;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +23,7 @@ public class PatientController(PatientService patientService, ILogger<PatientCon
         throw new Exception(response.Message);
       return Ok(response);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Failed to get all patients: {ex}");
       throw;

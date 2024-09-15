@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using HealthHub.Source.Helpers.Constants;
+using HealthHub.Source.Helpers.Defaults;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services;
@@ -111,7 +111,7 @@ public class DoctorController(DoctorService doctorService, ILogger<DoctorControl
       var result = await doctorService.GetDoctorAvailabilitiesAsync(doctorId);
       return Ok(result);
     }
-    catch (System.Exception)
+    catch (Exception)
     {
       throw;
     }

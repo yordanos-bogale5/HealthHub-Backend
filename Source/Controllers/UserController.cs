@@ -4,7 +4,7 @@ using Auth0.AspNetCore.Authentication.BackchannelLogout;
 using FluentValidation;
 using FluentValidation.Results;
 using HealthHub.Source.Config;
-using HealthHub.Source.Helpers.Constants;
+using HealthHub.Source.Helpers.Defaults;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Enums;
@@ -132,7 +132,7 @@ public class UserController(
 
       return Ok(response);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError(ex, "Failed to Login User");
       throw;
@@ -192,7 +192,6 @@ public class UserController(
   /// <param name="userId"></param>
   /// <returns></returns>
   [HttpGet("profile/{userId}")]
-  [Authorize]
   public async Task<IActionResult> GetUserProfile(Guid userId)
   {
     try
@@ -271,7 +270,7 @@ public class UserController(
       var response = await userService.EditUserProfileAsync(editProfileDto);
       return StatusCode(response.StatusCode, response);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured trying to update profile");
       throw;

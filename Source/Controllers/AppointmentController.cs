@@ -1,6 +1,6 @@
 using FluentValidation;
 using HealthHub.Source.Config;
-using HealthHub.Source.Helpers.Constants;
+using HealthHub.Source.Helpers.Defaults;
 using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Responses;
@@ -52,7 +52,7 @@ public class AppointmentController(
 
       return StatusCode(response.StatusCode, response);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       throw;
     }
@@ -70,7 +70,7 @@ public class AppointmentController(
       var response = await appointmentService.GetAllAppointmentsAsync();
       return StatusCode(response.StatusCode, response);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Error occured trying to get all appointments {ex}");
       throw;
@@ -89,7 +89,7 @@ public class AppointmentController(
       var result = await appointmentService.GetDoctorAppointmentsAsync(doctorId);
       return Ok(result);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"An error occured while trying to get patient appointments {ex}");
       throw new Exception("An error occured while trying to get doctor appointments", ex);
@@ -108,7 +108,7 @@ public class AppointmentController(
       var response = await appointmentService.GetPatientAppointmentsAsync(patientId);
       return StatusCode(response.StatusCode, response);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"An error occured while trying to get patient appointments {ex}");
       throw new Exception("An error occured while trying to get patient appointments", ex);
@@ -131,7 +131,7 @@ public class AppointmentController(
 
       return StatusCode(response.StatusCode, response);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Error occured trying to delete appointment {ex}");
       throw;
@@ -178,7 +178,7 @@ public class AppointmentController(
 
       return StatusCode(response.StatusCode, response);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"Error occured when trying to edit appointment {ex}");
       throw;
@@ -207,7 +207,7 @@ public class AppointmentController(
       var result = await appointmentService.GetDoctorSchedulesAsync(doctorId, timeFrame);
       return Ok(result);
     }
-    catch (System.Exception ex)
+    catch (Exception ex)
     {
       logger.LogError($"{ex}: An error occured trying to get doctor schedules");
       throw;
