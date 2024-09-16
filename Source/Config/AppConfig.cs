@@ -15,4 +15,6 @@ public class AppConfig(IConfiguration configuration)
   public string? Auth0ClientSecret { get; set; } = configuration["AUTH0_CLIENT_SECRET"];
   public string[] AllowedOrigins { get; set; } =
     configuration["ALLOWED_ORIGINS"]?.Split(",").Select(s => s.Trim()).ToArray() ?? [];
+  public string? ChapaPublicKey { get; set; } = configuration["CHAPA_PUBLIC_KEY"];
+  public string? ChapaSecretKey { get; set; } = configuration["CHAPA_SECRET_KEY"];
 }
