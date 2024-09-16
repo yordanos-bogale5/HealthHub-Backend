@@ -8,6 +8,8 @@ using HealthHub.Source.Filters.Error;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Hubs;
 using HealthHub.Source.Services;
+using HealthHub.Source.Services.PaymentProviders;
+using HealthHub.Source.Services.PaymentService;
 using HealthHub.Source.Validation;
 using HealthHub.Source.Validation.AppointmentValidation;
 using HealthHub.Source.Validation.UserValidation;
@@ -195,6 +197,12 @@ var builder = WebApplication.CreateBuilder(args);
 
   builder.Services.AddSingleton<UserConnection>();
 
+  builder.Services.AddTransient<IPaymentService, PaymentService>();
+  builder.Services.AddTransient<IPaymentProvider, ChapaPaymentProvider>();
+  builder.Services.AddTransient<IPaymentProviderFactory, PaymentProviderFactory>();
+
+  // Add other providers in the future here!
+
   // This line registers the Lazy<T> type with the DI container to enable lazy loading for services.
   builder.Services.AddTransient(typeof(Lazy<>), typeof(Lazy<>));
 
@@ -226,6 +234,9 @@ var builder = WebApplication.CreateBuilder(args);
     {
       options.ViewLocationFormats.Add("/Source/Views/{0}.cshtml");
     });
+
+  builder.Logging.AddFilter("Microsoft.AspNetCore.SignalR", LogLevel.Debug);
+  builder.Logging.AddFilter("Microsoft.AspNetCore.Http.Connections", LogLevel.Debug);
 
   // Close and Flush Serilog when the application exits
   AppDomain.CurrentDomain.ProcessExit += (s, e) => Log.CloseAndFlush();
