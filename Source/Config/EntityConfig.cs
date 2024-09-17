@@ -58,18 +58,18 @@ public static class EntityConfiguration
 
     var payment = mb.Entity<Payment>();
 
-    // Restrict the deletion of the Payment table if the Doctor entity is deleted
+    // Restrict the deletion of the Payment table if the Sender entity is deleted
     payment
-      .HasOne(p => p.Doctor)
+      .HasOne(p => p.Sender)
       .WithMany()
-      .HasForeignKey(p => p.DoctorId)
+      .HasForeignKey(p => p.SenderId)
       .OnDelete(DeleteBehavior.Restrict);
 
-    // Restrict the deletion of the Payment table if the Patient entity is deleted
+    // Restrict the deletion of the Payment table if the Receiver Entity is deleted
     payment
-      .HasOne(p => p.Patient)
+      .HasOne(p => p.Receiver)
       .WithMany()
-      .HasForeignKey(p => p.PatientId)
+      .HasForeignKey(p => p.ReceiverId)
       .OnDelete(DeleteBehavior.Restrict);
 
     mb.Entity<DoctorSpeciality>().HasKey(ds => new { ds.DoctorId, ds.SpecialityId }); // Comp Key

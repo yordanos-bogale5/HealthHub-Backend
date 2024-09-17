@@ -7,11 +7,13 @@ public class Payment : BaseEntity
 {
   public Guid PaymentId { get; set; } = Guid.NewGuid();
 
-  [Required]
-  public required Guid DoctorId { get; set; } // <<FK>>
+  public required string TransactionReference { get; set; } // Used for verification purposes between the payment provider and the application
 
   [Required]
-  public required Guid PatientId { get; set; } // <<FK>>
+  public required Guid SenderId { get; set; } // <<FK>>
+
+  [Required]
+  public required Guid ReceiverId { get; set; } // <<FK>>
 
   [Required]
   public required decimal Amount { get; set; }
@@ -22,6 +24,6 @@ public class Payment : BaseEntity
   [Required]
   public required PaymentProvider PaymentProvider { get; set; } = PaymentProvider.Chapa;
 
-  public virtual required Doctor Doctor { get; set; } // <<NAV>>
-  public virtual required Patient Patient { get; set; } // <<NAV>>
+  public virtual User? Sender { get; set; } // <<NAV>>
+  public virtual User? Receiver { get; set; } // <<NAV>>
 }
