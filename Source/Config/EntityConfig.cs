@@ -15,6 +15,9 @@ public static class EntityConfiguration
 
     var speciality = mb.Entity<Speciality>();
     speciality.HasIndex(s => s.SpecialityName).IsUnique();
+
+    var blog = mb.Entity<Blog>();
+    blog.HasIndex(b => b.Slug).IsUnique();
   }
 
   public static void ConfigureForeignKeyConstraints(ModelBuilder mb)
