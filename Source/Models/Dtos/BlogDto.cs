@@ -6,6 +6,7 @@ namespace HealthHub.Source.Models.Dtos;
 public record CreateBlogDto
 {
   [Required]
+  [Guid]
   public required Guid AuthorId { get; set; }
 
   [Required]
@@ -22,6 +23,11 @@ public record CreateBlogDto
   [MinLength(1)]
   public required string Slug { get; set; }
 
+  [Required]
+  [MinLength(10)]
+  [MaxLength(255)]
+  public required string Summary { get; set; }
+
   public IList<string> Tags { get; set; } = [];
 };
 
@@ -35,7 +41,6 @@ public record BlogDto
   public IList<string> Tags { get; set; } = [];
   public required string Summary { get; set; }
   public required BlogProfileDto Author { get; set; }
-  public required IList<BlogCommentDto> BlogComments { get; set; } = [];
   public required ICollection<BlogLikeDto> BlogLikes { get; set; } = new HashSet<BlogLikeDto>();
 };
 
