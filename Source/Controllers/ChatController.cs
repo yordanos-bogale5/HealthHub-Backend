@@ -3,11 +3,28 @@ using HealthHub.Source.Services;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/chats")]
+[Route("api/conversations")]
 public class ChatController(ChatService chatService, ILogger<ChatController> logger)
   : ControllerBase
 {
-  [HttpGet("conversations/users/{userId}")]
+  [HttpGet("messages/{conversationId}")]
+  public async Task<IActionResult> GetMessagesByConversationId(
+    [FromRoute] [Required(ErrorMessage = "Conversation id is required")] [Guid] Guid conversationId
+  )
+  {
+    try
+    {
+      var result = await chatService.GetMessagesAsync(conversationId);
+      return Ok(result);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occurred while trying to get all messages.");
+      throw;
+    }
+  }
+
+  [HttpGet("users/{userId}")]
   public async Task<IActionResult> GetConversations([FromRoute] [Required] [Guid] Guid userId)
   {
     try
@@ -24,7 +41,7 @@ public class ChatController(ChatService chatService, ILogger<ChatController> log
     }
   }
 
-  [HttpGet("conversations/{userId}")]
+  [HttpGet("{userId}")]
   public async Task<IActionResult> GetConversation(
     [FromRoute] [Required] [Guid] Guid conversationId
   )
@@ -42,7 +59,7 @@ public class ChatController(ChatService chatService, ILogger<ChatController> log
     }
   }
 
-  [HttpGet("conversations/all")]
+  [HttpGet("all")]
   public async Task<IActionResult> GetAllConversations()
   {
     try
