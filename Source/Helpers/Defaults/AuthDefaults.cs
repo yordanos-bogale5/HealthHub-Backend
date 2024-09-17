@@ -6,8 +6,11 @@ public static class AuthDefaults
 {
   public const string AccessToken = "access_token";
   public const string Authorization = "authorization";
+}
 
-  public static class User
+public static class CookieDefaults
+{
+  public static class Profile
   {
     public const string UserId = "user_id";
     public const string DateOfBirth = "date_of_birth";
