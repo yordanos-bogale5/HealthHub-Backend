@@ -417,4 +417,58 @@ public static class EntityExtensions
       PaymentProvider = payment.PaymentProvider
     };
   }
+
+  public static BlogDto ToBlogDto(this Blog blog, User author, ICollection<BlogLike> blogLikes)
+  {
+    return new BlogDto
+    {
+      Author = author.ToBlogProfileDto(),
+      AuthorId = author.UserId,
+      BlogId = blog.BlogId,
+      BlogLikes = blogLikes
+        .Select(bl =>
+          bl.ToBlogLikeDto(
+            bl.User ?? throw new Exception("You forgot to include user when querying blogLikes.")
+          )
+        )
+        .ToList(),
+      Slug = blog.Slug,
+      Content = blog.Content,
+      Summary = blog.Summary,
+      Title = blog.Title
+    };
+  }
+
+  public static BlogProfileDto ToBlogProfileDto(this User user)
+  {
+    return new BlogProfileDto(
+      user.UserId,
+      user.FirstName,
+      user.LastName,
+      user.Email,
+      user.ProfilePicture ?? ""
+    );
+  }
+
+  public static BlogCommentDto ToBlogCommentDto(this BlogComment blogComment, User sender)
+  {
+    return new BlogCommentDto
+    {
+      BlogCommentId = blogComment.BlogCommentId,
+      BlogId = blogComment.BlogId,
+      CommentText = blogComment.CommentText,
+      SenderId = blogComment.SenderId,
+      Sender = sender.ToBlogProfileDto()
+    };
+  }
+
+  public static BlogLikeDto ToBlogLikeDto(this BlogLike blogLike, User liker)
+  {
+    return new BlogLikeDto(
+      blogLike.BlogLikeId,
+      blogLike.UserId,
+      blogLike.BlogId,
+      liker.ToBlogProfileDto()
+    );
+  }
 }

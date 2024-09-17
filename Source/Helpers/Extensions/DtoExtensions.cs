@@ -167,4 +167,16 @@ public static class DtoExtensions
       PaymentStatus = isSuccessful ? PaymentStatus.Success : PaymentStatus.Failed
     };
   }
+
+  public static Blog ToBlog(this CreateBlogDto createBlogDto)
+  {
+    return new Blog
+    {
+      AuthorId = createBlogDto.AuthorId,
+      Content = createBlogDto.Content,
+      Slug = createBlogDto.Slug,
+      Title = createBlogDto.Title,
+      Summary = createBlogDto.Summary,
+    };
+  }
 }
