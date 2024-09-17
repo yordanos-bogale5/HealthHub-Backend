@@ -1,5 +1,7 @@
 namespace HealthHub.Source.Models.Enums;
-public enum AppointmentType {
+
+public enum AppointmentType
+{
   Online,
   InPerson
 }
