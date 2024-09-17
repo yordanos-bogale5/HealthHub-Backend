@@ -2,6 +2,7 @@ namespace HealthHub.Source.Config;
 
 public class AppConfig(IConfiguration configuration)
 {
+  public string? ApiOrigin { get; set; } = configuration["API_ORIGIN"];
   public string? Port { get; set; } = configuration["PORT"];
   public bool? IsProduction { get; set; } =
     bool.TryParse(configuration["IS_PRODUCTION"], out var isProduction) ? isProduction : null;
@@ -15,6 +16,8 @@ public class AppConfig(IConfiguration configuration)
   public string? Auth0ClientSecret { get; set; } = configuration["AUTH0_CLIENT_SECRET"];
   public string[] AllowedOrigins { get; set; } =
     configuration["ALLOWED_ORIGINS"]?.Split(",").Select(s => s.Trim()).ToArray() ?? [];
+
+  public string? ChapaApiOrigin { get; set; } = configuration["CHAPA_API_ORIGIN"];
   public string? ChapaPublicKey { get; set; } = configuration["CHAPA_PUBLIC_KEY"];
   public string? ChapaSecretKey { get; set; } = configuration["CHAPA_SECRET_KEY"];
 }
