@@ -4,6 +4,7 @@ using HealthHub.Source.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240916232400_Added_TransactionReference_To_PaymentModel")]
+    partial class Added_TransactionReference_To_PaymentModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -503,6 +506,12 @@ namespace HealthHub.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("PaymentProvider")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -510,12 +519,6 @@ namespace HealthHub.Migrations
                     b.Property<string>("PaymentStatus")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ReceiverId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SenderId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TransactionReference")
                         .IsRequired()
@@ -526,11 +529,11 @@ namespace HealthHub.Migrations
 
                     b.HasKey("PaymentId");
 
-                    b.HasIndex("ReceiverId");
+                    b.HasIndex("DoctorId");
 
-                    b.HasIndex("SenderId");
+                    b.HasIndex("PatientId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payment");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Review", b =>
@@ -915,21 +918,21 @@ namespace HealthHub.Migrations
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Payment", b =>
                 {
-                    b.HasOne("HealthHub.Source.Models.Entities.User", "Receiver")
+                    b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
                         .WithMany()
-                        .HasForeignKey("ReceiverId")
+                        .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("HealthHub.Source.Models.Entities.User", "Sender")
+                    b.HasOne("HealthHub.Source.Models.Entities.Patient", "Patient")
                         .WithMany()
-                        .HasForeignKey("SenderId")
+                        .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Receiver");
+                    b.Navigation("Doctor");
 
-                    b.Navigation("Sender");
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Review", b =>
