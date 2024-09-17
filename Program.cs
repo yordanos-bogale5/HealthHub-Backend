@@ -1,5 +1,3 @@
-using System.Net;
-using System.Text.Json.Serialization;
 using dotenv.net;
 using FluentValidation;
 using HealthHub.Source.Config;
@@ -8,6 +6,7 @@ using HealthHub.Source.Filters.Error;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Hubs;
 using HealthHub.Source.Services;
+using HealthHub.Source.Services.BlogService;
 using HealthHub.Source.Services.PaymentProviders;
 using HealthHub.Source.Services.PaymentService;
 using HealthHub.Source.Validation;
@@ -17,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+// using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Converters;
 using Org.BouncyCastle.Asn1.X509.Qualified;
@@ -201,6 +201,8 @@ var builder = WebApplication.CreateBuilder(args);
   builder.Services.AddTransient<IPaymentService, PaymentService>();
   builder.Services.AddTransient<IPaymentProvider, ChapaPaymentProvider>();
   builder.Services.AddTransient<IPaymentProviderFactory, PaymentProviderFactory>();
+
+  builder.Services.AddTransient<IBlogService, BlogService>();
 
   // Add other providers in the future here!
 
