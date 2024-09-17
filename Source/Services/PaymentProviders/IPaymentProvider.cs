@@ -11,5 +11,5 @@ public interface IPaymentProvider
 {
   PaymentProvider PaymentProvider { get; }
   Task<decimal> CheckBalanceAsync(string email);
-  Task<bool> TransferAsync(string senderEmail, string receiverEmail, decimal amount);
+  Task<TransferResponseInner> TransferAsync(TransferRequestDto transferRequestDto);
 }
