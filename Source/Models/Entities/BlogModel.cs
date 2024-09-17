@@ -4,9 +4,9 @@ namespace HealthHub.Source.Models.Entities;
 
 public class Blog : BaseEntity
 {
-  public Guid BlogId { get; set; }
+  public Guid BlogId { get; set; } = Guid.NewGuid();
 
-  public Guid AuthorId { get; set; } // <<FK>>
+  public required Guid AuthorId { get; set; } // <<FK>>
 
   public required string Title { get; set; }
 
@@ -16,7 +16,7 @@ public class Blog : BaseEntity
 
   public required string Summary { get; set; }
 
-  public virtual required User Author { get; set; }
+  public virtual User? Author { get; set; }
 
   public virtual ICollection<BlogComment> BlogComments { get; set; } = new HashSet<BlogComment>();
 

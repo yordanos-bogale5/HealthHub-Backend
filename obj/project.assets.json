@@ -8211,11 +8211,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
+      "projectUniqueName": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
       "projectName": "HealthHub",
-      "projectPath": "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
+      "projectPath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\HealthHub.csproj",
       "packagesPath": "C:\\Users\\Dag Weg\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\obj\\",
+      "outputPath": "C:\\Users\\Dag Weg\\Documents\\Projects\\HealthHub\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Dag Weg\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -8403,14 +8403,10 @@
   },
   "logs": [
     {
-      "code": "NU1902",
+      "code": "NU1900",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'RestSharp' 111.4.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-4rr6-2v9v-wcpc",
-      "libraryId": "RestSharp",
-      "targetGraphs": [
-        "net8.0"
-      ]
+      "message": "Error occurred while getting package vulnerability data: No such host is known. (api.nuget.org:443)"
     }
   ]
 }
