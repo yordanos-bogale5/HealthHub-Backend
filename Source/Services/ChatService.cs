@@ -14,8 +14,29 @@ public class ChatService(
   ILogger<ChatService> logger
 )
 {
-  public async Task GetAllMessages(Guid senderId, Guid receiverId) =>
-    throw new NotImplementedException();
+  public async Task<List<MessageDto>> GetMessagesAsync(Guid conversationId)
+  {
+    try
+    {
+      if (!await ConversationExistsAsync(conversationId))
+      {
+        throw new KeyNotFoundException("Conversation with the given id doesn't exist.");
+      }
+
+      var result = appContext
+        .Messages.Where(m => m.ConversationId == conversationId)
+        .Include(m => m.Files)
+        .Select(m => m.ToMessageDto(m.Files))
+        .ToList();
+
+      return result;
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occurred while trying to get all messages.");
+      throw;
+    }
+  }
 
   public async Task<List<ConversationDto>> GetAllConversations(Guid userId)
   {
@@ -53,7 +74,7 @@ public class ChatService(
     using var transaction = await appContext.Database.BeginTransactionAsync();
     try
     {
-      var conversationId = await GetConversationId(
+      var conversationId = await GetConversationIdOrCreate(
         createMessageDto.SenderId,
         createMessageDto.ReceiverId
       );
@@ -91,8 +112,9 @@ public class ChatService(
   /// <param name="receiverId"></param>
   /// <returns>ConversationId</returns>
   /// <exception cref="InvalidOperationException"></exception>
-  public async Task<Guid> GetConversationId(Guid senderId, Guid receiverId)
+  public async Task<Guid> GetConversationIdOrCreate(Guid senderId, Guid receiverId)
   {
+    using var transaction = await appContext.Database.BeginTransactionAsync();
     try
     {
       // Find common conversations between sender and receiver
@@ -123,13 +145,15 @@ public class ChatService(
         };
         await appContext.ConversationMemberships.AddRangeAsync(conversationMemberships); // create the conversation memberships
         await appContext.Conversations.AddAsync(conversation); // create the conversation
-        return conversation.ConversationId;
+        commonConversation = conversation.ConversationId;
       }
-
+      await appContext.SaveChangesAsync();
+      transaction.Commit();
       return commonConversation;
     }
     catch (Exception ex)
     {
+      await transaction.RollbackAsync();
       logger.LogError(ex, "An error occurred while getting the conversation ID.");
       throw;
     }
@@ -139,7 +163,7 @@ public class ChatService(
   {
     try
     {
-      if (!await ConversationExists(conversationId))
+      if (!await ConversationExistsAsync(conversationId))
         throw new KeyNotFoundException("Conversation with the given id doesn't exist.");
 
       return appContext
@@ -171,7 +195,7 @@ public class ChatService(
     }
   }
 
-  public async Task<bool> ConversationExists(Guid conversationId)
+  public async Task<bool> ConversationExistsAsync(Guid conversationId)
   {
     return await appContext.Conversations.FindAsync(conversationId) != null;
   }
