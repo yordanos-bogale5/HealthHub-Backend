@@ -1,0 +1,2 @@
+@conversationId = 510b289c-7946-484d-8581-36c1f3fd08b5
+GET {{apiHostUrl}}/api/conversations/messages/{{conversationId}} HTTP/1.1

@@ -1,1 +1,1 @@
-GET  {{apiHostUrl}}/api/chats/conversations/all
+GET  {{apiHostUrl}}/api/conversations/all

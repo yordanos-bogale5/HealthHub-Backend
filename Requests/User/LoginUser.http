@@ -2,6 +2,6 @@ POST {{apiHostUrl}}/api/users/login
 Content-Type: application/json
 
 {
-  "Email"    : "dagtef5@gmail.com",
+  "Email"    : "dagtef@gmail.com",
   "Password" : "12345678Ab@"
 }

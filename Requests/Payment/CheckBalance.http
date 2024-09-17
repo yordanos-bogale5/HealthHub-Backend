@@ -1,0 +1,4 @@
+@email = dagtef@gmail.com
+@paymentProvider = 1
+
+GET  {{apiHostUrl}}/api/payments/balance/{{email}}/{{paymentProvider}}

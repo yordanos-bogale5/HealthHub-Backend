@@ -1,0 +1,14 @@
+POST  {{apiHostUrl}}/api/payments/transfer HTTP/1.1
+Content-Type: application/json
+Cookie: user_id=74d501f1-b888-41cc-acb9-230eaa17698e
+
+{
+  "firstName":"Dagmawi",
+  "lastName": "Tefera",
+  "senderEmail": "dagtef@gmail.com",
+  "receiverEmail": "dagtef@gmail.com",
+  "receiverId":"db1ca3d9-8f05-444e-9cf8-e8e3f20dd38e",
+  "amount": "100000",
+  "phoneNumber":"0912345678",
+  "paymentProvider": "chapa"
+}

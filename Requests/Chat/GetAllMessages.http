@@ -1,2 +1,2 @@
-@chatId = fasdfasdfasfd
-GET {{apiHostUrl}}/api/chats/{{{chatId}}}/messages
+@conversationId = db1ca3d9-8f05-444e-9cf8-e8e3f20dd38e
+GET {{apiHostUrl}}/api/chats/conversations/messages/{{conversationId}}
