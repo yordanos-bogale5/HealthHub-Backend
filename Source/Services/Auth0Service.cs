@@ -37,7 +37,7 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
           role = userDto.Role.ToString(),
           phone = userDto.Phone,
           gender = userDto.Gender,
-          dateOfBirth = userDto.DateOfBirth
+          dateOfBirth = userDto.DateOfBirth,
         }
       };
 

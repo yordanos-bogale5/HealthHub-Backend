@@ -660,4 +660,9 @@ public class DoctorService(
       throw;
     }
   }
+
+  public async Task<bool> UserExistsAsync(Guid userId)
+  {
+    return await appContext.Doctors.AnyAsync(d => d.UserId == userId);
+  }
 }

@@ -155,4 +155,9 @@ public class PatientService(ILogger<PatientService> logger, ApplicationContext a
       throw;
     }
   }
+
+  public async Task<bool> UserExistsAsync(Guid userId)
+  {
+    return await appContext.Patients.AnyAsync(p => p.UserId == userId);
+  }
 }
