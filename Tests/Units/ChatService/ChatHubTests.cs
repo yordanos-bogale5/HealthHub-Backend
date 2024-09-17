@@ -5,6 +5,7 @@ using HealthHub.Source.Hubs;
 using HealthHub.Source.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -23,6 +24,7 @@ public class ChatHubTests
   private readonly Mock<HubCallerContext> _mockCallerContext;
   private readonly Mock<HttpContext> _mockHttpContext;
   private readonly Mock<UserConnection> _mockUserConnection;
+  private readonly Mock<UserService> _mockUserService;
 
   public ChatHubTests()
   {
@@ -50,9 +52,29 @@ public class ChatHubTests
     _mockHttpContext = new Mock<HttpContext>();
     _mockUserConnection = new Mock<UserConnection>();
 
-    _mockCallerContext.Setup(context => context.GetHttpContext()).Returns(_mockHttpContext.Object);
+    _mockUserService = new Mock<UserService>();
+    _mockUserService.Setup(svc => svc.UserExistsAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+
+    // Create a mock of IHttpContextAccessor
+    var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+
+    // Setup the FormCollection as before
+    var formCollection = new FormCollection(
+      new Dictionary<string, StringValues>()
+      {
+        { CookieDefaults.Profile.UserId, "DB1CA3D9-8F05-444E-9CF8-E8E3F20DD38E" }
+      }
+    );
+
+    // Create a mock HttpContext and set the request Form property
+    HttpContext httpContext = new DefaultHttpContext();
+    httpContext.Request.Form = formCollection;
+
+    // Setup the mock to return the created HttpContext
+    httpContextAccessorMock.Setup(_ => _.HttpContext).Returns(httpContext);
+
     _mockHttpContext
-      .Setup(context => context.Request.Cookies[AuthDefaults.User.UserId])
+      .Setup(context => context.Request.Cookies[CookieDefaults.Profile.UserId])
       .Returns("DB1CA3D9-8F05-444E-9CF8-E8E3F20DD38E");
 
     // Assign HttpContext to the HubCallerContext (mocking access to HttpContext from HubCallerContext)

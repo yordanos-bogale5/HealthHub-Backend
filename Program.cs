@@ -59,7 +59,8 @@ var builder = WebApplication.CreateBuilder(args);
 
   builder.Services.Configure<ApiBehaviorOptions>(options =>
   {
-    options.SuppressModelStateInvalidFilter = true;
+    // Model state invalid filter disable
+    // options.SuppressModelStateInvalidFilter = true;
   });
 
   builder.Services.AddCors(

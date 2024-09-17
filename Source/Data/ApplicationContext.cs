@@ -14,6 +14,34 @@ namespace HealthHub.Source.Data;
 /// </summary>
 public class ApplicationContext : DbContext
 {
+  public DbSet<User> Users { get; set; }
+  public DbSet<Doctor> Doctors { get; set; }
+  public DbSet<Patient> Patients { get; set; }
+  public DbSet<Admin> Admins { get; set; }
+  public DbSet<Speciality> Specialities { get; set; }
+  public DbSet<DoctorSpeciality> DoctorSpecialities { get; set; }
+
+  public DbSet<Education> Educations { get; set; }
+  public DbSet<Experience> Experiences { get; set; }
+
+  public DbSet<Appointment> Appointments { get; set; }
+  public DbSet<DoctorAvailability> DoctorAvailabilities { get; set; }
+  public DbSet<Blog> Blogs { get; set; }
+  public DbSet<BlogComment> BlogComments { get; set; }
+  public DbSet<BlogLike> BlogLikes { get; set; }
+  public DbSet<Review> Reviews { get; set; }
+
+  public DbSet<Conversation> Conversations { get; set; }
+  public DbSet<ConversationMembership> ConversationMemberships { get; set; }
+  public DbSet<Message> Messages { get; set; }
+
+  public DbSet<Notification> Notifications { get; set; }
+
+  public DbSet<Models.Entities.File> Files { get; set; }
+  public DbSet<FileAssociation> FileAssociations { get; set; }
+
+  public DbSet<Payment> Payments { get; set; }
+
   public ApplicationContext(DbContextOptions<ApplicationContext> options)
     : base(options) { }
 
@@ -64,30 +92,4 @@ public class ApplicationContext : DbContext
 
     return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
   }
-
-  public DbSet<User> Users { get; set; }
-  public DbSet<Doctor> Doctors { get; set; }
-  public DbSet<Patient> Patients { get; set; }
-  public DbSet<Admin> Admins { get; set; }
-  public DbSet<Speciality> Specialities { get; set; }
-  public DbSet<DoctorSpeciality> DoctorSpecialities { get; set; }
-
-  public DbSet<Education> Educations { get; set; }
-  public DbSet<Experience> Experiences { get; set; }
-
-  public DbSet<Appointment> Appointments { get; set; }
-  public DbSet<DoctorAvailability> DoctorAvailabilities { get; set; }
-  public DbSet<Blog> Blogs { get; set; }
-  public DbSet<BlogComment> BlogComments { get; set; }
-  public DbSet<BlogLike> BlogLikes { get; set; }
-  public DbSet<Review> Reviews { get; set; }
-
-  public DbSet<Conversation> Conversations { get; set; }
-  public DbSet<ConversationMembership> ConversationMemberships { get; set; }
-  public DbSet<Message> Messages { get; set; }
-
-  public DbSet<Notification> Notifications { get; set; }
-
-  public DbSet<Models.Entities.File> Files { get; set; }
-  public DbSet<FileAssociation> FileAssociations { get; set; }
 }

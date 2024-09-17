@@ -104,6 +104,20 @@
           }
         }
       },
+      "Chapa.NET/2.1.0": {
+        "type": "package",
+        "dependencies": {
+          "Flurl": "3.0.6",
+          "Flurl.Http": "3.2.4",
+          "Newtonsoft.Json": "13.0.2"
+        },
+        "compile": {
+          "lib/net6.0/Chapa.NET.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/Chapa.NET.dll": {}
+        }
+      },
       "dotenv.net/3.2.0": {
         "type": "package",
         "compile": {
@@ -159,6 +173,37 @@
         },
         "runtime": {
           "lib/netstandard2.1/FluentValidation.DependencyInjectionExtensions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Flurl/3.0.6": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Flurl.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Flurl.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Flurl.Http/3.2.4": {
+        "type": "package",
+        "dependencies": {
+          "Flurl": "3.0.6",
+          "Newtonsoft.Json": "12.0.2",
+          "System.Text.Encoding.CodePages": "4.5.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/Flurl.Http.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Flurl.Http.dll": {
             "related": ".xml"
           }
         }
@@ -3257,6 +3302,19 @@
         "readme.txt"
       ]
     },
+    "Chapa.NET/2.1.0": {
+      "sha512": "lHeh48vkizPvNA5SxVL/31S5asdErd0kUasU/UvSu57Jj+cLdi6PxRMZ+SSy2kBHxm0Z87XTo1HlpCIrWO9llw==",
+      "type": "package",
+      "path": "chapa.net/2.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "chapa.net.2.1.0.nupkg.sha512",
+        "chapa.net.nuspec",
+        "chapalogo.png",
+        "lib/net6.0/Chapa.NET.dll"
+      ]
+    },
     "dotenv.net/3.2.0": {
       "sha512": "shohkuZ2HxhNmLY+jCG5MJreMEtmjbaWyOIoJ920KTDwJHT9JC7WdnmrXCwqJ1JPKo5QY9oDJUEFTlQE8qSZSw==",
       "type": "package",
@@ -3331,6 +3389,42 @@
         "lib/netstandard2.0/FluentValidation.DependencyInjectionExtensions.xml",
         "lib/netstandard2.1/FluentValidation.DependencyInjectionExtensions.dll",
         "lib/netstandard2.1/FluentValidation.DependencyInjectionExtensions.xml"
+      ]
+    },
+    "Flurl/3.0.6": {
+      "sha512": "XMIlB/tJ4nTYF2+79xDsnnlgbXHpKyizKX2fffrECekI6pEsa9MSLzf5tPVMdLy4k4AcJPLs356Sa2Le5VRDCw==",
+      "type": "package",
+      "path": "flurl/3.0.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "flurl.3.0.6.nupkg.sha512",
+        "flurl.nuspec",
+        "icon.png",
+        "lib/net461/Flurl.dll",
+        "lib/net461/Flurl.xml",
+        "lib/net472/Flurl.dll",
+        "lib/net472/Flurl.xml",
+        "lib/netstandard2.0/Flurl.dll",
+        "lib/netstandard2.0/Flurl.xml"
+      ]
+    },
+    "Flurl.Http/3.2.4": {
+      "sha512": "Me9Vm4Lm21vt/pbR0G2Dww/ZOjJgh6mB2FiH28aiUYStJD10ZecDp8jxg2zKxcy6lnkvLm99pjG4yC/k7a/d8w==",
+      "type": "package",
+      "path": "flurl.http/3.2.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "flurl.http.3.2.4.nupkg.sha512",
+        "flurl.http.nuspec",
+        "icon.png",
+        "lib/net461/Flurl.Http.dll",
+        "lib/net461/Flurl.Http.xml",
+        "lib/net472/Flurl.Http.dll",
+        "lib/net472/Flurl.Http.xml",
+        "lib/netstandard2.0/Flurl.Http.dll",
+        "lib/netstandard2.0/Flurl.Http.xml"
       ]
     },
     "Humanizer.Core/2.14.1": {
@@ -8080,6 +8174,7 @@
     "net8.0": [
       "Auth0.AspNetCore.Authentication >= 1.4.1",
       "AutoMapper >= 13.0.1",
+      "Chapa.NET >= 2.1.0",
       "FluentValidation >= 11.9.2",
       "FluentValidation.AspNetCore >= 11.3.0",
       "MailKit >= 4.7.1.1",
@@ -8161,6 +8256,10 @@
           "AutoMapper": {
             "target": "Package",
             "version": "[13.0.1, )"
+          },
+          "Chapa.NET": {
+            "target": "Package",
+            "version": "[2.1.0, )"
           },
           "FluentValidation": {
             "target": "Package",

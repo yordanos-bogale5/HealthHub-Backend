@@ -22,14 +22,14 @@ namespace HealthHub.Source.Hubs
 
     public override async Task OnConnectedAsync()
     {
-      // var httpContext = Context.GetHttpContext();
-      // _senderId = httpContext?.Request.Cookies[AuthDefaults.User.UserId];
+      var httpContext = Context.GetHttpContext();
+      _senderId = httpContext?.Request.Cookies[CookieDefaults.Profile.UserId];
 
-      // if (_senderId == null)
-      //   throw new HubException("User is not logged in.");
+      if (_senderId == null)
+        throw new HubException("User is not logged in.");
 
       // Use the senderId to manage connection mapping
-      _senderId = "74d501f1-b888-41cc-acb9-230eaa17698e";
+      // _senderId = "74d501f1-b888-41cc-acb9-230eaa17698e";
       _userConnection.AddConnection(_senderId, Context.ConnectionId);
 
       await base.OnConnectedAsync();
@@ -60,7 +60,7 @@ namespace HealthHub.Source.Hubs
       [ValidCreateFileList] List<CreateFileDto>? files = null
     )
     {
-      _senderId = "74d501f1-b888-41cc-acb9-230eaa17698e";
+      // _senderId = "74d501f1-b888-41cc-acb9-230eaa17698e";
       if (string.IsNullOrWhiteSpace(_senderId))
       {
         throw new FormatException("The userId cookie is missing or empty.");
@@ -91,6 +91,11 @@ namespace HealthHub.Source.Hubs
           .Client(connId)
           .SendAsync(ChatEvents.ReceiveMessage.ToString(), createdMessage);
       }
+    }
+
+    public async Task SendMessageAll(string user, string message)
+    {
+      await Clients.All.SendAsync("ReceiveMessageAll", user, message);
     }
   }
 }
