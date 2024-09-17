@@ -135,4 +135,36 @@ public static class DtoExtensions
       ConversationId = conversationId
     };
   }
+
+  public static Payment ToPayment(
+    this CreatePaymentDto createPaymentDto,
+    string transactionReference
+  )
+  {
+    return new Payment
+    {
+      Amount = createPaymentDto.Amount,
+      SenderId = createPaymentDto.SenderId,
+      ReceiverId = createPaymentDto.ReceiverId,
+      PaymentProvider = createPaymentDto.PaymentProvider,
+      PaymentStatus = PaymentStatus.Pending,
+      TransactionReference = transactionReference,
+    };
+  }
+
+  public static CreatePaymentDto ToCreatePaymentDto(
+    this TransferRequestDto transferRequestDto,
+    Guid senderId,
+    bool isSuccessful
+  )
+  {
+    return new CreatePaymentDto
+    {
+      Amount = transferRequestDto.Amount,
+      ReceiverId = transferRequestDto.ReceiverId,
+      SenderId = senderId,
+      PaymentProvider = transferRequestDto.PaymentProvider,
+      PaymentStatus = isSuccessful ? PaymentStatus.Success : PaymentStatus.Failed
+    };
+  }
 }

@@ -404,4 +404,17 @@ public static class EntityExtensions
       messages.Select(m => m.ToMessageDto(files)).ToList()
     );
   }
+
+  public static PaymentDto ToPaymentDto(this Payment payment)
+  {
+    return new PaymentDto
+    {
+      PaymentId = payment.PaymentId,
+      SenderId = payment.SenderId,
+      ReceiverId = payment.ReceiverId,
+      Amount = payment.Amount,
+      PaymentStatus = payment.PaymentStatus,
+      PaymentProvider = payment.PaymentProvider
+    };
+  }
 }
