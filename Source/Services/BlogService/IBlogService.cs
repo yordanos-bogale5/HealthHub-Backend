@@ -6,7 +6,7 @@ public interface IBlogService
 {
   Task<BlogDto> CreateBlogAsync(CreateBlogDto createBlogDto);
   Task<List<BlogDto>> GetAllBlogsAsync();
-  Task<BlogDto> GetBlog(Guid blogId);
-  Task<BlogDto> UpdateBlog(Guid blogId, CreateBlogDto createBlogDto);
-  Task<bool> SlugExists(string slug);
+  Task<BlogDto> GetBlogAsync(Guid blogId);
+  Task<BlogDto> UpdateBlogAsync(Guid blogId, CreateBlogDto createBlogDto);
+  Task<bool> SlugExistsAsync(string slug);
 }

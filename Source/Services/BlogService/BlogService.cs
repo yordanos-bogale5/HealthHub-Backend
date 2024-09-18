@@ -22,7 +22,7 @@ public class BlogService(ApplicationContext appContext, ILogger<BlogService> log
           "Author with the specified id doesn't exist. Please make sure you provided a userId of a doctor!"
         );
 
-      if (await SlugExists(createBlogDto.Slug))
+      if (await SlugExistsAsync(createBlogDto.Slug))
         throw new BadHttpRequestException("Slug already exists. Please choose another slug!");
 
       var blog = createBlogDto.ToBlog();
@@ -34,19 +34,56 @@ public class BlogService(ApplicationContext appContext, ILogger<BlogService> log
     }
     catch (System.Exception ex)
     {
+      logger.LogError(ex, "An error occured trying to create a blog.");
       throw;
     }
   }
 
-  public async Task<bool> SlugExists(string slug)
+  public async Task<bool> SlugExistsAsync(string slug)
   {
     return await appContext.Blogs.FirstOrDefaultAsync(b => b.Slug == slug) != default;
   }
 
-  public Task<List<BlogDto>> GetAllBlogsAsync() => throw new NotImplementedException();
+  public async Task<List<BlogDto>> GetAllBlogsAsync()
+  {
+    try
+    {
+      var blogs = await appContext
+        .Blogs.Include(b => b.Author)
+        .Include(b => b.BlogLikes)
+        .Where(b => b.Author != null)
+        .Select(b => b.ToBlogDto(b.Author!, b.BlogLikes))
+        .ToListAsync();
+      return blogs;
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to get all blogs");
+      throw;
+    }
+  }
 
-  public Task<BlogDto> GetBlog(Guid blogId) => throw new NotImplementedException();
+  public async Task<BlogDto> GetBlogAsync(Guid blogId)
+  {
+    try
+    {
+      var blog = await appContext
+        .Blogs.Include(b => b.Author)
+        .Include(b => b.BlogLikes)
+        .FirstOrDefaultAsync(b => b.BlogId == blogId);
 
-  public Task<BlogDto> UpdateBlog(Guid blogId, CreateBlogDto createBlogDto) =>
+      if (blog == default)
+        throw new KeyNotFoundException("Blog with the given id is not found!");
+
+      return blog.ToBlogDto(blog.Author!, blog.BlogLikes);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to get blog by id.");
+      throw;
+    }
+  }
+
+  public Task<BlogDto> UpdateBlogAsync(Guid blogId, CreateBlogDto createBlogDto) =>
     throw new NotImplementedException();
 }
