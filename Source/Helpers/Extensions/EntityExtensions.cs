@@ -445,15 +445,28 @@ public static class EntityExtensions
     };
   }
 
-  public static BlogProfileDto ToBlogProfileDto(this User user)
+  public static IProfileDto ToBlogProfileDto(this User user)
   {
-    return new BlogProfileDto(
-      user.UserId,
-      user.FirstName,
-      user.LastName,
-      user.Email,
-      user.ProfilePicture ?? ""
-    );
+    return new BlogProfileDto
+    {
+      Email = user.Email,
+      FirstName = user.FirstName,
+      LastName = user.LastName,
+      UserId = user.UserId,
+      ProfilePicture = user.ProfilePicture ?? ""
+    };
+  }
+
+  public static IProfileDto ToConversationProfileDto(this User user)
+  {
+    return new ConversationProfileDto
+    {
+      Email = user.Email,
+      FirstName = user.FirstName,
+      LastName = user.LastName,
+      UserId = user.UserId,
+      ProfilePicture = user.ProfilePicture ?? ""
+    };
   }
 
   public static BlogCommentDto ToBlogCommentDto(this BlogComment blogComment, User sender)

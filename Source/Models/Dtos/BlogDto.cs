@@ -64,7 +64,7 @@ public record BlogDto
   public required string Slug { get; set; }
   public IList<string> Tags { get; set; } = [];
   public required string Summary { get; set; }
-  public required BlogProfileDto Author { get; set; }
+  public required IProfileDto Author { get; set; }
   public required ICollection<BlogLikeDto> BlogLikes { get; set; } = new HashSet<BlogLikeDto>();
 };
 
@@ -90,18 +90,10 @@ public record BlogCommentDto
   public required Guid BlogId { get; set; }
   public required Guid SenderId { get; set; }
   public required string CommentText { get; set; }
-  public required BlogProfileDto Sender { get; set; }
+  public required IProfileDto Sender { get; set; }
 }
-
-public record BlogProfileDto(
-  Guid UserId,
-  string FirstName,
-  string LastName,
-  string Email,
-  string ProfilePicture
-);
 
 // Request DTO for creating a blog like
 public record CreateBlogLikeDto([Required] [Guid] Guid UserId, [Required] [Guid] Guid BlogId);
 
-public record BlogLikeDto(Guid BlogLikeId, Guid UserId, Guid BlogId, BlogProfileDto User);
+public record BlogLikeDto(Guid BlogLikeId, Guid UserId, Guid BlogId, IProfileDto User);
