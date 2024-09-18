@@ -375,6 +375,7 @@ public static class EntityExtensions
   )
   {
     return new MessageDto(
+      message.MessageId,
       message.SenderId,
       message.ReceiverId,
       message.MessageText,
@@ -393,16 +394,16 @@ public static class EntityExtensions
     );
   }
 
-  public static ConversationDto ToConversationDto(
+  public static IConversationDto ToConversationDto(
     this Conversation conversation,
-    ICollection<Message> messages,
-    ICollection<HealthHub.Source.Models.Entities.File>? files
+    ICollection<User> participants
   )
   {
-    return new ConversationDto(
-      conversation.ConversationId,
-      messages.Select(m => m.ToMessageDto(files)).ToList()
-    );
+    return new ConversationDtoBase
+    {
+      ConversationId = conversation.ConversationId,
+      Participants = participants.Select(u => u.ToConversationProfileDto()).ToList()
+    };
   }
 
   public static PaymentDto ToPaymentDto(this Payment payment)

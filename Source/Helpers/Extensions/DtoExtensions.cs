@@ -179,4 +179,19 @@ public static class DtoExtensions
       Summary = createBlogDto.Summary,
     };
   }
+
+  public static BlogComment ToBlogComment(this CreateBlogCommentDto createBlogCommentDto)
+  {
+    return new BlogComment
+    {
+      BlogId = createBlogCommentDto.BlogId,
+      CommentText = createBlogCommentDto.CommentText,
+      SenderId = createBlogCommentDto.SenderId
+    };
+  }
+
+  public static BlogLike ToBlogLike(this CreateBlogLikeDto createBlogLikeDto)
+  {
+    return new BlogLike { BlogId = createBlogLikeDto.BlogId, UserId = createBlogLikeDto.UserId };
+  }
 }
