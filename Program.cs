@@ -152,8 +152,8 @@ var builder = WebApplication.CreateBuilder(args);
   // Controllers & Views Service
   builder.Services.AddControllersWithViews(options =>
   {
-    // Register the global exception handler filer
-    // options.Filters.Add<GlobalExceptionFilter>();
+    // Global action filter for validating each controller
+    options.Filters.Add<ValidateModelStateFilter>();
   });
 
   // Register Validation Services
