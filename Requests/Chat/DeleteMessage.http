@@ -1,0 +1,2 @@
+@messageId = 9f3b641f-1492-4147-a2da-7569e47eb700
+DELETE {{apiHostUrl}}/api/conversations/message/{{messageId}}

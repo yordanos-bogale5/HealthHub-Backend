@@ -1,0 +1,7 @@
+POST  {{apiHostUrl}}/api/blogs/like
+Content-Type:  application/json
+
+{
+  "blogId": "09472f5a-9ff1-4505-96d4-1b4122b4b3c8",
+  "userId": "74d501f1-b888-41cc-acb9-230eaa17698e"
+}

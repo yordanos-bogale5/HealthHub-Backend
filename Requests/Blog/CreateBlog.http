@@ -2,11 +2,11 @@ POST {{apiHostUrl}}/api/blogs
 Content-Type: application/json
 
 {
-  "Slug":"my-third-blog",
-  "Title":"Welcome to Health Hub: Part 3",
+  "Slug":"the-importance-of-health",
+  "Title":"The Importance of Health",
   "Content":"Lorem ipsum dolor amet. Lorem ipsum dolor amet. Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.",
-  "Summary":"There goes your summary!",
+  "Summary":"Health is wealth. Lorem ipsum dolor amet.",
   "authorId":"db1ca3d9-8f05-444e-9cf8-e8e3f20dd38e",
-  "tags":["Health"]
+  "tags":["Health","Nutrition","TestTag"]
 }
 

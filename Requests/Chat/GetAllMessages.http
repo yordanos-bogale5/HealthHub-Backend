@@ -1,2 +1,2 @@
-@conversationId = db1ca3d9-8f05-444e-9cf8-e8e3f20dd38e
-GET {{apiHostUrl}}/api/chats/conversations/messages/{{conversationId}}
+@conversationId = 510b289c-7946-484d-8581-36c1f3fd08b5
+GET {{apiHostUrl}}/api/conversations/messages/{{conversationId}}

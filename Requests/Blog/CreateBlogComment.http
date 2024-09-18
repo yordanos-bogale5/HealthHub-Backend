@@ -1,0 +1,8 @@
+POST {{apiHostUrl}}/api/blogs/comment
+Content-Type: application/json
+
+{
+  "blogId":"09472f5a-9ff1-4505-96d4-1b4122b4b3c8",
+  "senderId":"74d501f1-b888-41cc-acb9-230eaa17698e",
+  "commentText":"Very nice content. Keep it up!"
+}

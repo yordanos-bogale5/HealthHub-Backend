@@ -1,2 +1,2 @@
-@blogId = 22d0406b-1a7b-4c8e-9674-4e316e22498ee
+@blogId = 09472f5a-9ff1-4505-96d4-1b4122b4b3c8
 GET {{apiHostUrl}}/api/blogs/{{blogId}}

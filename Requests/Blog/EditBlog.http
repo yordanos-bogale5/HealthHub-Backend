@@ -7,5 +7,5 @@ Content-Type: application/json
   "title":"MORE TAGS",
   "content":"Lorem ipsum updated amet. Lorem ipsum updated amet. Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.",
   "summary":"Lorem ipsum updated amet.",
-  "tags":["Health","Nutrition","TestTag","HairGrowth"]
+  "tags":["Health","Nutrition","TestTag","HairGrowth","SkinCare","TestTag2"]
 }
