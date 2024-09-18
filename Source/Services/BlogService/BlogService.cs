@@ -7,6 +7,7 @@ using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Services;
 using HealthHub.Source.Services.BlogService;
 using Microsoft.EntityFrameworkCore;
+using RestSharp;
 
 public class BlogService(ApplicationContext appContext, ILogger<BlogService> logger) : IBlogService
 {
@@ -59,6 +60,7 @@ public class BlogService(ApplicationContext appContext, ILogger<BlogService> log
       var blogs = await appContext
         .Blogs.Include(b => b.Author)
         .Include(b => b.BlogLikes)
+        .ThenInclude(b => b.User)
         .Include(b => b.BlogTags)
         .ThenInclude(bt => bt.Tag)
         .Where(b => b.Author != null)
@@ -80,6 +82,7 @@ public class BlogService(ApplicationContext appContext, ILogger<BlogService> log
       var blog = await appContext
         .Blogs.Include(b => b.Author)
         .Include(b => b.BlogLikes)
+        .ThenInclude(bl => bl.User)
         .Include(b => b.BlogTags)
         .ThenInclude(bt => bt.Tag)
         .FirstOrDefaultAsync(b => b.BlogId == blogId);
@@ -108,6 +111,7 @@ public class BlogService(ApplicationContext appContext, ILogger<BlogService> log
         .Blogs.Include(b => b.Author)
         .Where(b => b.Author != null)
         .Include(b => b.BlogLikes)
+        .ThenInclude(bl => bl.User)
         .FirstOrDefaultAsync(b => b.BlogId == blogId);
 
       if (blog == default)
@@ -133,9 +137,18 @@ public class BlogService(ApplicationContext appContext, ILogger<BlogService> log
     }
   }
 
-  public async Task<bool> BlogExistsAsync(Guid blogId)
+  /// <summary>
+  /// Get a blog by id
+  /// </summary>
+  /// <param name="blogId"></param>
+  /// <returns></returns>
+  /// <exception cref="KeyNotFoundException"></exception>
+  public async Task<Blog> GetBlogIfExists(Guid blogId)
   {
-    return await appContext.Blogs.FirstOrDefaultAsync(b => b.BlogId == blogId) != default;
+    var blog = await appContext.Blogs.FirstOrDefaultAsync(b => b.BlogId == blogId);
+    if (blog == default)
+      throw new KeyNotFoundException("Blog with the given id doesn't exist.");
+    return blog;
   }
 
   public async Task<ICollection<Tag>> CreateTagsAsync(IList<string> tags)
@@ -232,6 +245,113 @@ public class BlogService(ApplicationContext appContext, ILogger<BlogService> log
     catch (System.Exception ex)
     {
       logger.LogError(ex, "Error deleting all blogs");
+      throw;
+    }
+  }
+
+  public async Task<BlogCommentDto> CreateBlogCommentAsync(
+    CreateBlogCommentDto createBlogCommentDto
+  )
+  {
+    try
+    {
+      var blog = appContext.Blogs.FirstOrDefault(b => b.BlogId == createBlogCommentDto.BlogId);
+
+      if (blog == default)
+        throw new KeyNotFoundException(
+          "Blog with the given id doesn't exist. Unable to create blog comment."
+        );
+
+      var sender = appContext.Users.FirstOrDefault(u => u.UserId == createBlogCommentDto.SenderId);
+
+      if (sender == default)
+        throw new KeyNotFoundException(
+          "Sender with the given id doesn't exist. Unable to create blog comment."
+        );
+
+      var comment = await appContext.BlogComments.AddAsync(createBlogCommentDto.ToBlogComment());
+
+      await appContext.SaveChangesAsync();
+
+      return comment.Entity.ToBlogCommentDto(sender);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to create blog comment");
+      throw;
+    }
+  }
+
+  public async Task<ICollection<BlogCommentDto>> GetBlogCommentsAsync(Guid blogId)
+  {
+    try
+    {
+      var blog = await appContext.Blogs.FirstOrDefaultAsync(b => b.BlogId == blogId);
+      if (blog == default)
+        throw new KeyNotFoundException(
+          "Blog with the given id doesn't exist. Unable to get blog comments."
+        );
+
+      var comments = await appContext
+        .Blogs.Where(b => b.BlogId == blogId)
+        .Include(b => b.BlogComments)
+        .ThenInclude(bc => bc.Sender)
+        .SelectMany(b => b.BlogComments)
+        .ToListAsync();
+
+      return comments
+        .Where(c => c.Sender != null)
+        .Select(c => c.ToBlogCommentDto(c.Sender!))
+        .ToList();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to get blog comments.");
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Create a blog like. If called subsequently acts as a toggle between like and unlike.
+  /// In other words creates and deletes a like.
+  /// </summary>
+  /// <param name="createBlogLikeDto"></param>
+  /// <returns></returns>
+  public async Task<BlogLikeDto?> CreateBlogLikeAsync(CreateBlogLikeDto createBlogLikeDto)
+  {
+    try
+    {
+      var blog = await GetBlogIfExists(createBlogLikeDto.BlogId);
+      var user = await appContext.Users.FirstOrDefaultAsync(u =>
+        u.UserId == createBlogLikeDto.UserId
+      );
+      if (user == default)
+        throw new KeyNotFoundException(
+          "User(Liker) with the given id doesn't exist. Unable to create blog like."
+        );
+      var blogLikeExists = await appContext.BlogLikes.FirstOrDefaultAsync(bl =>
+        bl.BlogId == createBlogLikeDto.BlogId && bl.UserId == createBlogLikeDto.UserId
+      );
+      // If bloglike already exists
+      if (blogLikeExists != default)
+      {
+        // Deletes the existing like
+        appContext.BlogLikes.Remove(blogLikeExists);
+        await appContext.SaveChangesAsync();
+        return null;
+      }
+      // If bloglike doesn't exist
+      else
+      {
+        // Creates a new like
+        var blogLike = await appContext.BlogLikes.AddAsync(createBlogLikeDto.ToBlogLike());
+        await appContext.SaveChangesAsync();
+        return blogLike.Entity.ToBlogLikeDto(user);
+      }
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to create blog like.");
       throw;
     }
   }
