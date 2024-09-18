@@ -1,35 +1,42 @@
 using HealthHub.Source.Data;
 using HealthHub.Source.Helpers.Defaults;
 using HealthHub.Source.Helpers.Extensions;
+using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Entities;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 
-namespace HealthHub.Source.Services;
+namespace HealthHub.Source.Services.ChatService;
 
 public class ChatService(
   ApplicationContext appContext,
   UserService userService,
   FileService fileService,
   ILogger<ChatService> logger
-)
+) : IChatService
 {
   public async Task<List<MessageDto>> GetMessagesAsync(Guid conversationId)
   {
     try
     {
-      if (!await ConversationExistsAsync(conversationId))
+      var conversation = await appContext
+        .Conversations.Where(c => c.ConversationId == conversationId)
+        .Include(c => c.Messages)
+        .ThenInclude(m => m.Files) // Load the associated files
+        .Include(c => c.Messages)
+        .ThenInclude(m => m.Sender) // Load the sender
+        .Include(c => c.Messages)
+        .ThenInclude(m => m.Receiver) // Load the receiver
+        .FirstOrDefaultAsync();
+
+      if (conversation == default)
       {
         throw new KeyNotFoundException("Conversation with the given id doesn't exist.");
       }
 
-      var result = appContext
-        .Messages.Where(m => m.ConversationId == conversationId)
-        .Include(m => m.Files)
-        .Select(m => m.ToMessageDto(m.Files))
-        .ToList();
-
-      return result;
+      return conversation.Messages.Select(m => m.ToMessageDto(m.Files)).ToList();
     }
     catch (System.Exception ex)
     {
@@ -38,29 +45,32 @@ public class ChatService(
     }
   }
 
-  public async Task<List<ConversationDto>> GetAllConversations(Guid userId)
+  public async Task<List<IConversationDto>> GetAllConversations(Guid userId)
   {
     try
     {
       if (!await userService.UserExistsAsync(userId))
         throw new KeyNotFoundException("User with that userid is not found!");
 
-      var conversations = await appContext
-        .Users.Where(u => u.UserId == userId)
-        .SelectMany(u => u.Conversations)
-        .Include(c => c.Messages)
-        .ThenInclude(m => m.Files)
-        .Select(c =>
-          c.ToConversationDto(
-            c.Messages,
-            c.Messages.First(m => m.ConversationId == c.ConversationId).Files
-          )
-        )
-        .ToListAsync();
+      var kvps = await appContext
+        .ConversationMemberships.Where(cm => cm.UserId == userId)
+        .Include(cm => cm.Conversation)
+        .Include(cm => cm.User)
+        .GroupBy(g => g.ConversationId)
+        .ToDictionaryAsync(
+          g => g.Key,
+          g =>
+            g.Where(cm => cm.User != null)
+              .Select(cm => cm.User!.ToConversationProfileDto())
+              .ToList()
+        );
 
-      Console.WriteLine($"{string.Join(",", conversations)}");
+      var result = kvps.Select(e =>
+        (IConversationDto)
+          new ConversationDtoBase { ConversationId = e.Key, Participants = e.Value.ToList() }
+      );
 
-      return conversations;
+      return result.ToList();
     }
     catch (System.Exception ex)
     {
@@ -159,21 +169,29 @@ public class ChatService(
     }
   }
 
-  public async Task<ConversationDto> GetConversationAsync(Guid conversationId)
+  public async Task<IConversationDto> GetConversationAsync(Guid conversationId)
   {
     try
     {
       if (!await ConversationExistsAsync(conversationId))
         throw new KeyNotFoundException("Conversation with the given id doesn't exist.");
 
-      return appContext
-        .Conversations.Include(c => c.Messages)
-        .ThenInclude(m => m.Files)
-        .Select(c =>
-          c.ToConversationDto(
-            c.Messages,
-            c.Messages.Where(m => m.ConversationId == c.ConversationId).Select(m => m.Files).First()
-          )
+      var kvp = await appContext
+        .ConversationMemberships.Where(cm => cm.ConversationId == conversationId)
+        .Include(cm => cm.Conversation)
+        .Include(cm => cm.User)
+        .GroupBy(g => g.ConversationId)
+        .ToDictionaryAsync(
+          g => g.Key,
+          g =>
+            g.Where(cm => cm.User != null)
+              .Select(cm => cm.User!.ToConversationProfileDto())
+              .ToList()
+        );
+
+      return kvp.Select(c =>
+          (IConversationDto)
+            new ConversationDtoBase { ConversationId = c.Key, Participants = [.. c.Value] }
         )
         .First();
     }
@@ -183,11 +201,28 @@ public class ChatService(
     }
   }
 
-  public async Task<List<Guid>> GetAllConversations()
+  public async Task<ICollection<IConversationDto>> GetAllConversations()
   {
     try
     {
-      return await appContext.Conversations.Select(c => c.ConversationId).ToListAsync();
+      var kvps = await appContext
+        .ConversationMemberships.Include(cm => cm.Conversation)
+        .Include(cm => cm.User)
+        .GroupBy(g => g.ConversationId)
+        .ToDictionaryAsync(
+          g => g.Key,
+          g =>
+            g.Where(cm => cm.User != null)
+              .Select(cm => cm.User!.ToConversationProfileDto())
+              .ToList()
+        );
+
+      var result = kvps.Select(e =>
+        (IConversationDto)
+          new ConversationDtoBase { ConversationId = e.Key, Participants = e.Value.ToList() }
+      );
+
+      return result.ToList();
     }
     catch (System.Exception ex)
     {
@@ -198,5 +233,25 @@ public class ChatService(
   public async Task<bool> ConversationExistsAsync(Guid conversationId)
   {
     return await appContext.Conversations.FindAsync(conversationId) != null;
+  }
+
+  public async Task DeleteMessage(Guid messageId)
+  {
+    try
+    {
+      var message = await appContext.Messages.FirstOrDefaultAsync(m => m.MessageId == messageId);
+
+      if (message == default)
+        throw new KeyNotFoundException("Message with the given id is not found!");
+
+      appContext.Messages.Remove(message);
+
+      await appContext.SaveChangesAsync();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to delete message.");
+      throw;
+    }
   }
 }
