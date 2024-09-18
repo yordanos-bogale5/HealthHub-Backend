@@ -29,6 +29,9 @@ public class ApplicationContext : DbContext
   public DbSet<Blog> Blogs { get; set; }
   public DbSet<BlogComment> BlogComments { get; set; }
   public DbSet<BlogLike> BlogLikes { get; set; }
+  public DbSet<Tag> Tags { get; set; }
+  public DbSet<BlogTag> BlogTags { get; set; }
+
   public DbSet<Review> Reviews { get; set; }
 
   public DbSet<Conversation> Conversations { get; set; }
