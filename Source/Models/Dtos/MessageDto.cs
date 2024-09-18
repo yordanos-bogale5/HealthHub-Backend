@@ -1,7 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using HealthHub.Source.Views;
 
-public record MessageDto(Guid SenderId, Guid ReceiverId, string? MessageText, List<FileDto>? Files);
+public record MessageDto(
+  Guid MessageId,
+  Guid SenderId,
+  Guid ReceiverId,
+  string? MessageText,
+  List<FileDto>? Files
+);
 
 public record CreateMessageDto(
   [Guid] Guid SenderId,
