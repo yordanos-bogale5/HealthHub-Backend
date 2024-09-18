@@ -418,7 +418,12 @@ public static class EntityExtensions
     };
   }
 
-  public static BlogDto ToBlogDto(this Blog blog, User author, ICollection<BlogLike> blogLikes)
+  public static BlogDto ToBlogDto(
+    this Blog blog,
+    User author,
+    ICollection<BlogLike> blogLikes,
+    ICollection<Tag> tags
+  )
   {
     return new BlogDto
     {
@@ -435,7 +440,8 @@ public static class EntityExtensions
       Slug = blog.Slug,
       Content = blog.Content,
       Summary = blog.Summary,
-      Title = blog.Title
+      Title = blog.Title,
+      Tags = tags.Select(t => t.TagName).ToList()
     };
   }
 
