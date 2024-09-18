@@ -4,6 +4,7 @@ using HealthHub.Source.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240918085855_Added_M2MConstraint_ToBlog_And_Tag")]
+    partial class Added_M2MConstraint_ToBlog_And_Tag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace HealthHub.Migrations
 
                     b.HasIndex("TagsTagId");
 
-                    b.ToTable("BlogTag");
+                    b.ToTable("BlogTags", (string)null);
                 });
 
             modelBuilder.Entity("ConversationMembership", b =>
@@ -253,21 +256,6 @@ namespace HealthHub.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("BlogLikes");
-                });
-
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.BlogTag", b =>
-                {
-                    b.Property<Guid>("BlogId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("TagId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("BlogId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("BlogTags");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Conversation", b =>
@@ -878,25 +866,6 @@ namespace HealthHub.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.BlogTag", b =>
-                {
-                    b.HasOne("HealthHub.Source.Models.Entities.Blog", "Blog")
-                        .WithMany("BlogTags")
-                        .HasForeignKey("BlogId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tag", "Tag")
-                        .WithMany("BlogTags")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Blog");
-
-                    b.Navigation("Tag");
-                });
-
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Conversation", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.User", null)
@@ -1058,8 +1027,6 @@ namespace HealthHub.Migrations
                     b.Navigation("BlogComments");
 
                     b.Navigation("BlogLikes");
-
-                    b.Navigation("BlogTags");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Conversation", b =>
@@ -1104,11 +1071,6 @@ namespace HealthHub.Migrations
                     b.Navigation("Blogs");
 
                     b.Navigation("Conversations");
-                });
-
-            modelBuilder.Entity("Tag", b =>
-                {
-                    b.Navigation("BlogTags");
                 });
 #pragma warning restore 612, 618
         }

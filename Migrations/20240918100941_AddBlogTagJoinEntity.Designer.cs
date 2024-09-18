@@ -4,6 +4,7 @@ using HealthHub.Source.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240918100941_AddBlogTagJoinEntity")]
+    partial class AddBlogTagJoinEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace HealthHub.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("BlogTag", b =>
-                {
-                    b.Property<Guid>("BlogsBlogId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("TagsTagId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("BlogsBlogId", "TagsTagId");
-
-                    b.HasIndex("TagsTagId");
-
-                    b.ToTable("BlogTag");
-                });
 
             modelBuilder.Entity("ConversationMembership", b =>
                 {
@@ -733,21 +721,6 @@ namespace HealthHub.Migrations
                     b.HasIndex("MessageId");
 
                     b.HasDiscriminator().HasValue(0);
-                });
-
-            modelBuilder.Entity("BlogTag", b =>
-                {
-                    b.HasOne("HealthHub.Source.Models.Entities.Blog", null)
-                        .WithMany()
-                        .HasForeignKey("BlogsBlogId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tag", null)
-                        .WithMany()
-                        .HasForeignKey("TagsTagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ConversationMembership", b =>
