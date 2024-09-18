@@ -18,6 +18,9 @@ public static class EntityConfiguration
 
     var blog = mb.Entity<Blog>();
     blog.HasIndex(b => b.Slug).IsUnique();
+
+    var tag = mb.Entity<Tag>();
+    tag.HasIndex(b => b.TagName).IsUnique();
   }
 
   public static void ConfigureForeignKeyConstraints(ModelBuilder mb)
@@ -110,6 +113,22 @@ public static class EntityConfiguration
       .WithMany(s => s.BlogComments)
       .HasForeignKey(bc => bc.SenderId) // Corrected Foreign Key
       .OnDelete(DeleteBehavior.Restrict); // Restrict delete to keep comments from deleted users
+
+    var blogTag = mb.Entity<BlogTag>();
+
+    blogTag.HasKey(bt => new { bt.BlogId, bt.TagId });
+
+    blogTag
+      .HasOne(b => b.Blog)
+      .WithMany(b => b.BlogTags)
+      .HasForeignKey(bt => bt.BlogId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    blogTag
+      .HasOne(b => b.Tag)
+      .WithMany(b => b.BlogTags)
+      .HasForeignKey(bt => bt.TagId)
+      .OnDelete(DeleteBehavior.NoAction);
 
     // Doctor Availability
     mb.Entity<DoctorAvailability>()
