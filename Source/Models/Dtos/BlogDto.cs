@@ -31,6 +31,30 @@ public record CreateBlogDto
   public IList<string> Tags { get; set; } = [];
 };
 
+public record EditBlogDto
+{
+  [Required]
+  [MinLength(5)]
+  [MaxLength(100)]
+  public required string Title { get; set; }
+
+  [Required]
+  [MinLength(100)]
+  [MaxLength(10_000)]
+  public required string Content { get; set; }
+
+  [Required]
+  [MinLength(1)]
+  public required string Slug { get; set; }
+
+  [Required]
+  [MinLength(10)]
+  [MaxLength(255)]
+  public required string Summary { get; set; }
+
+  public IList<string> Tags { get; set; } = [];
+};
+
 public record BlogDto
 {
   public required Guid BlogId { get; set; }
