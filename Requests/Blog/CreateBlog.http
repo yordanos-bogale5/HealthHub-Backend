@@ -2,9 +2,10 @@ POST {{apiHostUrl}}/api/blogs
 Content-Type: application/json
 
 {
-  "Slug":"my-first-blog",
-  "Title":"Welcome to Health Hub",
+  "Slug":"my-second-blog",
+  "Title":"Welcome to Health Hub: Part 2",
   "Content":"Lorem ipsum dolor amet. Lorem ipsum dolor amet. Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.",
   "Summary":"There goes your summary!",
   "authorId":"db1ca3d9-8f05-444e-9cf8-e8e3f20dd38e"
 }
+

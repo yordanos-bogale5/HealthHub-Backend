@@ -1,0 +1,2 @@
+@blogId = 22d0406b-1a7b-4c8e-9674-4e316e22498ee
+GET {{apiHostUrl}}/api/blogs/{{blogId}}
