@@ -8403,10 +8403,14 @@
   },
   "logs": [
     {
-      "code": "NU1900",
+      "code": "NU1902",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Error occurred while getting package vulnerability data: No such host is known. (api.nuget.org:443)"
+      "message": "Package 'RestSharp' 111.4.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-4rr6-2v9v-wcpc",
+      "libraryId": "RestSharp",
+      "targetGraphs": [
+        "net8.0"
+      ]
     }
   ]
 }
