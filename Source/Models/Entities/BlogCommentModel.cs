@@ -15,6 +15,6 @@ public class BlogComment : BaseEntity
   [Required]
   public required string CommentText { get; set; }
 
-  public virtual required Blog Blog { get; set; } // <<NAV>>
-  public virtual required User Sender { get; set; } // <<NAV>>
+  public virtual Blog? Blog { get; set; } // <<NAV>>
+  public virtual User? Sender { get; set; } // <<NAV>>
 }

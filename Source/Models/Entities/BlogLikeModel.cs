@@ -12,6 +12,6 @@ public class BlogLike : BaseEntity
   [Required]
   public Guid BlogId { get; set; } // <<FK>>
 
-  public virtual required User User { get; set; }
-  public virtual required Blog Blog { get; set; }
+  public virtual User? User { get; set; }
+  public virtual Blog? Blog { get; set; }
 }
