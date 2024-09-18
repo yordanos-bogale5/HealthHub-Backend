@@ -1,0 +1,11 @@
+@blogId = 09472f5a-9ff1-4505-96d4-1b4122b4b3c8
+PUT {{apiHostUrl}}/api/blogs/{{blogId}}
+Content-Type: application/json
+
+{
+  "slug":"my-third-blog",
+  "title":"MORE TAGS",
+  "content":"Lorem ipsum updated amet. Lorem ipsum updated amet. Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.Lorem ipsum updated amet. Lorem ipsum updated amet.",
+  "summary":"Lorem ipsum updated amet.",
+  "tags":["Health","Nutrition","TestTag","HairGrowth"]
+}

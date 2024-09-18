@@ -1,0 +1,2 @@
+DELETE {{apiHostUrl}}/api/blogs/all
+
