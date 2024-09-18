@@ -56,7 +56,7 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
   /// </summary>
   /// <param name="conversationId"></param>
   /// <returns></returns>
-  [HttpGet("{userId}")]
+  [HttpGet("{conversationId}")]
   public async Task<IActionResult> GetConversation(
     [FromRoute] [Required] [Guid] Guid conversationId
   )
@@ -90,6 +90,27 @@ public class ChatController(IChatService chatService, ILogger<ChatController> lo
     catch (System.Exception ex)
     {
       logger.LogError(ex, "An error occurred while trying to get all conversations.");
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Removes a message by the provided messageId
+  /// </summary>
+  /// <param name="messageId"></param>
+  /// <returns></returns>
+  [HttpDelete("message/{messageId}")]
+  public async Task<IActionResult> DeleteMessage([Required] [FromRoute] [Guid] Guid messageId)
+  {
+    try
+    {
+      await chatService.DeleteMessage(messageId);
+
+      return NoContent();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occurred while trying to delete a message.");
       throw;
     }
   }
