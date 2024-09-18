@@ -49,13 +49,41 @@ public class BlogController(IBlogService blogService, ILogger<BlogController> lo
     }
     catch (System.Exception ex)
     {
+      logger.LogError(ex, "An error occured trying to create blog");
       throw;
     }
   }
 
   [HttpPut("{blogId}")]
-  public IActionResult UpdateBlog(
+  public async Task<IActionResult> UpdateBlog(
     [FromRoute] Guid blogId,
-    [FromBody] CreateBlogDto createBlogDto
-  ) => throw new NotImplementedException();
+    [FromBody] EditBlogDto editBlogDto
+  )
+  {
+    try
+    {
+      var result = await blogService.UpdateBlogAsync(blogId, editBlogDto);
+      return Ok(result);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to update blog");
+      throw;
+    }
+  }
+
+  [HttpDelete("all")]
+  public IActionResult DeleteAllBlogs()
+  {
+    try
+    {
+      blogService.DeleteAllBlogs();
+      return NoContent();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to update blog");
+      throw;
+    }
+  }
 }
