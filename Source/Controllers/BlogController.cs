@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using HealthHub.Source.Helpers.Defaults;
+using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
+using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services.BlogService;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +21,7 @@ public class BlogController(IBlogService blogService, ILogger<BlogController> lo
     try
     {
       var result = await blogService.GetAllBlogsAsync();
-      return Ok(result);
+      return Ok(new ApiResponse<List<BlogDto>>(true, "Blogs retrieved successfully", result));
     }
     catch (System.Exception ex)
     {
@@ -39,7 +41,7 @@ public class BlogController(IBlogService blogService, ILogger<BlogController> lo
     try
     {
       var result = await blogService.GetBlogAsync(blogId);
-      return Ok(result);
+      return Ok(new ApiResponse<BlogDto>(true, "Blog retrieved successfully", result));
     }
     catch (System.Exception ex)
     {
@@ -59,7 +61,7 @@ public class BlogController(IBlogService blogService, ILogger<BlogController> lo
     try
     {
       var result = await blogService.CreateBlogAsync(createBlogDto);
-      return Ok(result);
+      return Ok(new ApiResponse<BlogDto>(true, "Blog created successfully", result));
     }
     catch (System.Exception ex)
     {
@@ -83,7 +85,7 @@ public class BlogController(IBlogService blogService, ILogger<BlogController> lo
     try
     {
       var result = await blogService.UpdateBlogAsync(blogId, editBlogDto);
-      return Ok(result);
+      return Ok(new ApiResponse<BlogDto>(true, "Blog updated successfully", result));
     }
     catch (System.Exception ex)
     {
@@ -107,6 +109,59 @@ public class BlogController(IBlogService blogService, ILogger<BlogController> lo
     catch (System.Exception ex)
     {
       logger.LogError(ex, "An error occured trying to update blog");
+      throw;
+    }
+  }
+
+  [HttpPost("comment")]
+  public async Task<IActionResult> PostCommentOnBlog(
+    [FromBody] CreateBlogCommentDto createBlogCommentDto
+  )
+  {
+    try
+    {
+      var result = await blogService.CreateBlogCommentAsync(createBlogCommentDto);
+      return Ok(new ApiResponse<BlogCommentDto>(true, "Comment posted successfully", result));
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to post a  blog comment");
+      throw;
+    }
+  }
+
+  [HttpGet("{blogId}/comments")]
+  public async Task<IActionResult> GetBlogComments([FromRoute] [Required] [Guid] Guid blogId)
+  {
+    try
+    {
+      var result = await blogService.GetBlogCommentsAsync(blogId);
+      return Ok(
+        new ApiResponse<ICollection<BlogCommentDto>>(
+          true,
+          "Blog comments retrieved successfully",
+          result
+        )
+      );
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to get blog comments.");
+      throw;
+    }
+  }
+
+  [HttpPost("like")]
+  public async Task<IActionResult> LikeBlog([FromBody] CreateBlogLikeDto createBlogLikeDto)
+  {
+    try
+    {
+      var result = await blogService.CreateBlogLikeAsync(createBlogLikeDto);
+      return Ok(new ApiResponse<BlogLikeDto>(true, result.IsNull() ? "Unliked" : "Liked", result));
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to like a blog.");
       throw;
     }
   }
