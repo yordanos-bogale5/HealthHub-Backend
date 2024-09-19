@@ -3,6 +3,7 @@ using HealthHub.Source.Data;
 using HealthHub.Source.Helpers.Defaults;
 using HealthHub.Source.Hubs;
 using HealthHub.Source.Services;
+using HealthHub.Source.Services.ChatService;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
@@ -15,7 +16,7 @@ public class ChatHubTests
   private readonly ApplicationContext _appContext;
   private readonly Mock<IHubContext<ChatHub>> _mockHubContext;
   private readonly Mock<FileService> _mockFileService;
-  private readonly Mock<ILogger<ChatService>> _mockLoggerChatService;
+  private readonly Mock<ILogger<IChatService>> _mockLoggerChatService;
   private readonly Mock<ILogger<FileService>> _mockLoggerFileService;
   private readonly Mock<IHubCallerClients> _mockClients;
   private readonly Mock<IClientProxy> _mockClientProxy;
@@ -33,7 +34,7 @@ public class ChatHubTests
     _mockClients = new Mock<IHubCallerClients>();
     _mockClientProxy = new Mock<IClientProxy>();
 
-    _mockLoggerChatService = new Mock<ILogger<ChatService>>();
+    _mockLoggerChatService = new Mock<ILogger<IChatService>>();
     _mockLoggerFileService = new Mock<ILogger<FileService>>();
 
     _options = new DbContextOptionsBuilder<ApplicationContext>()

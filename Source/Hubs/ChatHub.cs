@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using HealthHub.Source.Helpers.Defaults;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Services;
+using HealthHub.Source.Services.ChatService;
 using Microsoft.AspNetCore.SignalR;
 using Org.BouncyCastle.Asn1.Cms;
 using Serilog;
@@ -10,7 +11,7 @@ namespace HealthHub.Source.Hubs
 {
   public class ChatHub : Hub
   {
-    private readonly ChatService _chatService;
+    private readonly IChatService _chatService;
     private readonly UserConnection _userConnection;
     private string? _senderId;
 

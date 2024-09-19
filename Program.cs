@@ -7,6 +7,7 @@ using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Hubs;
 using HealthHub.Source.Services;
 using HealthHub.Source.Services.BlogService;
+using HealthHub.Source.Services.ChatService;
 using HealthHub.Source.Services.PaymentProviders;
 using HealthHub.Source.Services.PaymentService;
 using HealthHub.Source.Validation;
@@ -182,7 +183,7 @@ var builder = WebApplication.CreateBuilder(args);
   builder.Services.AddTransient<PatientService>();
   builder.Services.AddTransient<AdminService>();
 
-  builder.Services.AddTransient<ChatService>();
+  builder.Services.AddTransient<IChatService, ChatService>();
 
   builder.Services.AddTransient<AppointmentService>();
 
