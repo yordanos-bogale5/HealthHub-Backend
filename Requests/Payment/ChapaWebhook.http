@@ -1,0 +1,21 @@
+POST {{apiHostUrl}}/api/payments/chapa/webhooks
+Content-Type:  application/json
+Chapa-Signature: 207ae252c5d18e7878d0520ffee2ac0f0b58b1410ec2c7b983953adbb5e7a6ac
+
+{
+  "event": "payout.success",
+  "type": "Payout",
+  "account_name": "Customer Name",
+  "account_number": "25190000000",
+  "bank_id": 855,
+  "bank_name": "telebirr",
+  "amount": "2000.00",
+  "charge": "60.00",
+  "currency": "ETB",
+  "status": "success",
+  "reference": "MYMER3434989",
+  "chapa_reference": "2o10dfs332U",
+  "bank_reference": "GT3412w3",
+  "created_at": "2023-08-27T19:23:22.000000Z",
+  "updated_at": "2023-08-27T19:23:23.000000Z"
+}

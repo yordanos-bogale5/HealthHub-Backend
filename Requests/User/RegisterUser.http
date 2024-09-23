@@ -2,14 +2,14 @@ POST {{apiHostUrl}}/api/users/register
 Content-Type: application/json
 
 {
-  "FirstName": "Emilia",
-  "LastName" : "Kendle",
-  "Email"    : "dagtef2@gmail.com",
+  "FirstName": "Matthew",
+  "LastName" : "Perez",
+  "Email"    : "dagtef3@gmail.com",
   "Password" : "12345678Ab@",
-  "Gender"   : "Female",
+  "Gender"   : "Male",
   "DateOfBirth" : "2002-12-10",
-  "Role"     : "Patient",
-  "Phone"    : "3535105905",
+  "Role"     : "Doctor",
+  "Phone"    : "35351059059",
   "Address"  : "Kentucky",
   "ProfilePicture" : "PROFILE_DATA_GOES_HERE",
 
@@ -17,13 +17,23 @@ Content-Type: application/json
   "Biography" : "This is my biography",
   "Qualifications" : "This is supposed to be a qualification!",
   "Specialities": [
-    "Brain SPecialist", "Tumor Specialist", "Surgeon"
+    "Tumor Specialist", "Oncologist", "Onco-Surgeon"
   ],
   "Availabilities" : [
     {
       "day":"Monday",
       "startTime":"1:00",
       "endTime":"10:00"
+    },
+    {
+      "day":"Wednesday",
+      "startTime":"1:00",
+      "endTime":"9:00"
+    },
+    {
+      "day":"Saturday",
+      "startTime":"10:00",
+      "endTime":"15:00"
     }
   ],
 
@@ -49,6 +59,9 @@ Content-Type: application/json
       "EndDate": null
     }
   ],
+
+  "OnlineAppointmentFee":"500",
+  "InPersonAppointmentFee":"750",
 
   # Patient Specific Payload
   "MedicalHistory": "Had severe brain trauma multiple times.",

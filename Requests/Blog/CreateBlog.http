@@ -2,11 +2,11 @@ POST {{apiHostUrl}}/api/blogs
 Content-Type: application/json
 
 {
-  "Slug":"the-importance-of-health",
-  "Title":"The Importance of Health",
+  "Slug":"the-importance-of-onco-theraupetic",
+  "Title":"The Importance of Onco-Theraupetic in Cancer Treatment",
   "Content":"Lorem ipsum dolor amet. Lorem ipsum dolor amet. Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.Lorem ipsum dolor amet.",
   "Summary":"Health is wealth. Lorem ipsum dolor amet.",
-  "authorId":"db1ca3d9-8f05-444e-9cf8-e8e3f20dd38e",
-  "tags":["Health","Nutrition","TestTag"]
+  "authorId":"41e62f02-05b7-4dba-8ff0-4359b2406bbc",
+  "tags":["Oncology","Cancer","Theraupetic"]
 }
 
