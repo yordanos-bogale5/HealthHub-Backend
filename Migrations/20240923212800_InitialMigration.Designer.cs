@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthHub.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20240818125307_Added_UniqueSpecialityName_Constraint")]
-    partial class Added_UniqueSpecialityName_Constraint
+    [Migration("20240923212800_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace HealthHub.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ConversationMembership", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UserId", "ConversationId");
+
+                    b.HasIndex("ConversationId");
+
+                    b.ToTable("ConversationMemberships");
+                });
 
             modelBuilder.Entity("DoctorSpeciality", b =>
                 {
@@ -40,13 +55,43 @@ namespace HealthHub.Migrations
                     b.ToTable("DoctorSpecialities");
                 });
 
+            modelBuilder.Entity("Experience", b =>
+                {
+                    b.Property<Guid>("ExperienceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Institution")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("ExperienceId");
+
+                    b.HasIndex("DoctorId");
+
+                    b.ToTable("Experiences");
+                });
+
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Admin", b =>
                 {
                     b.Property<Guid>("AdminId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
+                        .IsRequired()
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("AdminId");
@@ -62,26 +107,32 @@ namespace HealthHub.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("AppointmentDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("AppointmentDate")
+                        .HasColumnType("date");
 
                     b.Property<TimeOnly>("AppointmentTime")
                         .HasColumnType("time");
 
-                    b.Property<int>("AppointmentType")
-                        .HasColumnType("int");
+                    b.Property<TimeSpan>("AppointmentTimeSpan")
+                        .HasColumnType("time");
+
+                    b.Property<string>("AppointmentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("DoctorId")
+                    b.Property<Guid?>("DoctorId")
+                        .IsRequired()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -111,6 +162,14 @@ namespace HealthHub.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -118,12 +177,12 @@ namespace HealthHub.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("BlogId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
 
                     b.ToTable("Blogs");
                 });
@@ -141,8 +200,14 @@ namespace HealthHub.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("SenderId")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("SenderId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("BlogCommentId");
 
@@ -162,6 +227,12 @@ namespace HealthHub.Migrations
                     b.Property<Guid>("BlogId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -174,25 +245,36 @@ namespace HealthHub.Migrations
                     b.ToTable("BlogLikes");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.Chat", b =>
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.BlogTag", b =>
                 {
-                    b.Property<Guid>("ChatId")
+                    b.Property<Guid>("BlogId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("BlogId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("BlogTags");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Conversation", b =>
+                {
+                    b.Property<Guid>("ConversationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ReceiverId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<Guid>("SenderId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.HasKey("ChatId");
+                    b.HasKey("ConversationId");
 
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Chats");
+                    b.ToTable("Conversations");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Doctor", b =>
@@ -205,8 +287,18 @@ namespace HealthHub.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DoctorStatus")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CvId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DoctorPreferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DoctorStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Qualifications")
                         .IsRequired()
@@ -215,10 +307,10 @@ namespace HealthHub.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("Verified")
-                        .HasColumnType("bit");
-
                     b.HasKey("DoctorId");
+
+                    b.HasIndex("CvId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -231,11 +323,9 @@ namespace HealthHub.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("AvailableDay")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("AvailableDay")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
@@ -246,14 +336,60 @@ namespace HealthHub.Migrations
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("DoctorAvailabilityId");
 
                     b.HasIndex("DoctorId");
 
                     b.ToTable("DoctorAvailabilities");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.DoctorPreference", b =>
+                {
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("InPersonAppointmentFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("OnlineAppointmentFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("DoctorId");
+
+                    b.HasIndex("DoctorId")
+                        .IsUnique();
+
+                    b.ToTable("DoctorPreferences");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Education", b =>
+                {
+                    b.Property<Guid>("EducationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Degree")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Institution")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("EducationId");
+
+                    b.HasIndex("DoctorId");
+
+                    b.ToTable("Educations");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.File", b =>
@@ -262,17 +398,55 @@ namespace HealthHub.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<byte[]>("FileData")
                         .IsRequired()
+                        .HasMaxLength(5242880)
                         .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("MessageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("FileId");
 
+                    b.HasIndex("MessageId");
+
                     b.ToTable("Files");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.FileAssociation", b =>
+                {
+                    b.Property<Guid>("FileAssociationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("EntityType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("FileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("FileAssociationId");
+
+                    b.HasIndex("FileId");
+
+                    b.ToTable("FileAssociations");
+
+                    b.HasDiscriminator<int>("EntityType");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Message", b =>
@@ -281,20 +455,26 @@ namespace HealthHub.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ChatId")
+                    b.Property<Guid>("ConversationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("FileId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("MessageText")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("MessageId");
 
-                    b.HasIndex("ChatId");
+                    b.HasIndex("ConversationId");
 
-                    b.HasIndex("FileId");
+                    b.HasIndex("SenderId");
 
                     b.ToTable("Messages");
                 });
@@ -312,8 +492,9 @@ namespace HealthHub.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("NotificationType")
-                        .HasColumnType("int");
+                    b.Property<string>("NotificationType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -362,40 +543,70 @@ namespace HealthHub.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("PaymentDate")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PaymentProvider")
-                        .HasColumnType("int");
+                    b.Property<string>("PaymentProvider")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PaymentStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ReceiverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SenderEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("SenderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SenderName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("PaymentId");
 
-                    b.HasIndex("DoctorId");
+                    b.HasIndex("ReceiverId");
 
-                    b.HasIndex("PatientId");
+                    b.HasIndex("SenderId");
 
-                    b.ToTable("Payment");
+                    b.HasIndex("TransactionReference")
+                        .IsUnique();
+
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Review", b =>
                 {
-                    b.Property<Guid>("ReviewId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("PaymentId")
+                    b.Property<Guid>("ReviewId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ReviewText")
@@ -408,9 +619,9 @@ namespace HealthHub.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("ReviewId");
+                    b.HasKey("DoctorId", "PatientId");
 
-                    b.HasIndex("PaymentId");
+                    b.HasIndex("PatientId");
 
                     b.ToTable("Reviews");
                 });
@@ -461,8 +672,8 @@ namespace HealthHub.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -472,8 +683,9 @@ namespace HealthHub.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsEmailVerified")
                         .HasColumnType("bit");
@@ -492,8 +704,9 @@ namespace HealthHub.Migrations
                     b.Property<string>("ProfilePicture")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -507,6 +720,61 @@ namespace HealthHub.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Tag", b =>
+                {
+                    b.Property<Guid>("TagId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TagName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TagId");
+
+                    b.HasIndex("TagName")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.MessageFileAssociation", b =>
+                {
+                    b.HasBaseType("HealthHub.Source.Models.Entities.FileAssociation");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasDiscriminator().HasValue(0);
+                });
+
+            modelBuilder.Entity("ConversationMembership", b =>
+                {
+                    b.HasOne("HealthHub.Source.Models.Entities.Conversation", "Conversation")
+                        .WithMany("ConversationMemberships")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HealthHub.Source.Models.Entities.User", "User")
+                        .WithMany("ConversationMemberships")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DoctorSpeciality", b =>
@@ -528,6 +796,17 @@ namespace HealthHub.Migrations
                     b.Navigation("Speciality");
                 });
 
+            modelBuilder.Entity("Experience", b =>
+                {
+                    b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
+                        .WithMany("Experiences")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+                });
+
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Admin", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.User", "User")
@@ -542,15 +821,15 @@ namespace HealthHub.Migrations
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Appointment", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
-                        .WithMany()
+                        .WithMany("Appointments")
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("HealthHub.Source.Models.Entities.Patient", "Patient")
-                        .WithMany()
+                        .WithMany("Appointments")
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -560,26 +839,27 @@ namespace HealthHub.Migrations
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Blog", b =>
                 {
-                    b.HasOne("HealthHub.Source.Models.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                    b.HasOne("HealthHub.Source.Models.Entities.User", "Author")
+                        .WithMany("Blogs")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Author");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.BlogComment", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Blog", "Blog")
-                        .WithMany()
+                        .WithMany("BlogComments")
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("HealthHub.Source.Models.Entities.User", "Sender")
-                        .WithMany()
+                        .WithMany("BlogComments")
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Blog");
 
@@ -589,15 +869,15 @@ namespace HealthHub.Migrations
             modelBuilder.Entity("HealthHub.Source.Models.Entities.BlogLike", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Blog", "Blog")
-                        .WithMany()
+                        .WithMany("BlogLikes")
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("HealthHub.Source.Models.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("BlogLikes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Blog");
@@ -605,32 +885,40 @@ namespace HealthHub.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.Chat", b =>
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.BlogTag", b =>
                 {
-                    b.HasOne("HealthHub.Source.Models.Entities.User", "Receiver")
-                        .WithMany()
-                        .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("HealthHub.Source.Models.Entities.Blog", "Blog")
+                        .WithMany("BlogTags")
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HealthHub.Source.Models.Entities.User", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("Tag", "Tag")
+                        .WithMany("BlogTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Receiver");
+                    b.Navigation("Blog");
 
-                    b.Navigation("Sender");
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Doctor", b =>
                 {
+                    b.HasOne("HealthHub.Source.Models.Entities.File", "Cv")
+                        .WithOne()
+                        .HasForeignKey("HealthHub.Source.Models.Entities.Doctor", "CvId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("HealthHub.Source.Models.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Cv");
 
                     b.Navigation("User");
                 });
@@ -638,7 +926,7 @@ namespace HealthHub.Migrations
             modelBuilder.Entity("HealthHub.Source.Models.Entities.DoctorAvailability", b =>
                 {
                     b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
-                        .WithMany()
+                        .WithMany("DoctorAvailabilities")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -646,23 +934,63 @@ namespace HealthHub.Migrations
                     b.Navigation("Doctor");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.Message", b =>
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.DoctorPreference", b =>
                 {
-                    b.HasOne("HealthHub.Source.Models.Entities.Chat", "Chat")
-                        .WithMany()
-                        .HasForeignKey("ChatId")
+                    b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
+                        .WithOne("DoctorPreference")
+                        .HasForeignKey("HealthHub.Source.Models.Entities.DoctorPreference", "DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Education", b =>
+                {
+                    b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
+                        .WithMany("Educations")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.File", b =>
+                {
+                    b.HasOne("HealthHub.Source.Models.Entities.Message", null)
+                        .WithMany("Files")
+                        .HasForeignKey("MessageId");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.FileAssociation", b =>
+                {
                     b.HasOne("HealthHub.Source.Models.Entities.File", "File")
                         .WithMany()
                         .HasForeignKey("FileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Chat");
-
                     b.Navigation("File");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Message", b =>
+                {
+                    b.HasOne("HealthHub.Source.Models.Entities.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HealthHub.Source.Models.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Notification", b =>
@@ -689,16 +1017,33 @@ namespace HealthHub.Migrations
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Payment", b =>
                 {
-                    b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
+                    b.HasOne("HealthHub.Source.Models.Entities.User", "Receiver")
                         .WithMany()
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("HealthHub.Source.Models.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Review", b =>
+                {
+                    b.HasOne("HealthHub.Source.Models.Entities.Doctor", "Doctor")
+                        .WithMany("Reviews")
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("HealthHub.Source.Models.Entities.Patient", "Patient")
-                        .WithMany()
+                        .WithMany("Reviews")
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -706,25 +1051,81 @@ namespace HealthHub.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("HealthHub.Source.Models.Entities.Review", b =>
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.MessageFileAssociation", b =>
                 {
-                    b.HasOne("HealthHub.Source.Models.Entities.Payment", "Payment")
+                    b.HasOne("HealthHub.Source.Models.Entities.Message", "Message")
                         .WithMany()
-                        .HasForeignKey("PaymentId")
+                        .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Payment");
+                    b.Navigation("Message");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Blog", b =>
+                {
+                    b.Navigation("BlogComments");
+
+                    b.Navigation("BlogLikes");
+
+                    b.Navigation("BlogTags");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Conversation", b =>
+                {
+                    b.Navigation("ConversationMemberships");
+
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Doctor", b =>
                 {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("DoctorAvailabilities");
+
+                    b.Navigation("DoctorPreference");
+
                     b.Navigation("DoctorSpecialities");
+
+                    b.Navigation("Educations");
+
+                    b.Navigation("Experiences");
+
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Message", b =>
+                {
+                    b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.Patient", b =>
+                {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("HealthHub.Source.Models.Entities.Speciality", b =>
                 {
                     b.Navigation("DoctorSpecialities");
+                });
+
+            modelBuilder.Entity("HealthHub.Source.Models.Entities.User", b =>
+                {
+                    b.Navigation("BlogComments");
+
+                    b.Navigation("BlogLikes");
+
+                    b.Navigation("Blogs");
+
+                    b.Navigation("ConversationMemberships");
+                });
+
+            modelBuilder.Entity("Tag", b =>
+                {
+                    b.Navigation("BlogTags");
                 });
 #pragma warning restore 612, 618
         }
