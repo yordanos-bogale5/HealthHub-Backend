@@ -1,12 +1,43 @@
 using System.ComponentModel.DataAnnotations;
+using HealthHub.Source.Services;
 using HealthHub.Source.Services.ChatService;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/conversations")]
-public class ChatController(IChatService chatService, ILogger<ChatController> logger)
-  : ControllerBase
+public class ChatController(
+  UserService userService,
+  IChatService chatService,
+  ILogger<ChatController> logger
+) : ControllerBase
 {
+  [HttpPost]
+  public async Task<IActionResult> CreateConversation(
+    [Required] [FromBody] CreateConversationDto createConversationDto
+  )
+  {
+    try
+    {
+      // Basically participants is of size 2. Just in case though we allow more than that
+      foreach (Guid guid in createConversationDto.Participants)
+      {
+        if (await userService.UserExistsAsync(guid) == false)
+        {
+          throw new KeyNotFoundException(
+            $"User with the id {guid} doesn't exist. Please provide correct userId."
+          );
+        }
+      }
+      var result = await chatService.CreateConversationAsync(createConversationDto);
+      return Ok(result);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occurred while trying to create a conversation.");
+      throw;
+    }
+  }
+
   /// <summary>
   /// Get all messages by conversation id
   /// </summary>
