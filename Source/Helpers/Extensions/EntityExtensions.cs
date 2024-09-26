@@ -1,4 +1,5 @@
 using HealthHub.Source.Helpers;
+using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Middlewares;
 using HealthHub.Source.Models.Defaults;
 using HealthHub.Source.Models.Dtos;
@@ -105,7 +106,9 @@ public static class EntityExtensions
       User = user,
       Cv = cv,
       Educations = createEducationDtos,
-      Experiences = createExperienceDtos
+      Experiences = createExperienceDtos,
+      OnlineAppointmentFee = registerUserDto.OnlineAppointmentFee,
+      InPersonAppointmentFee = registerUserDto.InPersonAppointmentFee
     };
   }
 
@@ -127,21 +130,22 @@ public static class EntityExtensions
   }
 
   // Maps User entity to RegisterUserDto
-  public static RegisterUserDto ToRegisterUserDto(this User user, string password)
-  {
-    return new RegisterUserDto
-    {
-      FirstName = user.FirstName,
-      LastName = user.LastName,
-      Email = user.Email,
-      Password = password,
-      Phone = user.Phone,
-      Gender = user.Gender.ToString(),
-      Role = user.Role.ToString(),
-      DateOfBirth = user.DateOfBirth.ToString(),
-      Address = user.Address
-    };
-  }
+  // Commented because it unused
+  // public static RegisterUserDto ToRegisterUserDto(this User user, string password, )
+  // {
+  //   return new RegisterUserDto
+  //   {
+  //     FirstName = user.FirstName,
+  //     LastName = user.LastName,
+  //     Email = user.Email,
+  //     Password = password,
+  //     Phone = user.Phone,
+  //     Gender = user.Gender.ToString(),
+  //     Role = user.Role.ToString(),
+  //     DateOfBirth = user.DateOfBirth.ToString(),
+  //     Address = user.Address
+  //   };
+  // }
 
   public static CreateAdminDto ToCreateAdminDto(this RegisterUserDto registerUserDto, User user)
   {
@@ -153,12 +157,12 @@ public static class EntityExtensions
   /// </summary>
   /// <param name="d"></param>
   /// <param name="user"></param>
-  /// <param name="doctorSpecialities"></param>
+  /// <param name="specialities"></param>
   /// <returns></returns>
   public static DoctorDto ToDoctorDto(
     this Doctor d,
     User user,
-    ICollection<DoctorSpeciality> doctorSpecialities
+    ICollection<Speciality> specialities
   )
   {
     return new DoctorDto
@@ -173,7 +177,7 @@ public static class EntityExtensions
       Gender = user.Gender,
       DateOfBirth = user.DateOfBirth,
       Address = user.Address,
-      Specialities = doctorSpecialities.Select(ds => ds.Speciality.SpecialityName).ToList(),
+      Specialities = specialities.Select(s => s.SpecialityName).ToList(),
       Qualifications = d.Qualifications,
       Biography = d.Biography,
       DoctorStatus = d.DoctorStatus,
@@ -219,13 +223,13 @@ public static class EntityExtensions
     Patient patient,
     User doctorUser,
     User patientUser,
-    ICollection<DoctorSpeciality> doctorSpecialities
+    ICollection<Speciality> specialities
   )
   {
     return new AppointmentDto
     {
       AppointmentId = appointment.AppointmentId,
-      Doctor = doctor.ToDoctorDto(doctorUser, doctorSpecialities),
+      Doctor = doctor.ToDoctorDto(doctorUser, specialities),
       Patient = patient.ToPatientDto(patientUser),
       AppointmentDate = appointment.AppointmentDate,
       AppointmentTime = appointment.AppointmentTime,
@@ -253,13 +257,13 @@ public static class EntityExtensions
     this Appointment appointment,
     Doctor doctor,
     User doctorUser,
-    ICollection<DoctorSpeciality> doctorSpecialities
+    ICollection<Speciality> specialities
   )
   {
     return new AppointmentDto
     {
       AppointmentId = appointment.AppointmentId,
-      Doctor = doctor.ToDoctorDto(doctorUser, doctorSpecialities),
+      Doctor = doctor.ToDoctorDto(doctorUser, specialities),
       AppointmentDate = appointment.AppointmentDate,
       AppointmentTime = appointment.AppointmentTime,
       AppointmentType = appointment.AppointmentType,
@@ -377,7 +381,6 @@ public static class EntityExtensions
     return new MessageDto(
       message.MessageId,
       message.SenderId,
-      message.ReceiverId,
       message.MessageText,
       files != null ? files.Select(f => f.ToFileDto()).ToList() : []
     );
@@ -415,7 +418,11 @@ public static class EntityExtensions
       ReceiverId = payment.ReceiverId,
       Amount = payment.Amount,
       PaymentStatus = payment.PaymentStatus,
-      PaymentProvider = payment.PaymentProvider
+      PaymentProvider = payment.PaymentProvider,
+      SenderName = payment.SenderEmail,
+      SenderEmail = payment.SenderEmail,
+      ReceiverName = payment.ReceiverName,
+      ReceiverEmail = payment.ReceiverEmail
     };
   }
 
@@ -491,4 +498,18 @@ public static class EntityExtensions
       liker.ToBlogProfileDto()
     );
   }
+
+  public static ReviewDto ToReviewDto(this Review review)
+  {
+    return new ReviewDto
+    {
+      DoctorId = review.DoctorId,
+      PatientId = review.PatientId,
+      ReviewId = review.ReviewId,
+      ReviewText = review.ReviewText,
+      StarRating = review.StarRating
+    };
+  }
+
+  // public static
 }

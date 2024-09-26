@@ -50,7 +50,7 @@ public static class DtoExtensions
   /// </summary>
   /// <param name="createDoctorDto"></param>
   /// <returns></returns>
-  public static Doctor ToDoctor(this CreateDoctorDto createDoctorDto)
+  public static Doctor ToDoctor(this CreateDoctorDto createDoctorDto, Guid doctorPreferenceId)
   {
     return new Doctor()
     {
@@ -60,7 +60,8 @@ public static class DtoExtensions
       Biography = createDoctorDto.Biography,
       DoctorStatus = createDoctorDto.DoctorStatus,
       CvId = createDoctorDto.Cv.FileId,
-      Cv = createDoctorDto.Cv
+      Cv = createDoctorDto.Cv,
+      DoctorPreferenceId = doctorPreferenceId
     };
   }
 
@@ -130,8 +131,7 @@ public static class DtoExtensions
     return new Message
     {
       MessageText = createMessageDto.MessageText,
-      ReceiverId = createMessageDto.ReceiverId,
-      SenderId = createMessageDto.ReceiverId,
+      SenderId = createMessageDto.SenderId,
       ConversationId = conversationId
     };
   }
@@ -145,7 +145,11 @@ public static class DtoExtensions
     {
       Amount = createPaymentDto.Amount,
       SenderId = createPaymentDto.SenderId,
+      SenderName = createPaymentDto.SenderName,
+      SenderEmail = createPaymentDto.SenderEmail,
       ReceiverId = createPaymentDto.ReceiverId,
+      ReceiverName = createPaymentDto.ReceiverName,
+      ReceiverEmail = createPaymentDto.ReceiverEmail,
       PaymentProvider = createPaymentDto.PaymentProvider,
       PaymentStatus = PaymentStatus.Pending,
       TransactionReference = transactionReference,
@@ -164,7 +168,11 @@ public static class DtoExtensions
       ReceiverId = transferRequestDto.ReceiverId,
       SenderId = senderId,
       PaymentProvider = transferRequestDto.PaymentProvider,
-      PaymentStatus = isSuccessful ? PaymentStatus.Success : PaymentStatus.Failed
+      PaymentStatus = isSuccessful ? PaymentStatus.Success : PaymentStatus.Failed,
+      SenderName = transferRequestDto.SenderName,
+      SenderEmail = transferRequestDto.SenderEmail,
+      ReceiverName = transferRequestDto.ReceiverName,
+      ReceiverEmail = transferRequestDto.ReceiverEmail
     };
   }
 
@@ -193,5 +201,15 @@ public static class DtoExtensions
   public static BlogLike ToBlogLike(this CreateBlogLikeDto createBlogLikeDto)
   {
     return new BlogLike { BlogId = createBlogLikeDto.BlogId, UserId = createBlogLikeDto.UserId };
+  }
+
+  public static Review ToReview(this CreateReviewDto createReviewDto)
+  {
+    return new Review
+    {
+      ReviewText = createReviewDto.ReviewText,
+      DoctorId = createReviewDto.DoctorId,
+      PatientId = createReviewDto.PatientId
+    };
   }
 }
