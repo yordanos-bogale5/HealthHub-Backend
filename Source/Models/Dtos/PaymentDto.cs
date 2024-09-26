@@ -5,14 +5,7 @@ using HealthHub.Source.Models.Enums;
 public record TransferRequestDto
 {
   [Required]
-  public required string FirstName { get; set; }
-
-  [Required]
-  public required string LastName { get; set; }
-
-  [Required]
-  [Phone]
-  public required string PhoneNumber { get; set; }
+  public required string SenderName { get; set; }
 
   /// <summary>
   /// Email address of the patient sending the funds.
@@ -20,6 +13,16 @@ public record TransferRequestDto
   [Required]
   [EmailAddress]
   public required string SenderEmail { get; set; }
+
+  [Required(ErrorMessage = "Receiver name is required for verification purposes.")]
+  public required string ReceiverName { get; set; }
+
+  [Required]
+  public required string ReceiverEmail { get; set; }
+
+  [Required]
+  [Phone]
+  public required string PhoneNumber { get; set; }
 
   [Required]
   [Guid]
@@ -68,8 +71,14 @@ public class TransferResponseInner : ITransferResponseDto, ITransactionReferable
 public record PaymentDto
 {
   public required Guid PaymentId { get; set; }
-  public required Guid SenderId { get; set; }
-  public required Guid ReceiverId { get; set; }
+  public required Guid? SenderId { get; set; }
+  public required Guid? ReceiverId { get; set; }
+
+  public required string SenderName { get; set; }
+  public required string SenderEmail { get; set; }
+  public required string ReceiverName { get; set; }
+  public required string ReceiverEmail { get; set; }
+
   public required decimal Amount { get; set; }
   public required PaymentStatus PaymentStatus { get; set; }
   public required PaymentProvider PaymentProvider { get; set; }
@@ -79,6 +88,12 @@ public record CreatePaymentDto
 {
   public required Guid SenderId { get; set; }
   public required Guid ReceiverId { get; set; }
+
+  public required string SenderName { get; set; }
+  public required string SenderEmail { get; set; }
+  public required string ReceiverName { get; set; }
+  public required string ReceiverEmail { get; set; }
+
   public required decimal Amount { get; set; }
   public required PaymentStatus PaymentStatus { get; set; }
   public required PaymentProvider PaymentProvider { get; set; }
