@@ -1,0 +1,6 @@
+POST {{apiHostUrl}}/api/conversations
+Content-Type:  application/json
+
+{
+  "participants":[]
+}

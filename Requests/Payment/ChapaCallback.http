@@ -1,0 +1,6 @@
+POST {{apiHostUrl}}/api/payments/chapa/callback
+Content-Type:  application/json
+
+{
+
+}

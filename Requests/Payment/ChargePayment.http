@@ -1,0 +1,10 @@
+POST {{apiHostUrl}}/api/payments/charge
+Content-Type:  application/json
+
+{
+  "Amount":"100",
+  "Currency":"ETB",
+  "PhoneNumber":"0900123456",
+  "PaymentProvider":"Chapa",
+  "PaymentMethod":"telebirr",
+}

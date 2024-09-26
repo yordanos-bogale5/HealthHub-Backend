@@ -1,0 +1,2 @@
+@conversationId =
+DELETE {{apiHostUrl}}/api/conversations/{{conversationId}}

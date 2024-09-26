@@ -1,0 +1,8 @@
+POST https://api.chapa.co/v1/charges?type=cbebirr
+Content-Type:  application/json
+Authorization: Bearer CHASECK_TEST-DgLxaSDuMEYBjTNPIrVJpl0tCFkOv3s7
+
+{
+  "amount":"10000",
+  "mobile":"0900123456"
+}

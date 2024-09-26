@@ -1,1 +1,2 @@
 GET {{apiHostUrl}}/api/appointments/all
+
