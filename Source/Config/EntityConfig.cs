@@ -21,25 +21,39 @@ public static class EntityConfiguration
 
     var tag = mb.Entity<Tag>();
     tag.HasIndex(b => b.TagName).IsUnique();
+
+    var payment = mb.Entity<Payment>();
+    payment.HasIndex(p => p.TransactionReference).IsUnique();
+
+    mb.Entity<DoctorSpeciality>().HasKey(ds => new { ds.DoctorId, ds.SpecialityId });
+
+    mb.Entity<BlogTag>().HasKey(bt => new { bt.BlogId, bt.TagId });
+
+    var conversationMemberships = mb.Entity<ConversationMembership>();
+    conversationMemberships.HasKey(cm => new { cm.UserId, cm.ConversationId });
+
+    var review = mb.Entity<Review>();
+    review.HasKey(r => new { r.DoctorId, r.PatientId });
+
+    var doctorPreference = mb.Entity<DoctorPreference>();
+    doctorPreference.HasIndex(dp => dp.DoctorId).IsUnique();
   }
 
   public static void ConfigureForeignKeyConstraints(ModelBuilder mb)
   {
     var appointment = mb.Entity<Appointment>();
 
-    // Restrict the deletion of the Appointment table if the Doctor entity is deleted
     appointment
       .HasOne(a => a.Doctor)
       .WithMany()
       .HasForeignKey(a => a.DoctorId)
-      .OnDelete(DeleteBehavior.Restrict);
+      .OnDelete(DeleteBehavior.NoAction);
 
-    // Restrict the deletion of the Appointment table if the Patient entity is deleted
     appointment
       .HasOne(a => a.Patient)
       .WithMany()
       .HasForeignKey(a => a.PatientId)
-      .OnDelete(DeleteBehavior.Restrict);
+      .OnDelete(DeleteBehavior.Cascade);
 
     var message = mb.Entity<Message>();
 
@@ -56,67 +70,74 @@ public static class EntityConfiguration
       .HasForeignKey(m => m.SenderId)
       .OnDelete(DeleteBehavior.NoAction);
 
-    message
-      .HasOne(m => m.Receiver)
-      .WithMany()
-      .HasForeignKey(m => m.ReceiverId)
-      .OnDelete(DeleteBehavior.NoAction);
+    // message
+    //   .HasOne(m => m.Receiver)
+    //   .WithMany()
+    //   .HasForeignKey(m => m.ReceiverId)
+    //   .OnDelete(DeleteBehavior.SetNull);
 
     var payment = mb.Entity<Payment>();
 
-    // Restrict the deletion of the Payment table if the Sender entity is deleted
+    // We don't want cascade property on payment record since it holds
+    // Sensitive data that later might be deemed important
     payment
       .HasOne(p => p.Sender)
       .WithMany()
       .HasForeignKey(p => p.SenderId)
-      .OnDelete(DeleteBehavior.Restrict);
+      .OnDelete(DeleteBehavior.Cascade);
 
-    // Restrict the deletion of the Payment table if the Receiver Entity is deleted
     payment
       .HasOne(p => p.Receiver)
       .WithMany()
       .HasForeignKey(p => p.ReceiverId)
-      .OnDelete(DeleteBehavior.Restrict);
+      .OnDelete(DeleteBehavior.NoAction);
 
-    mb.Entity<DoctorSpeciality>().HasKey(ds => new { ds.DoctorId, ds.SpecialityId }); // Comp Key
-
-    mb.Entity<DoctorSpeciality>()
+    var doctorSpeciality = mb.Entity<DoctorSpeciality>();
+    doctorSpeciality
       .HasOne(ds => ds.Doctor)
       .WithMany(d => d.DoctorSpecialities)
       .HasForeignKey(ds => ds.DoctorId)
       .OnDelete(DeleteBehavior.Cascade);
 
-    mb.Entity<DoctorSpeciality>()
+    doctorSpeciality
       .HasOne(ds => ds.Speciality)
       .WithMany(s => s.DoctorSpecialities)
       .HasForeignKey(ds => ds.SpecialityId)
       .OnDelete(DeleteBehavior.Cascade);
 
-    // This can be optional if we want to preserve the blog even if the user gets deleted
-    // or Cascade deletion of blog when the user who wrote that blog gets deleted
-    mb.Entity<Blog>()
-      .HasOne(b => b.Author)
+    var blog = mb.Entity<Blog>();
+    blog.HasOne(b => b.Author)
       .WithMany(a => a.Blogs)
       .HasForeignKey(b => b.AuthorId)
-      .OnDelete(DeleteBehavior.NoAction);
+      .OnDelete(DeleteBehavior.Cascade); // Cascade delete because a blog without an author reference will be a threat to accountability
 
-    // Same here too
-    // Cascade delete Blog Comment when Blog or User who wrote that comment gets deleted
-    mb.Entity<BlogComment>()
+    var blogComment = mb.Entity<BlogComment>();
+    blogComment
       .HasOne(bc => bc.Blog)
       .WithMany(b => b.BlogComments)
       .HasForeignKey(bc => bc.BlogId)
       .OnDelete(DeleteBehavior.Cascade); // No need to keep a comment if a blog gets deleted
 
-    mb.Entity<BlogComment>()
+    blogComment
       .HasOne(bc => bc.Sender)
       .WithMany(s => s.BlogComments)
       .HasForeignKey(bc => bc.SenderId) // Corrected Foreign Key
-      .OnDelete(DeleteBehavior.Restrict); // Restrict delete to keep comments from deleted users
+      .OnDelete(DeleteBehavior.NoAction);
+
+    var blogLike = mb.Entity<BlogLike>();
+    blogLike
+      .HasOne(bl => bl.Blog)
+      .WithMany(b => b.BlogLikes)
+      .HasForeignKey(bl => bl.BlogId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    blogLike
+      .HasOne(bl => bl.User)
+      .WithMany(u => u.BlogLikes)
+      .HasForeignKey(bl => bl.UserId)
+      .OnDelete(DeleteBehavior.NoAction);
 
     var blogTag = mb.Entity<BlogTag>();
-
-    blogTag.HasKey(bt => new { bt.BlogId, bt.TagId });
 
     blogTag
       .HasOne(b => b.Blog)
@@ -142,7 +163,7 @@ public static class EntityConfiguration
       .HasOne(a => a.Doctor)
       .WithMany(d => d.Appointments)
       .HasForeignKey(a => a.DoctorId)
-      .OnDelete(DeleteBehavior.Restrict);
+      .OnDelete(DeleteBehavior.NoAction);
 
     // Patient Appointments
     mb.Entity<Appointment>()
@@ -172,8 +193,43 @@ public static class EntityConfiguration
       .HasForeignKey<Doctor>(d => d.CvId)
       .OnDelete(DeleteBehavior.Cascade);
 
-    var conversationMemberships = mb.Entity<ConversationMembership>();
-    conversationMemberships.HasKey(cm => new { cm.UserId, cm.ConversationId });
+    var patient = mb.Entity<Patient>();
+    var doctor = mb.Entity<Doctor>();
+
+    // Configure patient review relationships
+    patient
+      .HasMany(p => p.Reviews)
+      .WithOne(r => r.Patient)
+      .HasForeignKey(r => r.PatientId)
+      .OnDelete(DeleteBehavior.NoAction);
+
+    // Configure doctor review relationships
+    doctor
+      .HasMany(d => d.Reviews)
+      .WithOne(r => r.Doctor)
+      .HasForeignKey(r => r.DoctorId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    doctor
+      .HasOne(d => d.DoctorPreference)
+      .WithOne(dp => dp.Doctor)
+      .HasForeignKey<DoctorPreference>(dp => dp.DoctorId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    var conversation = mb.Entity<Conversation>();
+
+    var conversationMembership = mb.Entity<ConversationMembership>();
+    conversationMembership
+      .HasOne(cm => cm.Conversation)
+      .WithMany(c => c.ConversationMemberships)
+      .HasForeignKey(cm => cm.ConversationId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    conversationMembership
+      .HasOne(cm => cm.User)
+      .WithMany(u => u.ConversationMemberships)
+      .HasForeignKey(cm => cm.UserId)
+      .OnDelete(DeleteBehavior.NoAction);
   }
 
   public static void ConfigureEnumConversions(ModelBuilder mb)
