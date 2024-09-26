@@ -68,6 +68,8 @@ public record RegisterUserDto
   public string? Biography { get; set; }
   public DoctorStatus DoctorStatus { get; set; } = DoctorStatus.Active;
   public CreateFileDto? Cv { get; set; }
+  public required decimal OnlineAppointmentFee { get; init; }
+  public required decimal InPersonAppointmentFee { get; init; }
   public List<CreateEducationDto> Educations { get; set; } = [];
   public List<CreateExperienceDto> Experiences { get; set; } = [];
 }
