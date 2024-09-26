@@ -7,6 +7,7 @@ public class AppConfig(IConfiguration configuration)
   public bool? IsProduction { get; set; } =
     bool.TryParse(configuration["IS_PRODUCTION"], out var isProduction) ? isProduction : null;
   public string? DatabaseConnection { get; set; } = configuration["DB_CONNECTION"];
+  public string? WebhookSecret { get; set; } = configuration["WEBHOOK_SECRET"];
   public string? MailSenderEmail { get; set; } = configuration["MAIL_SENDER_EMAIL"];
   public string? MailSenderPassword { get; set; } = configuration["MAIL_SENDER_PASSWORD"];
   public string? Auth0Domain { get; set; } = configuration["AUTH0_DOMAIN"];
