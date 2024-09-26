@@ -49,14 +49,14 @@ namespace HealthHub.Source.Hubs
     /// <summary>
     /// Sends a message to a user specified by the receiverId
     /// </summary>
-    /// <param name="receiverId"></param>
+    /// <param name="conversationId"></param>
     /// <param name="messageText"></param>
     /// <param name="files"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="FormatException"></exception>
     public async Task SendMessage(
-      [Guid] Guid receiverId,
+      [Guid] Guid conversationId,
       [MinLength(1, ErrorMessage = "Message text cannot be empty")] string? messageText = null,
       [ValidCreateFileList] List<CreateFileDto>? files = null
     )
@@ -80,7 +80,7 @@ namespace HealthHub.Source.Hubs
       if (!Guid.TryParse(_senderId, out Guid senderGuid))
         throw new FormatException("The userId cookie is malformed. Not a valid guid.");
 
-      var messagePayload = new CreateMessageDto(senderGuid, receiverId, messageText, files);
+      var messagePayload = new CreateMessageDto(conversationId, senderGuid, messageText, files);
 
       // Store message in db
       var createdMessage = await _chatService.CreateMessageAsync(messagePayload);
