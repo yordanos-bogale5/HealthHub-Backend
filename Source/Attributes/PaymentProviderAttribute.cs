@@ -1,42 +1,35 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using HealthHub.Source.Models.Enums;
+using Newtonsoft.Json;
 
-public class PaymentProviderAttribute : ValidationAttribute
+public class PaymentProviderAttribute(bool required = true) : ValidationAttribute
 {
-  private readonly bool _required;
-
-  public PaymentProviderAttribute(bool required = true)
-  {
-    _required = required;
-  }
-
   protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
   {
-    // If the value is null and the field is required, return an error
-    if (value is null && _required)
+    var validProviders = Enum.GetNames<PaymentProvider>().Skip(1); // Skips "Unknown"
+
+    // If required and value is null or empty
+    if (required && (value == null || string.IsNullOrWhiteSpace(value.ToString())))
     {
       return new ValidationResult("Payment provider is required.");
     }
 
-    // Check if the value is a valid PaymentProvider enum
-    if (value is PaymentProvider paymentProvider)
-    {
-      if (
-        !Enum.IsDefined(typeof(PaymentProvider), paymentProvider)
-        || paymentProvider == PaymentProvider.Unknown
+    // If value is present, validate it
+    if (
+      value != null
+      && (
+        !Enum.TryParse<PaymentProvider>(value.ToString(), out var provider)
+        || provider == PaymentProvider.Unknown
       )
-      {
-        var providers = Enum.GetNames<PaymentProvider>();
-        return new ValidationResult(
-          $"Invalid payment provider. Payment providers can only be {string.Join(", ", providers.Skip(1))}."
-        );
-      }
-    }
-    else
+    )
     {
-      return new ValidationResult("Invalid payment provider value.");
+      return new ValidationResult(
+        $"Invalid payment provider. Valid options: {string.Join(", ", validProviders)}"
+      );
     }
+
+    // Return success by default
     return ValidationResult.Success;
   }
 }
