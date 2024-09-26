@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Interfaces;
@@ -6,12 +7,30 @@ namespace HealthHub.Source.Models.Dtos;
 
 public record CreateDoctorDto
 {
+  [Required]
   public required User User { get; init; }
+
+  [Required]
   public required Entities.File Cv { get; init; }
+
+  [Required]
   public required string Qualifications { get; init; }
+
+  [Required]
   public required string Biography { get; init; }
+
+  [Required]
+  public required decimal OnlineAppointmentFee { get; init; }
+
+  [Required]
+  public required decimal InPersonAppointmentFee { get; init; }
+
+  [Required]
   public required List<CreateEducationDto> Educations { get; init; }
+
+  [Required]
   public required List<CreateExperienceDto> Experiences { get; init; }
+
   public DoctorStatus DoctorStatus { get; init; } = DoctorStatus.Active;
 }
 
