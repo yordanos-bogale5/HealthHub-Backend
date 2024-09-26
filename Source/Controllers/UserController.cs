@@ -71,7 +71,7 @@ public class UserController(
         throw new BadHttpRequestException(response.Message!);
       }
 
-      return Ok(response.Data);
+      return Ok(new ApiResponse<ProfileDto>(true, response.Message, response.Data));
     }
     catch (Exception ex)
     {
@@ -130,7 +130,7 @@ public class UserController(
         Response.Cookies.Append(field.Name.ToSnakeCase(), value?.ToString() ?? "", cookieOptions);
       }
 
-      return Ok(response);
+      return Ok(new ApiResponse<Auth0LoginDto>(true, response.Message, response.Data));
     }
     catch (Exception ex)
     {
@@ -176,7 +176,7 @@ public class UserController(
       {
         return StatusCode(response.StatusCode, response.Message);
       }
-      return StatusCode(204, response);
+      return NoContent();
     }
     catch (Exception ex)
     {
