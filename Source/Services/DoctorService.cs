@@ -10,6 +10,7 @@ using HealthHub.Source.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Crypto.Digests;
 
 public class DoctorService(
   ApplicationContext appContext,
@@ -22,7 +23,20 @@ public class DoctorService(
   {
     try
     {
-      var doctorResult = await appContext.Doctors.AddAsync(createDoctorDto.ToDoctor());
+      Guid doctorId = Guid.NewGuid();
+      var doctorPreference = await appContext.DoctorPreferences.AddAsync(
+        new DoctorPreference
+        {
+          InPersonAppointmentFee = createDoctorDto.InPersonAppointmentFee,
+          OnlineAppointmentFee = createDoctorDto.OnlineAppointmentFee,
+          DoctorId = doctorId // Share the DoctorId with the preference to estabilish connection
+        }
+      );
+
+      var doctorCreate = createDoctorDto.ToDoctor(doctorPreference.Entity.DoctorId);
+      doctorCreate.DoctorId = doctorId; // Share the DoctorId with the preference to estabilish connection
+
+      var doctorResult = await appContext.Doctors.AddAsync(doctorCreate); // Add the entry to db
       var doctor = doctorResult.Entity;
 
       // Create all educations for the doctor
@@ -95,11 +109,12 @@ public class DoctorService(
         .Include(d => d.DoctorSpecialities)
         .ThenInclude(ds => ds.Speciality)
         .Where(d =>
-          d.DoctorSpecialities.Any(ds =>
-            EF.Functions.Like(ds.Speciality.SpecialityName, $"%{specialityName}%")
-          )
+          d.DoctorSpecialities.Where(ds => ds.Speciality != null)
+            .Any(ds => EF.Functions.Like(ds.Speciality!.SpecialityName, $"%{specialityName}%"))
         )
-        .Select(d => d.ToDoctorDto(d.User, d.DoctorSpecialities))
+        .Select(d =>
+          d.ToDoctorDto(d.User, d.DoctorSpecialities.Select(ds => ds.Speciality!).ToList())
+        )
         .ToListAsync();
 
       return new ServiceResponse<List<DoctorDto>>(
@@ -129,7 +144,9 @@ public class DoctorService(
             EF.Functions.Like(d.User.FirstName + " " + d.User.LastName, $"%{doctorName}%")
           )
         )
-        .Select(d => d.ToDoctorDto(d.User, d.DoctorSpecialities))
+        .Select(d =>
+          d.ToDoctorDto(d.User, d.DoctorSpecialities.Select(ds => ds.Speciality!).ToList())
+        )
         .ToListAsync();
 
       return new ServiceResponse<List<DoctorDto>>(
@@ -154,7 +171,9 @@ public class DoctorService(
         .Include(d => d.DoctorSpecialities)
         .ThenInclude(ds => ds.Speciality)
         .Where(d => d.User.Gender == gender)
-        .Select(d => d.ToDoctorDto(d.User, d.DoctorSpecialities))
+        .Select(d =>
+          d.ToDoctorDto(d.User, d.DoctorSpecialities.Select(ds => ds.Speciality!).ToList())
+        )
         .ToListAsync();
 
       return new ServiceResponse<List<DoctorDto>>(
