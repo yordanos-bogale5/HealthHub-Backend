@@ -6,8 +6,6 @@ public class Blog : BaseEntity
 {
   public Guid BlogId { get; set; } = Guid.NewGuid();
 
-  public required Guid AuthorId { get; set; } // <<FK>>
-
   public required string Title { get; set; }
 
   public required string Content { get; set; }
@@ -16,6 +14,7 @@ public class Blog : BaseEntity
 
   public required string Summary { get; set; }
 
+  public required Guid AuthorId { get; set; } // <<FK>>
   public virtual User? Author { get; set; }
 
   public virtual ICollection<BlogComment> BlogComments { get; set; } = new HashSet<BlogComment>();

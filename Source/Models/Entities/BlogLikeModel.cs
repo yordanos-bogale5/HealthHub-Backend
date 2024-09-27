@@ -6,10 +6,8 @@ public class BlogLike : BaseEntity
 {
   public Guid BlogLikeId { get; set; } = Guid.NewGuid();
 
-  [Required]
   public Guid UserId { get; set; } // <<FK>>
 
-  [Required]
   public Guid BlogId { get; set; } // <<FK>>
 
   public virtual User? User { get; set; }

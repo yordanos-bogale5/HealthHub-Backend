@@ -7,22 +7,30 @@ public class Payment : BaseEntity
 {
   public Guid PaymentId { get; set; } = Guid.NewGuid();
 
-  public required string TransactionReference { get; set; } // Used for verification purposes between the payment provider and the application
+  // Used for verification purposes between the payment provider and the application
+  public required string TransactionReference { get; set; }
 
-  [Required]
-  public required Guid SenderId { get; set; } // <<FK>>
+  // The below fks are nullable because we don't want cascade to happen on payment
+  // records. Instead what happens is that these keys assume a null value
+  // Keeping only the essential information listed below intact even when a user deletion happens.
 
-  [Required]
-  public required Guid ReceiverId { get; set; } // <<FK>>
+  public Guid? SenderId { get; set; } // <<FK>>
 
-  [Required]
+  public Guid? ReceiverId { get; set; } // <<FK>>
+
+  // User details (to prevent loss on user deletion)
+  public required string SenderName { get; set; }
+  public required string SenderEmail { get; set; }
+  public required string ReceiverName { get; set; }
+  public required string ReceiverEmail { get; set; }
+
   public required decimal Amount { get; set; }
 
-  [Required]
-  public required PaymentStatus PaymentStatus { get; set; }
+  public required PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending; // Pending, Success, Failed etc..
 
-  [Required]
-  public required PaymentProvider PaymentProvider { get; set; } = PaymentProvider.Chapa;
+  public required PaymentProvider PaymentProvider { get; set; } // Chapa, Paypal etc..
+
+  public required PaymentType PaymentType { get; set; } // Transfer, Charge etc..
 
   public virtual User? Sender { get; set; } // <<NAV>>
   public virtual User? Receiver { get; set; } // <<NAV>>

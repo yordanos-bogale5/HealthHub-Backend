@@ -6,13 +6,10 @@ public class BlogComment : BaseEntity
 {
   public Guid BlogCommentId { get; set; }
 
-  [Required]
   public Guid BlogId { get; set; } // <<FK>>
 
-  [Required]
   public Guid SenderId { get; set; } // <<FK>>
 
-  [Required]
   public required string CommentText { get; set; }
 
   public virtual Blog? Blog { get; set; } // <<NAV>>

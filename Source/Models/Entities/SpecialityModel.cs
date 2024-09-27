@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HealthHub.Source.Models.Entities;
 
-public class Speciality {
+public class Speciality
+{
   public Guid SpecialityId { get; set; }
 
   [Required]
@@ -12,5 +13,5 @@ public class Speciality {
   public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
   public virtual ICollection<DoctorSpeciality> DoctorSpecialities { get; set; } =
-      new HashSet<DoctorSpeciality>();
+    new HashSet<DoctorSpeciality>();
 }

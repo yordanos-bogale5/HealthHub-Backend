@@ -8,12 +8,12 @@ public class DoctorAvailability
   public Guid DoctorAvailabilityId { get; set; } = Guid.NewGuid();
 
   [Required]
-  public Guid DoctorId { get; set; } // <<FK>>
+  public required Guid DoctorId { get; set; } // <<FK>>
 
   [Required]
-  public DayOfWeek AvailableDay { get; set; }
-  public TimeOnly StartTime { get; set; } = TimeOnly.MinValue.AddHours(6);
-  public TimeOnly EndTime { get; set; } = TimeOnly.MaxValue.AddHours(-6);
+  public required DayOfWeek AvailableDay { get; set; }
+  public required TimeOnly StartTime { get; set; } = TimeOnly.MinValue.AddHours(6);
+  public required TimeOnly EndTime { get; set; } = TimeOnly.MaxValue.AddHours(-6);
 
   public virtual required Doctor Doctor { get; set; }
 }
