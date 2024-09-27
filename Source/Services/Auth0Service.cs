@@ -7,6 +7,7 @@ using HealthHub.Source.Models.Dtos;
 using HealthHub.Source.Models.Enums;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Localization;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Ocsp;
 using RestSharp;
 
@@ -43,25 +44,37 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
 
       var token = await GetManagementApiTokenAsync();
 
-      var client = new RestClient($"{appConfig.Auth0Authority}/api/v2/users");
-
-      var request = new RestRequest() { Method = Method.Post };
-
-      request.AddHeader("content-type", "application/json");
-      request.AddHeader("Authorization", $"Bearer {token}");
-      request.AddJsonBody(userPayload);
-
-      RestResponse response = await client.ExecuteAsync(request);
-
-      if (response.StatusCode != System.Net.HttpStatusCode.Created)
+      Func<Task<RestResponse>> MakeRequest = async () =>
       {
-        logger.LogError(response.Content, $"Auth0 Create User Error\n\n");
-        throw new Exception("Failed to create user in Auth0");
+        var client = new RestClient($"{appConfig.Auth0Authority}/api/v2/users");
+        var request = new RestRequest() { Method = Method.Post };
+        request.AddHeader("content-type", "application/json");
+        request.AddHeader("Authorization", $"Bearer {token}");
+        request.AddJsonBody(userPayload);
+
+        return await client.ExecuteAsync(request);
+      };
+
+      var response = await MakeRequest();
+
+      if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+      {
+        // Delete the user with the given email from auth0
+        await DeleteUserByEmailAsync(userDto.Email);
+        // make the request again
+        response = await MakeRequest();
       }
 
-      logger.LogInformation($"\n\nAuth0 Create User Success:\n {response.Content}");
+      if (!response.IsSuccessStatusCode)
+      {
+        logger.LogError(response.Content, $"Auth0 Create User Error\n\n");
+        throw new Exception(
+          $"Failed to create user in Auth0. Please check auth0 dashboard / user management"
+        );
+      }
 
       var userData = JsonSerializer.Deserialize<JsonElement>(response.Content!);
+      logger.LogInformation($"\n\nAuth0 Create User Success:\n {response.Content}");
 
       return new Auth0UserDto(
         userData.GetProperty("user_id").GetString()!,
@@ -100,6 +113,48 @@ public class Auth0Service(AppConfig appConfig, ILogger<Auth0Service> logger)
     catch (Exception ex)
     {
       logger.LogError(ex, "Failed to delete user in Auth0");
+      throw;
+    }
+  }
+
+  public async Task DeleteUserByEmailAsync(string email)
+  {
+    try
+    {
+      var token = await GetManagementApiTokenAsync();
+
+      // Initialize RestClient to search for the user by email
+      var searchClient = new RestClient($"{appConfig.Auth0Authority}/api/v2/users-by-email");
+      var searchRequest = new RestRequest { Method = Method.Get };
+
+      searchRequest.AddHeader("Authorization", $"Bearer {token}");
+      searchRequest.AddParameter("email", email);
+
+      var searchResponse = await searchClient.ExecuteAsync(searchRequest);
+
+      if (searchResponse.StatusCode != System.Net.HttpStatusCode.OK)
+      {
+        logger.LogError(searchResponse.Content, "Auth0 Search User Error");
+        throw new Exception("Failed to search user by email in Auth0");
+      }
+
+      // Parse the response to get the user ID
+      var responseBody = searchResponse.Content;
+      var users = JArray.Parse(responseBody);
+
+      if (users.Count == 0)
+      {
+        throw new Exception("User not found");
+      }
+
+      var userId = users.First["user_id"].ToString(); // Extract user ID
+
+      // Call the existing DeleteUserAsync method
+      await DeleteUserAsync(userId);
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Failed to delete user by email in Auth0");
       throw;
     }
   }
