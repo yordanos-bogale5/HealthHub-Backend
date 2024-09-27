@@ -1,4 +1,3 @@
-using HealthHub.Migrations;
 using HealthHub.Source.Data;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Dtos;
@@ -6,6 +5,7 @@ using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
 using HealthHub.Source.Models.Interfaces;
 using HealthHub.Source.Models.Responses;
+using HealthHub.Source.Services.PaymentService;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Extensions;
@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Extensions;
 namespace HealthHub.Source.Services;
 
 public class AppointmentService(
+  IPaymentService paymentService,
   ApplicationContext appContext,
   DoctorService doctorService,
   PatientService patientService,
@@ -34,6 +35,7 @@ public class AppointmentService(
       Guid patientId = createAppointmentDto.PatientId.ToGuid();
 
       var doctor = await doctorService.GetDoctorAsync(doctorId);
+
       if (!doctor.Success || doctor.Data == null)
       {
         return new ServiceResponse<AppointmentDto>
@@ -125,9 +127,23 @@ public class AppointmentService(
         };
       }
 
+      // Before creating an appointment we must first process payment for that specific appointment
+      // If the patient decides to cancel an appointment we will refund their money with
+      // some percentage cancellation fee.
+
+      // Todo: Make payment for the appointment
+      // paymentService.CreatePaymentAsync(new CreatePaymentDto{
+      //   Amount =
+      // })
+
       var appointment = await appContext.Appointments.AddAsync(appointmentData);
 
       await appContext.SaveChangesAsync();
+
+      var specialities = await appContext
+        .DoctorSpecialities.Where(ds => ds.DoctorId == doctorId && ds.Speciality != null)
+        .Select(ds => ds.Speciality!)
+        .ToListAsync();
 
       return new ServiceResponse<AppointmentDto>
       {
@@ -138,7 +154,7 @@ public class AppointmentService(
           patient.Data,
           doctor.Data.User,
           patient.Data.User,
-          doctor.Data.DoctorSpecialities
+          specialities
         ),
         Message = "Appointment created successfully",
       };
@@ -202,7 +218,9 @@ public class AppointmentService(
             a.Patient,
             a.Doctor.User,
             a.Patient.User,
-            a.Doctor.DoctorSpecialities
+            a.Doctor.DoctorSpecialities.Where(ds => ds.Speciality != null)
+              .Select(ds => ds.Speciality!)
+              .ToList()
           )
         )
         .ToListAsync();
@@ -306,7 +324,15 @@ public class AppointmentService(
         .Include(ap => ap.Doctor)
         .ThenInclude(d => d.User)
         .Include(ap => ap.Doctor.DoctorSpecialities)
-        .Select(ap => ap.ToAppointmentDto(ap.Doctor, ap.Doctor.User, ap.Doctor.DoctorSpecialities))
+        .Select(ap =>
+          ap.ToAppointmentDto(
+            ap.Doctor,
+            ap.Doctor.User,
+            ap.Doctor.DoctorSpecialities.Where(ds => ds.Speciality != null)
+              .Select(ds => ds.Speciality!)
+              .ToList()
+          )
+        )
         .ToListAsync();
 
       return new ServiceResponse<List<AppointmentDto>>(
@@ -456,7 +482,10 @@ public class AppointmentService(
           appointment.Patient,
           appointment.Doctor.User,
           appointment.Patient.User,
-          appointment.Doctor.DoctorSpecialities
+          appointment
+            .Doctor.DoctorSpecialities.Where(ds => ds.Speciality != null)
+            .Select(ds => ds.Speciality!)
+            .ToList()
         ),
         Message = "Appointment edited successfully"
       };

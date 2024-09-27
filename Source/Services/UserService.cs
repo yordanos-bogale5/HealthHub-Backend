@@ -181,7 +181,7 @@ public class UserService(
       return new ServiceResponse<ProfileDto>(
         Success: true,
         StatusCode: 201,
-        Message: "Registration Success!",
+        Message: "Registration Success! We have sent you an email verification link to your email. Please verify your account.",
         Data: userProfile
       );
     }
