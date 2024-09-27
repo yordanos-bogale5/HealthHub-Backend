@@ -10,6 +10,7 @@ using HealthHub.Source.Services.BlogService;
 using HealthHub.Source.Services.ChatService;
 using HealthHub.Source.Services.PaymentProviders;
 using HealthHub.Source.Services.PaymentService;
+using HealthHub.Source.Services.ReviewService;
 using HealthHub.Source.Validation;
 using HealthHub.Source.Validation.AppointmentValidation;
 using HealthHub.Source.Validation.UserValidation;
@@ -204,6 +205,7 @@ var builder = WebApplication.CreateBuilder(args);
   builder.Services.AddTransient<IPaymentProviderFactory, PaymentProviderFactory>();
 
   builder.Services.AddTransient<IBlogService, BlogService>();
+  builder.Services.AddTransient<IReviewService, ReviewService>();
 
   // Add other providers in the future here!
 
@@ -275,5 +277,5 @@ var app = builder.Build();
     app.UseSwaggerUI();
   }
 
-  app.Run();
+  app.Run(new AppConfig(app.Configuration).ApiOrigin);
 }
