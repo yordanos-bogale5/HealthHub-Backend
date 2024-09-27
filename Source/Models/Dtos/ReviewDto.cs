@@ -16,7 +16,7 @@ public record CreateReviewDto
   public required Guid DoctorId { get; set; }
 
   [Required]
-  public required Guid? PatientId { get; set; }
+  public required Guid PatientId { get; set; }
 
   [Required]
   [StarRating]

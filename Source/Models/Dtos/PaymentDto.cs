@@ -82,6 +82,7 @@ public record PaymentDto
   public required decimal Amount { get; set; }
   public required PaymentStatus PaymentStatus { get; set; }
   public required PaymentProvider PaymentProvider { get; set; }
+  public required PaymentType PaymentType { get; set; }
 }
 
 public record CreatePaymentDto
@@ -97,4 +98,5 @@ public record CreatePaymentDto
   public required decimal Amount { get; set; }
   public required PaymentStatus PaymentStatus { get; set; }
   public required PaymentProvider PaymentProvider { get; set; }
+  public required PaymentType PaymentType { get; set; }
 }
