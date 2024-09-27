@@ -1,3 +1,5 @@
+using HealthHub.Source.Models.Entities;
+
 namespace HealthHub.Source.Services.ChatService;
 
 public interface IChatService
@@ -8,7 +10,9 @@ public interface IChatService
 
   Task<MessageDto> CreateMessageAsync(CreateMessageDto createMessageDto);
 
-  Task<Guid> GetConversationIdOrCreate(Guid senderId, Guid receiverId);
+  // Task<Guid> GetConversationIdOrCreate(Guid senderId, Guid receiverId);
+
+  Task<IConversationDto> CreateConversationAsync(CreateConversationDto createConversationDto);
 
   Task<IConversationDto> GetConversationAsync(Guid conversationId);
 
@@ -17,4 +21,8 @@ public interface IChatService
   Task<bool> ConversationExistsAsync(Guid conversationId);
 
   Task DeleteMessage(Guid messageId);
+
+  Task CreateConversationMembershipsRangeAsync(List<Guid> participants, Guid conversationId);
+
+  Task<ICollection<User>> GetConversationParticipantsAsync(Guid conversationId);
 }

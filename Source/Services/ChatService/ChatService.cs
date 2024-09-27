@@ -17,18 +17,77 @@ public class ChatService(
   ILogger<ChatService> logger
 ) : IChatService
 {
+  public async Task<IConversationDto> CreateConversationAsync(
+    CreateConversationDto createConversationDto
+  )
+  {
+    try
+    {
+      var conversationId = Guid.NewGuid();
+      var conversation = await appContext.Conversations.AddAsync(
+        new Conversation() { ConversationId = conversationId }
+      );
+
+      await appContext.SaveChangesAsync();
+      var participants = await GetConversationParticipantsAsync(conversationId);
+      return conversation.Entity.ToConversationDto(participants);
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to create conversation.");
+      throw;
+    }
+  }
+
+  public async Task CreateConversationMembershipsRangeAsync(
+    List<Guid> participants,
+    Guid conversationId
+  )
+  {
+    try
+    {
+      ConversationMembership[] conversationMemberships = new ConversationMembership[
+        participants.Count
+      ];
+      for (var i = 0; i < participants.Count; i++)
+      {
+        conversationMemberships[i].UserId = participants[i];
+        conversationMemberships[i].ConversationId = conversationId;
+      }
+
+      await appContext.ConversationMemberships.AddRangeAsync(conversationMemberships);
+      await appContext.SaveChangesAsync();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to create conversation memberships.");
+      throw;
+    }
+  }
+
   public async Task<List<MessageDto>> GetMessagesAsync(Guid conversationId)
   {
     try
     {
+      // var conversation = await appContext
+      //   .Conversations.Where(c => c.ConversationId == conversationId)
+      //   .Include(c => c.Messages)
+      //   .ThenInclude(m => m.Files) // Load the associated files
+      //   .Include(c => c.Messages)
+      //   .ThenInclude(m => m.Sender) // Load the sender
+      //   .Include(c => c.Messages)
+      //   .ThenInclude(m => m.Receiver) // Load the receiver
+      //   .FirstOrDefaultAsync();
+
       var conversation = await appContext
-        .Conversations.Where(c => c.ConversationId == conversationId)
-        .Include(c => c.Messages)
-        .ThenInclude(m => m.Files) // Load the associated files
-        .Include(c => c.Messages)
-        .ThenInclude(m => m.Sender) // Load the sender
-        .Include(c => c.Messages)
-        .ThenInclude(m => m.Receiver) // Load the receiver
+        .ConversationMemberships.Where(cm => cm.ConversationId == conversationId)
+        .Include(cm => cm.Conversation)
+        .ThenInclude(c => c!.Messages)
+        .ThenInclude(m => m.Files)
+        .Include(cm => cm.Conversation)
+        .ThenInclude(c => c!.Messages)
+        .ThenInclude(m => m.Sender)
+        .Select(cm => cm.Conversation)
         .FirstOrDefaultAsync();
 
       if (conversation == default)
@@ -84,10 +143,12 @@ public class ChatService(
     using var transaction = await appContext.Database.BeginTransactionAsync();
     try
     {
-      var conversationId = await GetConversationIdOrCreate(
-        createMessageDto.SenderId,
-        createMessageDto.ReceiverId
-      );
+      // var conversationId = await GetConversationIdOrCreate(
+      //   createMessageDto.SenderId,
+      //   createMessageDto.ReceiverId
+      // );
+
+      var conversationId = createMessageDto.ConversationId;
 
       Guid messageId = Guid.NewGuid(); // Create a messageID to share to fileService to establish associations
 
@@ -115,59 +176,59 @@ public class ChatService(
     }
   }
 
-  /// <summary>
-  /// Get the conversation ID between two users, if no conversation exists, creates one and returns the ID
-  /// </summary>
-  /// <param name="senderId"></param>
-  /// <param name="receiverId"></param>
-  /// <returns>ConversationId</returns>
-  /// <exception cref="InvalidOperationException"></exception>
-  public async Task<Guid> GetConversationIdOrCreate(Guid senderId, Guid receiverId)
-  {
-    using var transaction = await appContext.Database.BeginTransactionAsync();
-    try
-    {
-      // Find common conversations between sender and receiver
-      var commonConversation = await appContext
-        .ConversationMemberships.Where(cm => cm.UserId == senderId || cm.UserId == receiverId)
-        .GroupBy(cm => cm.ConversationId)
-        .Where(g => g.Count() == 2) // Both sender and receiver must be in this conversation
-        .Select(g => g.Key)
-        .FirstOrDefaultAsync();
+  // /// <summary>
+  // /// Get the conversation ID between two users, if no conversation exists, creates one and returns the ID
+  // /// </summary>
+  // /// <param name="senderId"></param>
+  // /// <param name="receiverId"></param>
+  // /// <returns>ConversationId</returns>
+  // /// <exception cref="InvalidOperationException"></exception>
+  // public async Task<Guid> GetConversationIdOrCreate(Guid senderId, Guid participantId)
+  // {
+  //   using var transaction = await appContext.Database.BeginTransactionAsync();
+  //   try
+  //   {
+  //     // Find common conversations between sender and receiver
+  //     var commonConversation = await appContext
+  //       .ConversationMemberships.Where(cm => cm.UserId == senderId || cm.UserId == participantId)
+  //       .GroupBy(cm => cm.ConversationId)
+  //       .Where(g => g.Count() == 2) // Both sender and receiver must be in this conversation
+  //       .Select(g => g.Key)
+  //       .FirstOrDefaultAsync();
 
-      // If they don't have conversation yet
-      if (commonConversation == default)
-      {
-        // Create a new conversation
-        var conversation = new Conversation();
-        var conversationMemberships = new List<ConversationMembership>
-        {
-          new ConversationMembership
-          {
-            UserId = senderId,
-            ConversationId = conversation.ConversationId
-          },
-          new ConversationMembership
-          {
-            UserId = receiverId,
-            ConversationId = conversation.ConversationId
-          }
-        };
-        await appContext.ConversationMemberships.AddRangeAsync(conversationMemberships); // create the conversation memberships
-        await appContext.Conversations.AddAsync(conversation); // create the conversation
-        commonConversation = conversation.ConversationId;
-      }
-      await appContext.SaveChangesAsync();
-      transaction.Commit();
-      return commonConversation;
-    }
-    catch (Exception ex)
-    {
-      await transaction.RollbackAsync();
-      logger.LogError(ex, "An error occurred while getting the conversation ID.");
-      throw;
-    }
-  }
+  //     // If they don't have conversation yet
+  //     if (commonConversation == default)
+  //     {
+  //       // Create a new conversation
+  //       var conversation = new Conversation();
+  //       var conversationMemberships = new List<ConversationMembership>
+  //       {
+  //         new ConversationMembership
+  //         {
+  //           UserId = senderId,
+  //           ConversationId = conversation.ConversationId
+  //         },
+  //         new ConversationMembership
+  //         {
+  //           UserId = participantId,
+  //           ConversationId = conversation.ConversationId
+  //         }
+  //       };
+  //       await appContext.ConversationMemberships.AddRangeAsync(conversationMemberships); // create the conversation memberships
+  //       await appContext.Conversations.AddAsync(conversation); // create the conversation
+  //       commonConversation = conversation.ConversationId;
+  //     }
+  //     await appContext.SaveChangesAsync();
+  //     transaction.Commit();
+  //     return commonConversation;
+  //   }
+  //   catch (Exception ex)
+  //   {
+  //     await transaction.RollbackAsync();
+  //     logger.LogError(ex, "An error occurred while getting the conversation ID.");
+  //     throw;
+  //   }
+  // }
 
   public async Task<IConversationDto> GetConversationAsync(Guid conversationId)
   {
@@ -251,6 +312,25 @@ public class ChatService(
     catch (System.Exception ex)
     {
       logger.LogError(ex, "An error occured trying to delete message.");
+      throw;
+    }
+  }
+
+  public async Task<ICollection<User>> GetConversationParticipantsAsync(Guid conversationId)
+  {
+    try
+    {
+      var result = await appContext
+        .ConversationMemberships.Where(cm => cm.ConversationId == conversationId && cm.User != null)
+        .Include(cm => cm.User)
+        .Select(g => g.User!)
+        .ToListAsync();
+
+      return result;
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "An error occured trying to get conversation participants.");
       throw;
     }
   }
