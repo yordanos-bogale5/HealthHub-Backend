@@ -46,8 +46,8 @@ public class User : BaseEntity
   [RoleValidation]
   public Role Role { get; set; }
 
-  public virtual ICollection<Conversation> Conversations { get; set; } =
-    new HashSet<Conversation>();
+  public virtual ICollection<ConversationMembership> ConversationMemberships { get; set; } =
+    new HashSet<ConversationMembership>();
   public virtual ICollection<Blog> Blogs { get; set; } = new HashSet<Blog>();
   public virtual ICollection<BlogComment> BlogComments { get; set; } = new HashSet<BlogComment>();
   public virtual ICollection<BlogLike> BlogLikes { get; set; } = new HashSet<BlogLike>();
