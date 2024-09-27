@@ -153,6 +153,7 @@ public static class DtoExtensions
       PaymentProvider = createPaymentDto.PaymentProvider,
       PaymentStatus = PaymentStatus.Pending,
       TransactionReference = transactionReference,
+      PaymentType = createPaymentDto.PaymentType
     };
   }
 
@@ -172,7 +173,8 @@ public static class DtoExtensions
       SenderName = transferRequestDto.SenderName,
       SenderEmail = transferRequestDto.SenderEmail,
       ReceiverName = transferRequestDto.ReceiverName,
-      ReceiverEmail = transferRequestDto.ReceiverEmail
+      ReceiverEmail = transferRequestDto.ReceiverEmail,
+      PaymentType = PaymentType.Transfer
     };
   }
 

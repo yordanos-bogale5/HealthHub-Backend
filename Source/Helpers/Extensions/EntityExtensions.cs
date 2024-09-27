@@ -422,7 +422,8 @@ public static class EntityExtensions
       SenderName = payment.SenderEmail,
       SenderEmail = payment.SenderEmail,
       ReceiverName = payment.ReceiverName,
-      ReceiverEmail = payment.ReceiverEmail
+      ReceiverEmail = payment.ReceiverEmail,
+      PaymentType = payment.PaymentType
     };
   }
 
