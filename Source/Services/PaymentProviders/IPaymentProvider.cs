@@ -1,4 +1,5 @@
 using HealthHub.Source.Models.Enums;
+using HealthHub.Source.Models.Interfaces.Payments;
 
 namespace HealthHub.Source.Services.PaymentProviders;
 
@@ -12,4 +13,6 @@ public interface IPaymentProvider
   PaymentProvider PaymentProvider { get; }
   Task<decimal> CheckBalanceAsync(string email);
   Task<TransferResponseInner> TransferAsync(TransferRequestDto transferRequestDto);
+  Task<IChargeResponse> ChargeAsync(ICharge charge);
+  Task<IVerifyResponse> VerifyAsync(IVerifyRequest verifyRequest);
 }
