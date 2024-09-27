@@ -2,7 +2,10 @@ using HealthHub.Source.Data;
 using HealthHub.Source.Helpers.Extensions;
 using HealthHub.Source.Models.Entities;
 using HealthHub.Source.Models.Enums;
+using HealthHub.Source.Models.Interfaces.Payments;
+using HealthHub.Source.Models.Interfaces.Payments.Chapa;
 using HealthHub.Source.Services.PaymentProviders;
+using Microsoft.EntityFrameworkCore;
 
 namespace HealthHub.Source.Services.PaymentService;
 
@@ -92,4 +95,60 @@ public class PaymentService(
       throw;
     }
   }
+
+  public async Task<PaymentDto> ChangePaymentStatusAsync(
+    string transactionReference,
+    PaymentStatus status
+  )
+  {
+    try
+    {
+      var payment = await appContext.Payments.FirstOrDefaultAsync(p =>
+        p.TransactionReference == transactionReference
+      );
+      if (payment == default)
+      {
+        throw new KeyNotFoundException(
+          "Payment with the specified transaction reference does not exist"
+        );
+      }
+      payment.PaymentStatus = status; // update the status
+      await appContext.SaveChangesAsync();
+      return payment.ToPaymentDto();
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Error changing payment status");
+      throw;
+    }
+  }
+
+  public async Task<ChargeResponse> ChargeAsync(IChargeRequest charge)
+  {
+    try
+    {
+      IPaymentProvider provider = paymentProviderFactory.GetProvider(
+        charge.PaymentProvider.ConvertToEnum<PaymentProvider>()
+      );
+      var result = await provider.ChargeAsync(
+        new ChapaCharge
+        {
+          Amount = charge.Amount,
+          Currency = charge.Currency.ConvertToEnum<PaymentCurrency>(),
+          PhoneNumber = charge.PhoneNumber,
+          PaymentProvider = charge.PaymentProvider.ConvertToEnum<PaymentProvider>(),
+          PaymentMethod = charge.PaymentMethod.ConvertToChapaPaymentMethod()
+        }
+      );
+      return (ChargeResponse)result;
+    }
+    catch (System.Exception ex)
+    {
+      logger.LogError(ex, "Error charging");
+      throw;
+    }
+  }
+
+  public Task<IVerifyResponse> VerifyAsync(IVerifyRequest verifyRequest) =>
+    throw new NotImplementedException();
 }

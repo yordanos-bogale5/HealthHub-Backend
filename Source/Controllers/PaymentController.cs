@@ -5,8 +5,6 @@ using System.Text;
 using System.Text.Json;
 using HealthHub.Source.Config;
 using HealthHub.Source.Helpers.Defaults;
-using HealthHub.Source.Models.Enums;
-using HealthHub.Source.Models.Interfaces.ChapaProvider;
 using HealthHub.Source.Models.Interfaces.Payments;
 using HealthHub.Source.Models.Responses;
 using HealthHub.Source.Services.PaymentService;
