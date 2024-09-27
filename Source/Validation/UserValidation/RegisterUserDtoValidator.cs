@@ -104,6 +104,20 @@ public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
           .Must(avail => TimeOnly.TryParse(avail.EndTime.ToString(), out _))
           .WithMessage("End time must be valid! (HH:mm)");
 
+        RuleFor(u => u.OnlineAppointmentFee)
+          .NotEmpty()
+          .WithMessage("Online Appointment fee cannot be empty.")
+          // Change the below based on the business requirement
+          .Must(appFee => appFee >= 0)
+          .WithMessage("Online Appointment fee cannot be negative!");
+
+        RuleFor(u => u.InPersonAppointmentFee)
+          .NotEmpty()
+          .WithMessage("Inperson Appointment fee cannot be empty.")
+          // Change the below based on the business requirement
+          .Must(appFee => appFee >= 0)
+          .WithMessage("Inperson Appointment fee cannot be negative!");
+
         RuleFor(u => u.Educations)
           .NotNull()
           .NotEmpty()
